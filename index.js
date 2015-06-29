@@ -1,6 +1,7 @@
 'use strict';
 
 var configManager = require('./lib/services/config-manager.js');
+var server = require('./lib/server.js');
 var logger = require('./lib/utils/logger.js');
 
 function load(params) {
@@ -10,6 +11,13 @@ function load(params) {
   
   var appRootPath = params.appRootPath;
   var config = configManager(appRootPath + '/config');
+  
+  // Start the server
+  var serverInstance = server.listen(17779, function () {
+    var host = serverInstance.address().address;
+    var port = serverInstance.address().port;
+    logger.trace('devebot REST API listening at http://%s:%s', host, port);
+  });
 }
 
 module.exports = load;
