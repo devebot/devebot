@@ -1,7 +1,7 @@
 'use strict';
 
 var configManager = require('./lib/services/config-manager.js');
-var server = require('./lib/server.js');
+var Server = require('./lib/server.js');
 var logger = require('./lib/utils/logger.js');
 
 function load(params) {
@@ -13,6 +13,7 @@ function load(params) {
   var config = configManager(appRootPath + '/config');
   
   // Start the server
+  var server = Server(config);
   var serverInstance = server.listen(17779, function () {
     var host = serverInstance.address().address;
     var port = serverInstance.address().port;
