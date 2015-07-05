@@ -4,7 +4,7 @@ var configManager = require('./lib/services/config-manager.js');
 var Server = require('./lib/server.js');
 var logger = require('./lib/utils/logger.js');
 
-function load(params) {
+function init(params) {
   params = params || {};
 
   logger.trace(' * devebot is starting up with parameters: %s', JSON.stringify(params, null, 2));
@@ -21,4 +21,6 @@ function load(params) {
   });
 }
 
-module.exports = load;
+init.logger = logger;
+
+module.exports = init;
