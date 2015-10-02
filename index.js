@@ -11,10 +11,11 @@ function init(params) {
   
   var appRootPath = params.appRootPath;
   var config = configLoader(appRootPath + '/config');
+  var configDevebot = config.SYSTEM.devebot || {port: 17779};
 
   // Start the server
-  var server = Server(config.SERVER);
-  var serverInstance = server.listen(17779, function () {
+  var server = Server(config);
+  var serverInstance = server.listen(configDevebot.port, function () {
     var host = serverInstance.address().address;
     var port = serverInstance.address().port;
     logger.trace('devebot REST API listening at http://%s:%s', host, port);
