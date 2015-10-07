@@ -7,7 +7,7 @@ var logger = require('./lib/utils/logger.js');
 function init(params) {
   params = params || {};
 
-  logger.trace(' * devebot is starting up with parameters: %s', JSON.stringify(params, null, 2));
+  logger.trace(' * devebot is starting up with parameters: %s', JSON.stringify(params));
   
   var appRootPath = params.appRootPath;
   var config = configLoader(appRootPath + '/config');
@@ -22,6 +22,7 @@ function init(params) {
   });
 }
 
+init.configLoader = configLoader;
 init.logger = logger;
 
 module.exports = init;
