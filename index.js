@@ -12,6 +12,8 @@ function init(params) {
   var appRootPath = params.appRootPath;
   var config = configLoader(appRootPath + '/config');
   var configDevebot = config.SYSTEM.devebot || {port: 17779};
+  
+  config.appRootPath = params.appRootPath;
 
   // Start the server
   var server = Server(config);
