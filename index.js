@@ -1,5 +1,6 @@
 'use strict';
 
+var appinfoLoader = require('./lib/services/appinfo-loader.js');
 var configLoader = require('./lib/services/config-loader.js');
 var Server = require('./lib/server.js');
 var logger = require('./lib/utils/logger.js');
@@ -10,10 +11,11 @@ function init(params) {
   logger.trace(' * devebot is starting up with parameters: %s', JSON.stringify(params));
   
   var appRootPath = params.appRootPath;
+  
   var config = configLoader(appRootPath + '/config');
   var configDevebot = config.SYSTEM.devebot || {port: 17779};
   
-  config.appRootPath = params.appRootPath;
+  config.APPINFO = appinfoLoader(appRootPath);
 
   // Start the server
   var server = Server(config);
