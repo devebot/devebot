@@ -22,7 +22,7 @@ function init(params) {
   var serverInstance = server.listen(configDevebot.port, function () {
     var host = serverInstance.address().address;
     var port = serverInstance.address().port;
-    logger.trace('devebot REST API listening at http://%s:%s', host, port);
+    console.log('devebot service listening at http://%s:%s', host, port);
   });
 }
 
