@@ -13,7 +13,7 @@ function init(params) {
   var appRootPath = params.appRootPath;
   
   var config = configLoader(appRootPath + '/config');
-  var configDevebot = config.SYSTEM.devebot || {port: 17779};
+  var configDevebot = config.system.default.devebot || {port: 17779};
   
   config.APPINFO = appinfoLoader(appRootPath);
 
