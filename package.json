@@ -30,7 +30,8 @@
     "mongo-oplog": "^1.0.1",
     "mongojs": "^1.4.1",
     "superagent": "^1.4.0",
-    "winston": "^1.1.0",
+    "winston": "^2.1.1",
+    "winston-mongodb": "^1.2.0",
     "ws": "^0.8.0"
   }
 }
