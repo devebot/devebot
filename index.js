@@ -3,7 +3,8 @@
 var appinfoLoader = require('./lib/services/appinfo-loader.js');
 var configLoader = require('./lib/services/config-loader.js');
 var Server = require('./lib/server.js');
-var logger = require('./lib/utils/logger.js');
+
+var logger = require('logdapter').defaultLogger;
 
 function init(params) {
   params = params || {};
@@ -13,7 +14,7 @@ function init(params) {
   var appRootPath = params.appRootPath;
   
   var config = configLoader(appRootPath + '/config');
-  var configDevebot = config.system.default.devebot || {port: 17779};
+  var configDevebot = config.profile.default.devebot || {port: 17779};
   
   config.APPINFO = appinfoLoader(appRootPath);
 
