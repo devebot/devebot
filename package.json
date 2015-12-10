@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -32,9 +32,6 @@
     "mongo-oplog": "^1.0.1",
     "mongojs": "^1.4.1",
     "superagent": "^1.4.0",
-    "winston": "^2.1.1",
-    "winston-logstash": "^0.2.11",
-    "winston-mongodb": "^1.2.0",
     "ws": "^0.8.0"
   }
 }
