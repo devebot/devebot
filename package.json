@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -13,6 +13,14 @@
     "type": "git",
     "url": "git+https://github.com/devebot/devebot.git"
   },
+  "keywords": [
+    "devebot",
+    "mongodb",
+    "elasticsearch",
+    "oplog",
+    "connector",
+    "synchronization"
+  ],
   "author": "Hung Pham <pnhung177@acegik.net> (http://acegik.net/blog)",
   "license": "GPL-3.0",
   "bugs": {
@@ -25,10 +33,10 @@
     "body-parser": "^1.14.1",
     "express": "^4.13.3",
     "express-session": "^1.11.3",
-    "injektor": "^0.0.9",
+    "injektor": "^0.0.10",
     "kue": "^0.10.4",
     "lodash": "^3.10.1",
-    "logdapter": "^0.0.7",
+    "logdapter": "^0.0.9",
     "mongo-oplog": "^1.0.1",
     "mongojs": "^1.4.1",
     "superagent": "^1.4.0",
