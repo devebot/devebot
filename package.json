@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -37,7 +37,7 @@
     "injektor": "^0.0.11",
     "kue": "^0.10.4",
     "lodash": "^3.10.1",
-    "logdapter": "^0.0.10",
+    "logdapter": "^0.0.11",
     "mongo-oplog": "^1.0.1",
     "mongojs": "^1.4.1",
     "superagent": "^1.4.0",
