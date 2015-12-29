@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -34,12 +34,12 @@
     "body-parser": "^1.14.1",
     "express": "^4.13.3",
     "express-session": "^1.11.3",
-    "injektor": "^0.0.11",
+    "injektor": "^0.0.12",
     "kue": "^0.10.4",
     "lodash": "^3.10.1",
-    "logdapter": "^0.0.11",
+    "logdapter": "^0.0.12",
     "mongo-oplog": "^1.0.1",
-    "mongojs": "^1.4.1",
+    "mongojs": "^2.2.2",
     "superagent": "^1.4.0",
     "ws": "^0.8.0"
   }
