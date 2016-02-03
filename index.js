@@ -14,17 +14,12 @@ function init(params) {
   var appRootPath = params.appRootPath;
   
   var config = configLoader(appRootPath + '/config');
-  var configDevebot = config.profile.default.devebot || {port: 17779};
-  
   config.APPINFO = appinfoLoader(appRootPath);
 
-  // Start the server
-  var server = Server(config);
-  var serverInstance = server.listen(configDevebot.port, function () {
-    var host = serverInstance.address().address;
-    var port = serverInstance.address().port;
-    console.log('devebot service listening at http://%s:%s', host, port);
-  });
+  return {
+    config: config,
+    server: Server(config)
+  };
 }
 
 init.configLoader = configLoader;
