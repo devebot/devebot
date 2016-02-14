@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.0.24",
+  "version": "0.1.10",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
