@@ -1,5 +1,7 @@
 'use strict';
 
+var lodash = require('lodash');
+
 var appinfoLoader = require('./lib/services/appinfo-loader.js');
 var configLoader = require('./lib/services/config-loader.js');
 var Server = require('./lib/server.js');
@@ -12,9 +14,17 @@ function init(params) {
   logger.trace(' * devebot is starting up with parameters: %s', JSON.stringify(params));
   
   var appRootPath = params.appRootPath;
+  var libRootPaths = params.libRootPaths || [];
   
   var config = configLoader(appRootPath + '/config');
   config.APPINFO = appinfoLoader(appRootPath);
+  config.scriptfolders = [].concat(
+    [ appRootPath + '/lib/scripts' ],
+    lodash.map(libRootPaths, function(libRootPath) {
+      return libRootPath + '/lib/scripts';
+    }),
+    [ __dirname + '/lib/scripts' ]
+  );
 
   return {
     config: config,
