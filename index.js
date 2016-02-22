@@ -2,8 +2,8 @@
 
 var lodash = require('lodash');
 
-var appinfoLoader = require('./lib/services/appinfo-loader.js');
-var configLoader = require('./lib/services/config-loader.js');
+var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
+var configLoader = require('./lib/backbone/config-loader.js');
 var Server = require('./lib/server.js');
 
 var logger = require('logdapter').defaultLogger;
