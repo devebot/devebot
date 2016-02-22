@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -15,12 +15,8 @@
   },
   "keywords": [
     "devebot",
-    "mongodb",
-    "elasticsearch",
-    "oplog",
-    "connector",
-    "synchronization",
-    "development"
+    "development",
+    "tool"
   ],
   "author": "Hung Pham <pnhung177@acegik.net> (http://acegik.net/blog)",
   "license": "GPL-3.0",
@@ -39,9 +35,6 @@
     "kue": "^0.10.4",
     "lodash": "^3.10.1",
     "logdapter": "^0.0.12",
-    "mongo-oplog": "^1.0.1",
-    "mongojs": "^2.2.2",
-    "superagent": "^1.4.0",
     "ws": "^0.8.0"
   }
 }

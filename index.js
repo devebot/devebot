@@ -29,9 +29,4 @@ function init(params) {
 init.configLoader = configLoader;
 init.logger = logger;
 
-init.utils = {
-  chores: require('./lib/utils/chores.js'),
-  constx: require('./lib/utils/constx.js')
-};
-
 module.exports = init;
