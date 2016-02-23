@@ -7,7 +7,9 @@
     "node": "0.10 || 0.12 || 4"
   },
   "scripts": {
-    "test": "echo \"no test specified\" && exit 0"
+    "test": "npm run unitest",
+    "unitest": "./node_modules/.bin/mocha test/ut/**/*-test.js",
+    "e2etest": "./node_modules/.bin/cucumber.js test/et/features/*.feature"
   },
   "repository": {
     "type": "git",
@@ -36,5 +38,12 @@
     "lodash": "^3.10.1",
     "logdapter": "^0.0.12",
     "ws": "^0.8.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5",
+    "nock": "^7.2.2",
+    "rewire": "^2.5.1",
+    "sinon": "^1.17.3"
   }
 }

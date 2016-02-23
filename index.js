@@ -8,17 +8,18 @@ var Server = require('./lib/server.js');
 
 var logger = require('logdapter').defaultLogger;
 
-function init(params) {
+function appLoader(params) {
   params = params || {};
 
   logger.trace(' * devebot is starting up with parameters: %s', JSON.stringify(params));
   
   var appRootPath = params.appRootPath;
   var libRootPaths = params.libRootPaths || [];
+  var topRootPath = __dirname;
   
-  var config = configLoader(appRootPath + '/config');
-  config.APPINFO = appinfoLoader(appRootPath);
-  config.moduleFolders = [].concat(appRootPath, libRootPaths, __dirname);
+  var config = configLoader(appRootPath, libRootPaths.concat(topRootPath));
+  config.appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
+  config.moduleFolders = [].concat(appRootPath, libRootPaths, topRootPath);
 
   return {
     config: config,
@@ -26,7 +27,6 @@ function init(params) {
   };
 }
 
-init.configLoader = configLoader;
-init.logger = logger;
+appLoader.logger = logger;
 
-module.exports = init;
+module.exports = appLoader;
