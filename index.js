@@ -11,7 +11,7 @@ var logger = require('logdapter').defaultLogger;
 function appLoader(params) {
   params = params || {};
 
-  logger.trace(' * devebot is starting up with parameters: %s', JSON.stringify(params));
+  logger.trace(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
   
   var appRootPath = params.appRootPath;
   var libRootPaths = params.libRootPaths || [];
@@ -27,6 +27,16 @@ function appLoader(params) {
   };
 }
 
+function attachLayer(params, layerRootPath) {
+  params = params || {};
+
+  params.libRootPaths = params.libRootPaths || [];
+  params.libRootPaths.push(layerRootPath);
+
+  return params;
+}
+
+appLoader.attachLayer = attachLayer;
 appLoader.logger = logger;
 
 module.exports = appLoader;
