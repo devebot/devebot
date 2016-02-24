@@ -27,7 +27,7 @@ function appLoader(params) {
   };
 }
 
-function attachLayer(params, layerRootPath) {
+function attachLayer(layerRootPath, params) {
   params = params || {};
 
   params.libRootPaths = params.libRootPaths || [];
@@ -36,7 +36,27 @@ function attachLayer(params, layerRootPath) {
   return params;
 }
 
+function instantiate(options, layers) {
+  
+  if (lodash.isString(options)) {
+    options = { appRootPath: options };
+  }
+  
+  if (!lodash.isArray(layers)) layers = [];
+  var index = layers.indexOf(appLoader);
+  if (index >= 0) {
+    layers = layers.slice(0, index+1);
+  } else {
+    layers = layers.concat(appLoader);
+  }
+  
+  return layers.reduce(function(params, plugin) {
+    return plugin(params);
+  }, options);
+}
+
 appLoader.attachLayer = attachLayer;
+appLoader.instantiate = instantiate;
 appLoader.logger = logger;
 
 module.exports = appLoader;
