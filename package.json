@@ -36,7 +36,7 @@
     "jsonschema": "^1.0.2",
     "kue": "^0.10.4",
     "lodash": "^3.10.1",
-    "logdapter": "^0.0.12",
+    "logdapter": "^0.0.13",
     "ws": "^0.8.0"
   },
   "devDependencies": {
