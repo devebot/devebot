@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -36,7 +36,7 @@
     "jsonschema": "^1.0.2",
     "kue": "^0.10.4",
     "lodash": "^3.10.1",
-    "logdapter": "^0.0.13",
+    "logdapter": "^0.0.14",
     "ws": "^0.8.0"
   },
   "devDependencies": {
