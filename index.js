@@ -59,4 +59,8 @@ appLoader.attachLayer = attachLayer;
 appLoader.instantiate = instantiate;
 appLoader.logger = logger;
 
+appLoader.debug = function(pkgName) {
+  return (process.env.DEBUG) ? require('debug')(pkgName) : function() {};
+}
+
 module.exports = appLoader;
