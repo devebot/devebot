@@ -63,4 +63,10 @@ appLoader.debug = function(pkgName) {
   return (process.env.DEBUG) ? require('debug')(pkgName) : function() {};
 }
 
+appLoader.pkg = {
+  async: require('async'),
+  bluebird: require('bluebird'),
+  lodash: require('lodash')
+};
+
 module.exports = appLoader;
