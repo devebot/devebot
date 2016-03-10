@@ -5,13 +5,16 @@ var lodash = require('lodash');
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
 var configLoader = require('./lib/backbone/config-loader.js');
 var Server = require('./lib/server.js');
+var debuglog = require('./lib/utils/debug.js')('devebot');
 
 var logger = require('logdapter').defaultLogger;
 
 function appLoader(params) {
   params = params || {};
 
-  logger.trace(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
+  if (debuglog.isEnabled) {
+    debuglog(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
+  }
   
   var appRootPath = params.appRootPath;
   var libRootPaths = params.libRootPaths || [];
@@ -58,10 +61,7 @@ function instantiate(options, layers) {
 appLoader.attachLayer = attachLayer;
 appLoader.instantiate = instantiate;
 appLoader.logger = logger;
-
-appLoader.debug = function(pkgName) {
-  return (process.env.DEBUG) ? require('debug')(pkgName) : function() {};
-}
+appLoader.debug = require('./lib/utils/debug.js');
 
 appLoader.pkg = {
   async: require('async'),
