@@ -16,12 +16,18 @@ function appLoader(params) {
     debuglog(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
   }
   
+  var appName = params.appName;
   var appRootPath = params.appRootPath;
   var libRootPaths = params.libRootPaths || [];
   var topRootPath = __dirname;
   
-  var config = configLoader(appRootPath, libRootPaths.concat(topRootPath));
-  config.appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
+  var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
+  var appname = appName || appinfo.name || appinfo.framework.name || 'devebot';
+  debuglog(' - application name: %s', appname);
+  
+  var config = configLoader(appname, appRootPath, libRootPaths.concat(topRootPath));
+  
+  config.appinfo = appinfo;
   config.moduleFolders = [].concat(appRootPath, libRootPaths, topRootPath);
 
   return {
