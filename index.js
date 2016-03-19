@@ -5,7 +5,9 @@ var lodash = require('lodash');
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
 var configLoader = require('./lib/backbone/config-loader.js');
 var Server = require('./lib/server.js');
-var debuglog = require('./lib/utils/debug.js')('devebot');
+
+var debug = require('./lib/utils/debug.js');
+var debuglog = debug('devebot');
 
 var logger = require('logdapter').defaultLogger;
 
@@ -30,6 +32,7 @@ function appLoader(params) {
   
   config.appName = appName;
   config.appinfo = appinfo;
+  config.bridgeNames = params.bridgeNames || [];
   config.moduleFolders = [].concat(appRootPath, libRootPaths, topRootPath);
 
   return {
@@ -69,7 +72,7 @@ function instantiate(options, layers) {
 appLoader.attachLayer = attachLayer;
 appLoader.instantiate = instantiate;
 appLoader.logger = logger;
-appLoader.debug = require('./lib/utils/debug.js');
+appLoader.debug = debug;
 
 appLoader.pkg = {
   async: require('async'),
