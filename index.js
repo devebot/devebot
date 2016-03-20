@@ -80,7 +80,7 @@ function registerLayerware(layerRootPath, pluginNames, bridgeNames) {
     context.libRootPaths.push(layerRootPath);
 
     return expandExtensions(context, pluginNames, bridgeNames);  
-  }
+  };
   return initialize.bind(undefined, layerRootPath, pluginNames, bridgeNames);
 }
 
@@ -88,10 +88,9 @@ function launchApplication(context, pluginNames, bridgeNames) {
   if (lodash.isString(context)) {
     context = { appRootPath: context };
   }
-  return appLoader(expandExtensions(
-      lodash.omit(context, ATTRS),
+  return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS),
       lodash.union(context.pluginNames, pluginNames),
-      lodash.union(context.bridgeNames, bridgeNames)));
+      lodash.union(context.bridgeNames, bridgeNames))));
 }
 
 var expandExtensions = function (context, pluginNames, bridgeNames) {
@@ -105,10 +104,10 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
   bridgeNames = lodash.isArray(bridgeNames) ? bridgeNames : [bridgeNames];
 
-  pluginNames = lodash.diferrence(pluginNames, context.pluginNames);
+  pluginNames = lodash.difference(pluginNames, context.pluginNames);
 
-  context.pluginNames = context.pluginNames.concat(pluginNames);
-  context.bridgeNames = context.bridgeNames.concat(bridgeNames);
+  context.pluginNames = lodash.union(context.pluginNames, pluginNames);
+  context.bridgeNames = lodash.union(context.bridgeNames, bridgeNames);
 
   var pluginInitializers = lodash.map(pluginNames, function(pluginName) {
     return require(pluginName);
@@ -117,7 +116,7 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   return pluginInitializers.reduce(function(params, pluginInitializer) {
     return pluginInitializer(params);
   }, context);
-}
+};
 
 appLoader.attachLayer = attachLayer;
 appLoader.instantiate = instantiate;
