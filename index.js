@@ -32,6 +32,7 @@ function appLoader(params) {
   
   config.appName = appName;
   config.appinfo = appinfo;
+  config.pluginNames = params.pluginNames || [];
   config.bridgeNames = params.bridgeNames || [];
   config.moduleFolders = [].concat(appRootPath, libRootPaths, topRootPath);
 
@@ -69,10 +70,61 @@ function instantiate(options, layers) {
   }, options);
 }
 
+var ATTRS = ['libRootPaths', 'pluginNames', 'bridgeNames'];
+
+function registerLayerware(layerRootPath, pluginNames, bridgeNames) {
+  var initialize = function(layerRootPath, pluginNames, bridgeNames, context) {
+    context = context || {};
+
+    context.libRootPaths = context.libRootPaths || [];
+    context.libRootPaths.push(layerRootPath);
+
+    return expandExtensions(context, pluginNames, bridgeNames);  
+  }
+  return initialize.bind(undefined, layerRootPath, pluginNames, bridgeNames);
+}
+
+function launchApplication(context, pluginNames, bridgeNames) {
+  if (lodash.isString(context)) {
+    context = { appRootPath: context };
+  }
+  return appLoader(expandExtensions(
+      lodash.omit(context, ATTRS),
+      lodash.union(context.pluginNames, pluginNames),
+      lodash.union(context.bridgeNames, bridgeNames)));
+}
+
+var expandExtensions = function (context, pluginNames, bridgeNames) {
+  context = context || {};
+  context = lodash.pick(context, ATTRS);
+
+  context.libRootPaths = context.libRootPaths || [];
+  context.pluginNames = context.pluginNames || [];
+  context.bridgeNames = context.bridgeNames || [];
+
+  pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
+  bridgeNames = lodash.isArray(bridgeNames) ? bridgeNames : [bridgeNames];
+
+  pluginNames = lodash.diferrence(pluginNames, context.pluginNames);
+
+  context.pluginNames = context.pluginNames.concat(pluginNames);
+  context.bridgeNames = context.bridgeNames.concat(bridgeNames);
+
+  var pluginInitializers = lodash.map(pluginNames, function(pluginName) {
+    return require(pluginName);
+  });
+
+  return pluginInitializers.reduce(function(params, pluginInitializer) {
+    return pluginInitializer(params);
+  }, context);
+}
+
 appLoader.attachLayer = attachLayer;
 appLoader.instantiate = instantiate;
 appLoader.logger = logger;
 appLoader.debug = debug;
+appLoader.registerLayerware = registerLayerware;
+appLoader.launchApplication = launchApplication;
 
 appLoader.pkg = {
   async: require('async'),
