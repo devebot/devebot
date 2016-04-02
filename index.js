@@ -75,6 +75,8 @@ var ATTRS = ['libRootPaths', 'pluginNames', 'bridgeNames'];
 function registerLayerware(layerRootPath, pluginNames, bridgeNames) {
   var initialize = function(layerRootPath, pluginNames, bridgeNames, context) {
     context = context || {};
+    pluginNames = pluginNames || [];
+    bridgeNames = bridgeNames || [];
 
     context.libRootPaths = context.libRootPaths || [];
     context.libRootPaths.push(layerRootPath);
@@ -129,6 +131,12 @@ appLoader.pkg = {
   async: require('async'),
   bluebird: require('bluebird'),
   lodash: require('lodash')
+};
+
+var builtinPackages = ['async', 'bluebird', 'lodash'];
+
+appLoader.require = function(packageName) {
+  return (builtinPackages.indexOf(packageName) >= 0) ? require(packageName) : null;
 };
 
 module.exports = appLoader;
