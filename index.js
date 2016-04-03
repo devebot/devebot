@@ -33,9 +33,9 @@ function appLoader(params) {
   config.appName = appName;
   config.appinfo = appinfo;
   config.pluginNames = params.pluginNames || [];
+  config.pluginRootDirs = [].concat(appRootPath, libRootPaths, topRootPath);
   config.bridgeNames = params.bridgeNames || [];
-  config.moduleFolders = [].concat(appRootPath, libRootPaths, topRootPath);
-
+  
   return {
     config: config,
     server: Server(config)
@@ -136,7 +136,9 @@ appLoader.pkg = {
 var builtinPackages = ['async', 'bluebird', 'lodash'];
 
 appLoader.require = function(packageName) {
-  return (builtinPackages.indexOf(packageName) >= 0) ? require(packageName) : null;
+  if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
+  if (packageName == 'debug') return debug;
+  return null;
 };
 
 module.exports = appLoader;
