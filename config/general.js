@@ -1,6 +1,1 @@
-module.exports = {
-  jobqueue: {
-    mappings: {
-    }
-  }
-};
+module.exports = {};
