@@ -5,11 +5,8 @@ var lodash = require('lodash');
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
 var configLoader = require('./lib/backbone/config-loader.js');
 var Server = require('./lib/server.js');
-
 var debug = require('./lib/utils/debug.js');
 var debuglog = debug('devebot');
-
-var logger = require('logdapter').defaultLogger;
 
 function appLoader(params) {
   params = params || {};
@@ -40,34 +37,6 @@ function appLoader(params) {
     config: config,
     server: Server(config)
   };
-}
-
-function attachLayer(layerRootPath, params) {
-  params = params || {};
-
-  params.libRootPaths = params.libRootPaths || [];
-  params.libRootPaths.push(layerRootPath);
-
-  return params;
-}
-
-function instantiate(options, layers) {
-  
-  if (lodash.isString(options)) {
-    options = { appRootPath: options };
-  }
-  
-  if (!lodash.isArray(layers)) layers = [];
-  var index = layers.indexOf(appLoader);
-  if (index >= 0) {
-    layers = layers.slice(0, index+1);
-  } else {
-    layers = layers.concat(appLoader);
-  }
-  
-  return layers.reduce(function(params, plugin) {
-    return plugin(params);
-  }, options);
 }
 
 var ATTRS = ['libRootPaths', 'pluginNames', 'bridgeNames'];
@@ -120,18 +89,8 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   }, context);
 };
 
-appLoader.attachLayer = attachLayer;
-appLoader.instantiate = instantiate;
-appLoader.logger = logger;
-appLoader.debug = debug;
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
-
-appLoader.pkg = {
-  async: require('async'),
-  bluebird: require('bluebird'),
-  lodash: require('lodash')
-};
 
 var builtinPackages = ['async', 'bluebird', 'lodash'];
 
