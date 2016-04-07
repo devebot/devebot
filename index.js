@@ -54,13 +54,21 @@ function appLoader(params) {
 var ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs'];
 
 function registerLayerware(layerRootPath, pluginNames, bridgeNames) {
+  if ((arguments.length < 3) && lodash.isArray(layerRootPath)) {
+    bridgeNames = pluginNames;
+    pluginNames = layerRootPath;
+    layerRootPath = null;
+  }
+
   var initialize = function(layerRootPath, pluginNames, bridgeNames, context) {
     context = context || {};
-    context.libRootPaths = context.libRootPaths || [];
-    context.libRootPaths.push(layerRootPath);
-
+    if (typeof(layerRootPath) == 'string' && layerRootPath.length > 0) {
+      context.libRootPaths = context.libRootPaths || [];
+      context.libRootPaths.push(layerRootPath);
+    }
     return expandExtensions(context, pluginNames, bridgeNames);  
   };
+
   return initialize.bind(undefined, layerRootPath, pluginNames, bridgeNames);
 }
 
@@ -94,7 +102,6 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
       name: bridgeName,
       path: require.resolve(bridgeName)
     }
-    require(context.bridgeRefs[bridgeName].path);
   });
 
   pluginNames.forEach(function(pluginName) {
@@ -102,7 +109,6 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
       name: pluginName, 
       path: require.resolve(pluginName)
     }
-    require(context.pluginRefs[pluginName].path);
   });
 
   var pluginInitializers = lodash.map(pluginNames, function(pluginName) {
