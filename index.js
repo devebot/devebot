@@ -29,17 +29,19 @@ function appLoader(params) {
   
   config.appName = appName;
   config.appinfo = appinfo;
+  config.bridgeRefs = lodash.values(params.bridgeRefs || {});
+  config.pluginRefs = lodash.values(params.pluginRefs || {});
+  config.bridgeNames = params.bridgeNames || [];
   config.pluginNames = params.pluginNames || [];
   config.pluginRootDirs = [].concat(appRootPath, libRootPaths, topRootPath);
-  config.bridgeNames = params.bridgeNames || [];
-  
+
   return {
     config: config,
     server: Server(config)
   };
 }
 
-var ATTRS = ['libRootPaths', 'pluginNames', 'bridgeNames'];
+var ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs', 'pluginNames', 'bridgeNames'];
 
 function registerLayerware(layerRootPath, pluginNames, bridgeNames) {
   var initialize = function(layerRootPath, pluginNames, bridgeNames, context) {
@@ -69,16 +71,35 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   context = lodash.pick(context, ATTRS);
 
   context.libRootPaths = context.libRootPaths || [];
-  context.pluginNames = context.pluginNames || [];
+  context.bridgeRefs = context.bridgeRefs || {};
+  context.pluginRefs = context.pluginRefs || {};
   context.bridgeNames = context.bridgeNames || [];
+  context.pluginNames = context.pluginNames || [];
 
-  pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
   bridgeNames = lodash.isArray(bridgeNames) ? bridgeNames : [bridgeNames];
+  pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
 
-  pluginNames = lodash.difference(pluginNames, context.pluginNames);
+  bridgeNames = lodash.difference(bridgeNames, lodash.keys(context.bridgeRefs));
+  pluginNames = lodash.difference(pluginNames, lodash.keys(context.pluginRefs));
 
-  context.pluginNames = lodash.union(context.pluginNames, pluginNames);
+  bridgeNames.forEach(function(bridgeName) {
+    context.bridgeRefs[bridgeName] = {
+      name: bridgeName,
+      path: require.resolve(bridgeName)
+    }
+    require(context.bridgeRefs[bridgeName].path);
+  });
+
+  pluginNames.forEach(function(pluginName) {
+    context.pluginRefs[pluginName] = {
+      name: pluginName, 
+      path: require.resolve(pluginName)
+    }
+    require(context.pluginRefs[pluginName].path);
+  });
+
   context.bridgeNames = lodash.union(context.bridgeNames, bridgeNames);
+  context.pluginNames = lodash.union(context.pluginNames, pluginNames);
 
   var pluginInitializers = lodash.map(pluginNames, function(pluginName) {
     return require(pluginName);
