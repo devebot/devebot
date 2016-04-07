@@ -30,7 +30,7 @@ function appLoader(params) {
   
   var config = configLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
 
-  var appRef = lodash.isEmpty(appRootPath) ? null : {
+  var appRef = lodash.isEmpty(appRootPath) ? [] : {
     name: appName,
     path: path.join(appRootPath, 'app.js')
   };
@@ -51,14 +51,11 @@ function appLoader(params) {
   };
 }
 
-var ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs', 'pluginNames', 'bridgeNames'];
+var ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs'];
 
 function registerLayerware(layerRootPath, pluginNames, bridgeNames) {
   var initialize = function(layerRootPath, pluginNames, bridgeNames, context) {
     context = context || {};
-    pluginNames = pluginNames || [];
-    bridgeNames = bridgeNames || [];
-
     context.libRootPaths = context.libRootPaths || [];
     context.libRootPaths.push(layerRootPath);
 
@@ -71,9 +68,8 @@ function launchApplication(context, pluginNames, bridgeNames) {
   if (lodash.isString(context)) {
     context = { appRootPath: context };
   }
-  return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS),
-      lodash.union(context.pluginNames, pluginNames),
-      lodash.union(context.bridgeNames, bridgeNames))));
+  return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS), 
+      pluginNames, bridgeNames)));
 }
 
 var expandExtensions = function (context, pluginNames, bridgeNames) {
@@ -83,8 +79,9 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   context.libRootPaths = context.libRootPaths || [];
   context.bridgeRefs = context.bridgeRefs || {};
   context.pluginRefs = context.pluginRefs || {};
-  context.bridgeNames = context.bridgeNames || [];
-  context.pluginNames = context.pluginNames || [];
+
+  bridgeNames = bridgeNames || [];
+  pluginNames = pluginNames || [];
 
   bridgeNames = lodash.isArray(bridgeNames) ? bridgeNames : [bridgeNames];
   pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
@@ -107,9 +104,6 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
     }
     require(context.pluginRefs[pluginName].path);
   });
-
-  context.bridgeNames = lodash.union(context.bridgeNames, bridgeNames);
-  context.pluginNames = lodash.union(context.pluginNames, pluginNames);
 
   var pluginInitializers = lodash.map(pluginNames, function(pluginName) {
     return require(pluginName);
