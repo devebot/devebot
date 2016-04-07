@@ -1,5 +1,6 @@
 'use strict';
 
+var path = require('path');
 var lodash = require('lodash');
 
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
@@ -16,24 +17,33 @@ function appLoader(params) {
   }
   
   var appRootPath = params.appRootPath;
-  var libRootPaths = params.libRootPaths || [];
+  var libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
+    return path.dirname(pluginRef.path);
+  });
   var topRootPath = __dirname;
   
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
-  var appName = params.appName || appinfo.name || appinfo.framework.name || 'devebot';
+  var appName = params.appName || appinfo.name || 'devebot-application';
   if (debuglog.isEnabled) {
     debuglog(' - application name: %s', appName);
   }
   
   var config = configLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
-  
+
+  var appRef = lodash.isEmpty(appRootPath) ? null : {
+    name: appName,
+    path: path.join(appRootPath, 'app.js')
+  };
+
+  var devebotRef = {
+    name: 'devebot',
+    path: path.join(topRootPath, 'index.js')
+  };
+
   config.appName = appName;
   config.appinfo = appinfo;
-  config.bridgeRefs = lodash.values(params.bridgeRefs || {});
-  config.pluginRefs = lodash.values(params.pluginRefs || {});
-  config.bridgeNames = params.bridgeNames || [];
-  config.pluginNames = params.pluginNames || [];
-  config.pluginRootDirs = [].concat(appRootPath, libRootPaths, topRootPath);
+  config.bridgeRefs = lodash.values(params.bridgeRefs);
+  config.pluginRefs = [].concat(appRef, lodash.values(params.pluginRefs), devebotRef);
 
   return {
     config: config,
