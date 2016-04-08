@@ -25,7 +25,7 @@ function appLoader(params) {
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
   if (debuglog.isEnabled) {
-    debuglog(' - application name: %s', appName);
+    debuglog(' - application name (appName): %s', appName);
   }
   
   var config = configLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
