@@ -123,11 +123,13 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
 
-var builtinPackages = ['async', 'bluebird', 'lodash'];
+var builtinPackages = ['bluebird', 'lodash', 'injektor'];
 
 appLoader.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
   if (packageName == 'debug') return debug;
+  if (packageName == 'chores') return require('./lib/utils/chores.js');
+  if (packageName == 'loader') return require('./lib/utils/loader.js');
   return null;
 };
 

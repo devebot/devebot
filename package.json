@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.1.21-alpha.2",
+  "version": "0.1.21-alpha.3",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -35,7 +35,7 @@
     "express": "^4.13.3",
     "express-session": "^1.11.3",
     "injektor": "^0.0.12",
-    "jobdapter": "^0.0.2",
+    "jobdapter": "^0.1.0",
     "jsonschema": "^1.1.0",
     "lodash": "^3.10.1",
     "logdapter": "^0.0.15",
