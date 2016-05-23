@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.1.21",
+  "version": "0.1.22-alpha.1",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -28,11 +28,8 @@
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
     "bluebird": "^3.0.4",
-    "body-parser": "^1.14.1",
     "cross-spawn": "^2.1.5",
     "debug": "^2.2.0",
-    "express": "^4.13.3",
-    "express-session": "^1.11.3",
     "injektor": "^0.0.12",
     "jobdapter": "^0.1.0",
     "jsonschema": "^1.1.0",
