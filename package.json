@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.1.22-alpha.1",
+  "version": "0.1.22-alpha.2",
   "description": "Development support toolkit",
   "main": "index.js",
   "engines": {
@@ -17,8 +17,7 @@
   },
   "keywords": [
     "devebot",
-    "development",
-    "tool"
+    "framework"
   ],
   "author": "Hung Pham <pnhung177@acegik.net> (http://acegik.net/blog)",
   "license": "GPL-3.0",
@@ -27,15 +26,14 @@
   },
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
-    "bluebird": "^3.0.4",
-    "cross-spawn": "^2.1.5",
+    "bluebird": "^3.4.0",
     "debug": "^2.2.0",
     "injektor": "^0.0.12",
     "jobdapter": "^0.1.0",
     "jsonschema": "^1.1.0",
-    "lodash": "^3.10.1",
+    "lodash": "^4.13.0",
     "logdapter": "^0.0.15",
-    "ws": "^0.8.0"
+    "ws": "^1.1.0"
   },
   "devDependencies": {
     "chai": "^3.5.0",
