@@ -6,7 +6,7 @@ module.exports = {
       disabled: false,
       tokenStoreFile: __dirname + '/../data/tokenstore.json')
     },
-    ssl: {
+    tunnel: {
       enabled: false,
       key_file: __dirname + '/../data/ssl/example.key'),
       crt_file: __dirname + '/../data/ssl/example.crt')
