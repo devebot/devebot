@@ -12,22 +12,19 @@ var debuglog = debug('devebot');
 function appLoader(params) {
   params = params || {};
 
-  if (debuglog.isEnabled) {
-    debuglog(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
-  }
-  
+  debuglog.isEnabled && debuglog(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
+
   var appRootPath = params.appRootPath;
   var libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
     return path.dirname(pluginRef.path);
   });
   var topRootPath = __dirname;
-  
+
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
-  if (debuglog.isEnabled) {
-    debuglog(' - application name (appName): %s', appName);
-  }
-  
+
+  debuglog.isEnabled && debuglog(' - application name (appName): %s', appName);
+
   var config = configLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
 
   var appRef = lodash.isEmpty(appRootPath) ? [] : {
@@ -66,7 +63,7 @@ function registerLayerware(layerRootPath, pluginNames, bridgeNames) {
       context.libRootPaths = context.libRootPaths || [];
       context.libRootPaths.push(layerRootPath);
     }
-    return expandExtensions(context, pluginNames, bridgeNames);  
+    return expandExtensions(context, pluginNames, bridgeNames);
   };
 
   return initialize.bind(undefined, layerRootPath, pluginNames, bridgeNames);
@@ -76,7 +73,7 @@ function launchApplication(context, pluginNames, bridgeNames) {
   if (lodash.isString(context)) {
     context = { appRootPath: context };
   }
-  return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS), 
+  return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS),
       pluginNames, bridgeNames)));
 }
 
@@ -106,7 +103,7 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 
   pluginNames.forEach(function(pluginName) {
     context.pluginRefs[pluginName] = {
-      name: pluginName, 
+      name: pluginName,
       path: require.resolve(pluginName)
     }
   });
