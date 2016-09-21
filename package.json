@@ -1,7 +1,7 @@
 {
   "name": "devebot",
-  "version": "0.1.22",
-  "description": "Development support toolkit",
+  "version": "0.1.23",
+  "description": "Microservice Framework",
   "main": "index.js",
   "engines": {
     "node": "0.10 || 0.12 || 4"
