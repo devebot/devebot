@@ -4,12 +4,12 @@ module.exports = {
     port: '17779',
     authen: {
       disabled: false,
-      tokenStoreFile: __dirname + '/../data/tokenstore.json')
+      tokenStoreFile: __dirname + '/../data/tokenstore.json'
     },
     tunnel: {
       enabled: false,
-      key_file: __dirname + '/../data/ssl/example.key'),
-      crt_file: __dirname + '/../data/ssl/example.crt')
+      key_file: __dirname + '/../data/ssl/example.key',
+      crt_file: __dirname + '/../data/ssl/example.crt'
     }
   }
 };

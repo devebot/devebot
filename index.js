@@ -91,25 +91,36 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   bridgeNames = lodash.isArray(bridgeNames) ? bridgeNames : [bridgeNames];
   pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
 
-  bridgeNames = lodash.difference(bridgeNames, lodash.keys(context.bridgeRefs));
-  pluginNames = lodash.difference(pluginNames, lodash.keys(context.pluginRefs));
+  var bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
+    return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
+  });
+  var pluginInfos = lodash.map(pluginNames, function(pluginName) {
+    return lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
+  });
 
-  bridgeNames.forEach(function(bridgeName) {
-    context.bridgeRefs[bridgeName] = {
-      name: bridgeName,
-      path: require.resolve(bridgeName)
+  var bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
+    return (bridgeInfo.name == bridgeKey);
+  });
+  var pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
+    return (pluginInfo.name == pluginKey);
+  });
+
+  bridgeDiffs.forEach(function(bridgeInfo) {
+    context.bridgeRefs[bridgeInfo.name] = {
+      name: bridgeInfo.name,
+      path: require.resolve(bridgeInfo.path)
     }
   });
 
-  pluginNames.forEach(function(pluginName) {
-    context.pluginRefs[pluginName] = {
-      name: pluginName,
-      path: require.resolve(pluginName)
+  pluginDiffs.forEach(function(pluginInfo) {
+    context.pluginRefs[pluginInfo.name] = {
+      name: pluginInfo.name,
+      path: require.resolve(pluginInfo.path)
     }
   });
 
-  var pluginInitializers = lodash.map(pluginNames, function(pluginName) {
-    return require(pluginName);
+  var pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
+    return require(pluginInfo.path);
   });
 
   return pluginInitializers.reduce(function(params, pluginInitializer) {
