@@ -1,15 +1,10 @@
 {
   "name": "devebot",
-  "version": "0.1.24",
+  "version": "0.2.0",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "engines": {
-    "node": "0.10 || 0.12 || 4"
-  },
-  "scripts": {
-    "test": "npm run unitest",
-    "unitest": "./node_modules/.bin/mocha test/ut/**/*-test.js",
-    "e2etest": "./node_modules/.bin/cucumber.js test/et/features/*.feature"
+    "node": "0.10 || 0.12 || 4 || 5 || 6"
   },
   "repository": {
     "type": "git",
