@@ -1,3 +1,3 @@
 #!/bin/bash
-./node_modules/.bin/mocha test/tdd/**/*-test.js;
+find $(dirname $0)/../tdd -name '*-test.js' | xargs ./node_modules/.bin/mocha -R spec;
 true

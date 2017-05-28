@@ -1,3 +1,3 @@
 #!/bin/bash
-./node_modules/.bin/cucumber.js test/bdd/features/*.feature;
+find $(dirname $0)/../bdd -name '*-test.js' | xargs ./node_modules/.bin/mocha -R spec;
 true
