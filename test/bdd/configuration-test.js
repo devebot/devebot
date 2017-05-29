@@ -22,6 +22,11 @@ describe('devebot:configuration', function() {
 				var appinfo = injektor.lookup('appinfo');
 				debugx.enabled && debugx('appinfo: %s', JSON.stringify(appinfo, null, 2));
 				expect(appinfo).to.deep.include({
+					"version": "0.1.0",
+					"name": "demo-app",
+					"description": "Devebot Demo Application",
+					"author": "devebot",
+					"license": "ISC",
 					"layerware": [
 						{
 							"version": "0.1.1",

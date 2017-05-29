@@ -13,13 +13,10 @@ var debugx = debug('devebot:test:bdd:engine:service');
 describe('devebot:engine:server', function() {
 	var app;
 	describe('start/stop app engine-service', function() {
-		before(function() {
-			app = lab.getApp();
-		});
-
 		it('engine-service should be started/stopped properly', function(done) {
-			Promise.resolve(app.server.start()).delay(4000).then(function() {
-				return Promise.resolve(app.server.teardown()).delay(1000);
+			app = lab.getApp();
+			app.server.start().then(function() {
+				return app.server.teardown();
 			}).then(function() {
 				done();
 			});
