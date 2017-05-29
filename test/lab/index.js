@@ -1,9 +1,11 @@
+var path = require('path');
+
 module.exports = {
 	getApp: function(name) {
 		name = name || 'app';
-		return require('./' + name);
+		return require(path.join(__dirname, './' + name));
 	},
 	getDevebot: function() {
-		return require('../../index');
+		return require(path.join(__dirname, '../../index'));
 	}
 }

@@ -22,6 +22,7 @@
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
     "bluebird": "^3.4.0",
+    "death": "^1.1.0",
     "debug": "^2.2.0",
     "injektor": "^0.0.12",
     "jobdapter": "^0.1.0",
