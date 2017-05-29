@@ -5,10 +5,10 @@ var Devebot = require('../../../../index').getDevebot();
 var Promise = Devebot.require('bluebird');
 var lodash = Devebot.require('lodash');
 var debug = Devebot.require('debug');
-var debuglog = debug('devebot:test:lab:plugin1:plugin1Trigger');
+var debugx = debug('devebot:test:lab:plugin1:plugin1Trigger');
 
 var Service = function(params) {
-  debuglog.isEnabled && debuglog(' + constructor begin ...');
+  debugx.enabled && debugx(' + constructor begin ...');
 
   params = params || {};
 
@@ -21,7 +21,7 @@ var Service = function(params) {
   var server = http.createServer();
 
   server.on('error', function(err) {
-    debuglog.isEnabled && debuglog('Server Error: %s', JSON.stringify(err));
+    debugx.enabled && debugx('Server Error: %s', JSON.stringify(err));
   });
 
   self.getServer = function() {
@@ -36,6 +36,7 @@ var Service = function(params) {
       var serverInstance = server.listen(configPort, configHost, function () {
         var host = serverInstance.address().address;
         var port = serverInstance.address().port;
+        (plugin1Cfg && plugin1Cfg.verbose !== false || debugx.enabled) &&
         console.log('plugin1 webserver is listening at http://%s:%s', host, port);
         resolved(serverInstance);
       });
@@ -45,13 +46,14 @@ var Service = function(params) {
   self.stop = function() {
     return new Promise(function(resolved, rejected) {
       server.close(function () {
+        (plugin1Cfg && plugin1Cfg.verbose !== false || debugx.enabled) &&
         console.log('plugin1 webserver has been closed');
         resolved();
       });
     });
   };
 
-  debuglog.isEnabled && debuglog(' - constructor end!');
+  debugx.enabled && debugx(' - constructor end!');
 };
 
 Service.argumentSchema = {

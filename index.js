@@ -7,12 +7,12 @@ var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
 var configLoader = require('./lib/backbone/config-loader.js');
 var Server = require('./lib/server.js');
 var debug = require('./lib/utils/debug.js');
-var debuglog = debug('devebot');
+var debugx = debug('devebot');
 
 function appLoader(params) {
   params = params || {};
 
-  debuglog.isEnabled && debuglog(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
+  debugx.enabled && debugx(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
 
   var appRootPath = params.appRootPath;
   var libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
@@ -23,7 +23,7 @@ function appLoader(params) {
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
 
-  debuglog.isEnabled && debuglog(' - application name (appName): %s', appName);
+  debugx.enabled && debugx(' - application name (appName): %s', appName);
 
   var config = configLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
 
