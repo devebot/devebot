@@ -4,7 +4,7 @@ var path = require('path');
 var lodash = require('lodash');
 
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
-var configLoader = require('./lib/backbone/config-loader.js');
+var ConfigLoader = require('./lib/backbone/config-loader.js');
 var Server = require('./lib/server.js');
 var debug = require('./lib/utils/debug.js');
 var debugx = debug('devebot');
@@ -25,7 +25,8 @@ function appLoader(params) {
 
   debugx.enabled && debugx(' - application name (appName): %s', appName);
 
-  var config = configLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
+  var configLoader = new ConfigLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
+  var config = configLoader.config;
 
   var appRef = lodash.isEmpty(appRootPath) ? [] : {
     name: appName,
