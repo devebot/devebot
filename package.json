@@ -29,6 +29,7 @@
     "jsonschema": "^1.1.0",
     "lodash": "^4.13.0",
     "logdapter": "^0.0.15",
+    "os-homedir": "^1.0.2",
     "ws": "^1.1.0"
   },
   "devDependencies": {
