@@ -34,9 +34,6 @@ Service.argumentSchema = {
     "profileConfig": {
       "type": "object"
     },
-    "generalConfig": {
-      "type": "object"
-    },
     "loggingFactory": {
       "type": "object"
     }
