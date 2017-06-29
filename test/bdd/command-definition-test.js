@@ -31,12 +31,24 @@ describe('devebot:command:definition', function() {
 				var cmdNames = lodash.map(defs.commands, function(cmd) {
 					return cmd.name;
 				});
-				assert.includeMembers(cmdNames, [
+
+				var fwCmdNames = [
 					'app-info',
 					'log-info', 'log-reset', 'log-set',
 					'sb-info', 'sb-use',
 					'sys-info'
-				]);
+				];
+				assert.includeMembers(cmdNames, fwCmdNames);
+
+				var appCmdNames = [
+					'main-cmd1', 'main-cmd2',
+					'plugin1-cmd1', 'plugin1-cmd2',
+					'plugin2-cmd1', 'plugin2-cmd2'
+				];
+				assert.includeMembers(cmdNames, appCmdNames);
+
+				assert(cmdNames.length, fwCmdNames.length + appCmdNames.length);
+
 				lodash.forEach(defs.commands, function(cmd) {
 					assert.containsAllKeys(cmd, ['name', 'description', 'options']);
 				});
