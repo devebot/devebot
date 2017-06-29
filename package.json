@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "chai": "^4.0.0",
+    "devebot-api": "^0.1.5",
     "mocha": "^2.4.5",
     "nock": "^7.2.2",
     "rewire": "^2.5.1",
