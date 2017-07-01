@@ -1,8 +1,7 @@
 'use strict';
 
 var lab = require('../lab');
-var DevebotApi = require('devebot-api');
-var Devebot = require('../lab/index').getDevebot();
+var Devebot = lab.getDevebot();
 var Promise = Devebot.require('bluebird');
 var lodash = Devebot.require('lodash');
 var debug = Devebot.require('debug');
@@ -10,6 +9,7 @@ var assert = require('chai').assert;
 var expect = require('chai').expect;
 var util = require('util');
 var debugx = debug('bdd:devebot:core:configuration');
+var DevebotApi = require('devebot-api');
 
 describe('devebot:command:definition', function() {
 	this.timeout(60000);
