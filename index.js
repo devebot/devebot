@@ -29,11 +29,13 @@ function appLoader(params) {
   var config = configLoader.config;
 
   var appRef = lodash.isEmpty(appRootPath) ? [] : {
+    type: 'application',
     name: appName,
     path: path.join(appRootPath, 'app.js')
   };
 
   var devebotRef = {
+    type: 'framework',
     name: 'devebot',
     path: path.join(topRootPath, 'index.js')
   };

@@ -7,13 +7,13 @@ var commandConfig;
 
 var commandObject = {
   info: {
-  	description: 'Plugin2 - Command1',
+  	description: 'Plugin1 - Routine1',
     options: []
   },
   handler: function(opts, ctx) {
     return Promise.resolve([{
         type: 'json',
-        title: 'Plugin2 - Command1',
+        title: 'Plugin1 - Routine1',
         data: {}
     }]);
   }

@@ -41,9 +41,7 @@ describe('devebot:command:definition', function() {
 				assert.includeMembers(cmdNames, fwCmdNames);
 
 				var appCmdNames = [
-					'main-cmd1', 'main-cmd2',
-					'plugin1-cmd1', 'plugin1-cmd2',
-					'plugin2-cmd1', 'plugin2-cmd2'
+					'main-cmd1', 'main-cmd2'
 				];
 				assert.includeMembers(cmdNames, appCmdNames);
 
