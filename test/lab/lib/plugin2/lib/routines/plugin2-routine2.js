@@ -3,11 +3,11 @@
 var Promise = require('bluebird');
 var lodash = require('lodash');
 
-var commandConfig;
+var runhookSetting;
 
-var commandObject = {
+var runhookDialect = {
   info: {
-  	description: 'Plugin2 - Routine2',
+    description: 'Plugin2 - Routine2',
     options: []
   },
   handler: function(opts, ctx) {
@@ -20,6 +20,6 @@ var commandObject = {
 };
 
 module.exports = function(params) {
-  commandConfig = params || {};
-  return commandObject;
+  runhookSetting = params || {};
+  return runhookDialect;
 };

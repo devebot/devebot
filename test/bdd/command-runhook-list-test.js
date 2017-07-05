@@ -8,10 +8,10 @@ var debug = Devebot.require('debug');
 var assert = require('chai').assert;
 var expect = require('chai').expect;
 var util = require('util');
-var debugx = debug('bdd:devebot:command:runhook:call');
+var debugx = debug('bdd:devebot:command:runhook:list');
 var DevebotApi = require('devebot-api');
 
-describe('devebot:command:runhook:call', function() {
+describe('devebot:command:runhook:list', function() {
 	this.timeout(60000);
 	var app, api;
 
@@ -32,20 +32,20 @@ describe('devebot:command:runhook:call', function() {
 		});
 	});
 
-	it('definition should contain runhook-call command', function(done) {
+	it('definition should contain runhook-list command', function(done) {
 		return new Promise(function(resolved, rejected) {
 			api.loadDefinition(function(err, defs) {
 				if (err) return rejected(err);
 				resolved(defs);
 			});
 		}).then(function(defs) {
-			var cmd = lodash.keyBy(defs.commands, 'name')['runhook-call'];
+			var cmd = lodash.keyBy(defs.commands, 'name')['runhook-list'];
 			assert.isNotNull(cmd);
 			done();
 		});
 	});
 
-	it('invoked [plugin1-routine1] command return correct result', function(done) {
+	it('invoked [runhook-list] command return list of active runhooks', function(done) {
 		return new Promise(function(resolved, rejected) {
 			api.on('failure', function(result) {
 				rejected(result);
@@ -54,11 +54,7 @@ describe('devebot:command:runhook:call', function() {
 				resolved(result);
 			});
 			api.execCommand({
-				name: 'runhook-call',
-				options: {
-					name: 'plugin1-routine1',
-					data: '{ "key": "hello", "value": "world" }'
-				}
+				name: 'runhook-list'
 			});
 		}).then(function(result) {
 			debugx.enabled && debugx(JSON.stringify(result, null, 2));
