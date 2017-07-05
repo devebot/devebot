@@ -33,10 +33,10 @@ describe('devebot:command:definition', function() {
 				});
 
 				var fwCmdNames = [
-					'app-info',
-					'log-info', 'log-reset', 'log-set',
-					'sb-info', 'sb-use',
-					'sys-info'
+					'applica-info',
+					'logger-info', 'logger-reset', 'logger-set',
+					'sandbox-info', 'sandbox-use',
+					'system-info'
 				];
 				assert.includeMembers(cmdNames, fwCmdNames);
 

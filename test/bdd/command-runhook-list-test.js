@@ -57,10 +57,10 @@ describe('devebot:command:runhook:list', function() {
 				name: 'runhook-list'
 			});
 		}).then(function(result) {
-			debugx.enabled && debugx(JSON.stringify(result, null, 2));
+			debugx.enabled && debugx('Runhook list: %s', JSON.stringify(result, null, 2));
 			done();
 		}).catch(function(error) {
-			debugx.enabled && debugx(JSON.stringify(error, null, 2));
+			debugx.enabled && debugx('Command error: %s', JSON.stringify(error, null, 2));
 			done(error);
 		});
 	});

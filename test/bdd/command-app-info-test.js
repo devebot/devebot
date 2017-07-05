@@ -8,10 +8,10 @@ var debug = Devebot.require('debug');
 var assert = require('chai').assert;
 var expect = require('chai').expect;
 var util = require('util');
-var debugx = debug('bdd:devebot:command:app-info');
+var debugx = debug('bdd:devebot:command:applica:info');
 var DevebotApi = require('devebot-api');
 
-describe('devebot:command:app-info', function() {
+describe('devebot:command:applica:info', function() {
 	this.timeout(60000);
 	var app, api;
 
@@ -32,14 +32,14 @@ describe('devebot:command:app-info', function() {
 		});
 	});
 
-	it('definition should contain [app-info] command', function(done) {
+	it('definition should contain [applica-info] command', function(done) {
 		return new Promise(function(resolved, rejected) {
 			api.loadDefinition(function(err, defs) {
 				if (err) return rejected(err);
 				resolved(defs);
 			});
 		}).then(function(defs) {
-			var cmd = lodash.keyBy(defs.commands, 'name')['app-info'];
+			var cmd = lodash.keyBy(defs.commands, 'name')['applica-info'];
 			assert.isNotNull(cmd);
 			done();
 		});
@@ -54,7 +54,7 @@ describe('devebot:command:app-info', function() {
 				resolved(result);
 			});
 			api.execCommand({
-				name: 'app-info',
+				name: 'applica-info',
 				options: {}
 			});
 		}).then(function(result) {
