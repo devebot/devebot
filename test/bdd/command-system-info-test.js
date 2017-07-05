@@ -8,10 +8,10 @@ var debug = Devebot.require('debug');
 var assert = require('chai').assert;
 var expect = require('chai').expect;
 var util = require('util');
-var debugx = debug('bdd:devebot:command:sys-info');
+var debugx = debug('bdd:devebot:command:system:info');
 var DevebotApi = require('devebot-api');
 
-describe('devebot:command:sys-info', function() {
+describe('devebot:command:system:info', function() {
 	this.timeout(60000);
 	var app, api;
 
@@ -32,20 +32,20 @@ describe('devebot:command:sys-info', function() {
 		});
 	});
 
-	it('definition should contain [sys-info] command', function(done) {
+	it('definition should contain [system-info] command', function(done) {
 		return new Promise(function(resolved, rejected) {
 			api.loadDefinition(function(err, defs) {
 				if (err) return rejected(err);
 				resolved(defs);
 			});
 		}).then(function(defs) {
-			var cmd = lodash.keyBy(defs.commands, 'name')['sys-info'];
+			var cmd = lodash.keyBy(defs.commands, 'name')['system-info'];
 			assert.isNotNull(cmd);
 			done();
 		});
 	});
 
-	it('invoked [sys-info] command return correct result', function(done) {
+	it('invoked [system-info] command return correct result', function(done) {
 		return new Promise(function(resolved, rejected) {
 			api.on('failure', function(result) {
 				rejected(result);
@@ -54,7 +54,7 @@ describe('devebot:command:sys-info', function() {
 				resolved(result);
 			});
 			api.execCommand({
-				name: 'sys-info',
+				name: 'system-info',
 				options: {}
 			});
 		}).then(function(result) {
