@@ -45,7 +45,7 @@ describe('devebot:command:definition', function() {
 				];
 				assert.includeMembers(cmdNames, appCmdNames);
 
-				assert(cmdNames.length, fwCmdNames.length + appCmdNames.length);
+				assert(cmdNames.length >= fwCmdNames.length + appCmdNames.length);
 
 				lodash.forEach(defs.commands, function(cmd) {
 					assert.containsAllKeys(cmd, ['name', 'description', 'options']);
