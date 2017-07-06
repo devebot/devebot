@@ -45,7 +45,7 @@ describe('devebot:command:runhook:call', function() {
 		});
 	});
 
-	it('invoked [plugin1-routine1] command return correct result', function(done) {
+	it('remote runhook should return correct result', function(done) {
 		return new Promise(function(resolved, rejected) {
 			api.on('failure', function(result) {
 				rejected(result);
@@ -57,6 +57,31 @@ describe('devebot:command:runhook:call', function() {
 				name: 'runhook-call',
 				options: {
 					name: 'plugin1-routine1',
+					data: '{ "key": "hello", "value": "world" }'
+				}
+			});
+		}).then(function(result) {
+			debugx.enabled && debugx(JSON.stringify(result, null, 2));
+			done();
+		}).catch(function(error) {
+			debugx.enabled && debugx(JSON.stringify(error, null, 2));
+			done(error);
+		});
+	});
+
+	it('direct runhook should return correct result', function(done) {
+		return new Promise(function(resolved, rejected) {
+			api.on('failure', function(result) {
+				rejected(result);
+			});
+			api.on('success', function(result) {
+				resolved(result);
+			});
+			api.execCommand({
+				name: 'runhook-call',
+				options: {
+					name: 'plugin1-routine1',
+					mode: 'direct',
 					data: '{ "key": "hello", "value": "world" }'
 				}
 			});

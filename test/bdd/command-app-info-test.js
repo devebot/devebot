@@ -45,7 +45,7 @@ describe('devebot:command:applica:info', function() {
 		});
 	});
 
-	it('invoked [app-info] command return correct result', function(done) {
+	it('invoked [applica-info] command return correct result', function(done) {
 		return new Promise(function(resolved, rejected) {
 			api.on('failure', function(result) {
 				rejected(result);
