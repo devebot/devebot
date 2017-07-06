@@ -58,6 +58,37 @@ describe('devebot:command:runhook:list', function() {
 			});
 		}).then(function(result) {
 			debugx.enabled && debugx('Runhook list: %s', JSON.stringify(result, null, 2));
+
+			expect(result)
+				.to.deep.include({
+					"command": {
+						"name": "runhook-list"
+					},
+					"state": "complete",
+					"message": "The command execution is completed"
+				})
+				.to.have.property('details');
+
+			expect(result.details)
+				.to.be.an('array')
+				.to.have.lengthOf(1);
+
+			expect(result.details[0])
+				.to.have.all.keys(['title', 'type', 'data']);
+
+			expect(result.details[0].data)
+				.to.be.an('array')
+				.to.have.lengthOf(4);
+
+			expect(result.details[0].data.map(function(item) {
+				return item.name;
+			})).to.have.members([
+				"plugin1-routine1",
+				"plugin1-routine2",
+				"plugin2-routine1",
+				"plugin2-routine3"
+			]);
+
 			done();
 		}).catch(function(error) {
 			debugx.enabled && debugx('Command error: %s', JSON.stringify(error, null, 2));

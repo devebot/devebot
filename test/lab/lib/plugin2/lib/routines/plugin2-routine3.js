@@ -6,15 +6,14 @@ var lodash = require('lodash');
 var runhookSetting;
 
 var runhookDialect = {
-  enabled: false,
   info: {
-    description: 'Plugin2 - Routine2',
+    description: 'Plugin2 - Routine3',
     options: []
   },
   handler: function(opts, ctx) {
     return Promise.resolve([{
         type: 'json',
-        title: 'Plugin2 - Routine2',
+        title: 'Plugin2 - Routine3',
         data: {}
     }]);
   }
