@@ -33,7 +33,7 @@ describe('devebot:command:applica:info', function() {
 	});
 
 	it('definition should contain [applica-info] command', function(done) {
-		return new Promise(function(resolved, rejected) {
+		new Promise(function(resolved, rejected) {
 			api.loadDefinition(function(err, defs) {
 				if (err) return rejected(err);
 				resolved(defs);
@@ -46,7 +46,7 @@ describe('devebot:command:applica:info', function() {
 	});
 
 	it('invoked [applica-info] command return correct result', function(done) {
-		return new Promise(function(resolved, rejected) {
+		new Promise(function(resolved, rejected) {
 			api.on('failure', function(result) {
 				rejected(result);
 			});

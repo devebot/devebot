@@ -20,40 +20,49 @@ describe('devebot:command:definition', function() {
 		api = new DevebotApi(lab.getApiConfig());
 	});
 
-	it('definition should contain default commands', function(done) {
+	beforeEach(function(done) {
 		app.server.start().then(function() {
-			return new Promise(function(resolved, rejected) {
-				api.loadDefinition(function(err, defs) {
-					if (err) return rejected(err);
-					resolved(defs);
-				});
-			}).then(function(defs) {
-				var cmdNames = lodash.map(defs.commands, function(cmd) {
-					return cmd.name;
-				});
+			done();
+		});
+	});
 
-				var fwCmdNames = [
-					'applica-info',
-					'logger-info', 'logger-reset', 'logger-set',
-					'sandbox-info', 'sandbox-use',
-					'system-info'
-				];
-				assert.includeMembers(cmdNames, fwCmdNames);
+	afterEach(function(done) {
+		app.server.teardown().then(function() {
+			done();
+		});
+	});
 
-				var appCmdNames = [
-					'main-cmd1', 'main-cmd2'
-				];
-				assert.includeMembers(cmdNames, appCmdNames);
-
-				assert(cmdNames.length >= fwCmdNames.length + appCmdNames.length);
-
-				lodash.forEach(defs.commands, function(cmd) {
-					assert.containsAllKeys(cmd, ['name', 'description', 'options']);
-				});
-				false && console.log('Definition: %s', JSON.stringify(defs, null, 2));
-				return app.server.teardown();
+	it('definition should contain default commands', function(done) {
+		new Promise(function(resolved, rejected) {
+			api.loadDefinition(function(err, defs) {
+				if (err) return rejected(err);
+				resolved(defs);
 			});
-		}).then(function() {
+		}).then(function(defs) {
+			var cmdNames = lodash.map(defs.commands, function(cmd) {
+				return cmd.name;
+			});
+
+			var fwCmdNames = [
+				'applica-info',
+				'logger-info', 'logger-reset', 'logger-set',
+				'sandbox-info', 'sandbox-use',
+				'system-info'
+			];
+			assert.includeMembers(cmdNames, fwCmdNames);
+
+			var appCmdNames = [
+				'main-cmd1', 'main-cmd2'
+			];
+			assert.includeMembers(cmdNames, appCmdNames);
+
+			assert(cmdNames.length >= fwCmdNames.length + appCmdNames.length);
+
+			lodash.forEach(defs.commands, function(cmd) {
+				assert.containsAllKeys(cmd, ['name', 'description', 'options']);
+			});
+			false && console.log('Definition: %s', JSON.stringify(defs, null, 2));
+
 			done();
 		});
 	});

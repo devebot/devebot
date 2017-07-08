@@ -33,7 +33,7 @@ describe('devebot:command:runhook:call', function() {
 	});
 
 	it('definition should contain runhook-call command', function(done) {
-		return new Promise(function(resolved, rejected) {
+		new Promise(function(resolved, rejected) {
 			api.loadDefinition(function(err, defs) {
 				if (err) return rejected(err);
 				resolved(defs);
@@ -46,7 +46,7 @@ describe('devebot:command:runhook:call', function() {
 	});
 
 	it('remote runhook should return correct result', function(done) {
-		return new Promise(function(resolved, rejected) {
+		new Promise(function(resolved, rejected) {
 			api.on('failure', function(result) {
 				rejected(result);
 			});
@@ -70,7 +70,7 @@ describe('devebot:command:runhook:call', function() {
 	});
 
 	it('direct runhook should return correct result', function(done) {
-		return new Promise(function(resolved, rejected) {
+		new Promise(function(resolved, rejected) {
 			api.on('failure', function(result) {
 				rejected(result);
 			});
