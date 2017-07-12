@@ -18,7 +18,7 @@ describe('devebot:configuration', function() {
 		});
 
 		it('configuration has been loaded correctly', function(done) {
-			app.server.tryit(function(injektor) {
+			app.runner.invoke(function(injektor) {
 				var appinfo = injektor.lookup('appinfo');
 				debugx.enabled && debugx('appinfo: %s', JSON.stringify(appinfo, null, 2));
 				expect(appinfo).to.deep.include({

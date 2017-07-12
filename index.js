@@ -5,9 +5,9 @@ var lodash = require('lodash');
 
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
 var ConfigLoader = require('./lib/backbone/config-loader.js');
+var Runner = require('./lib/runner.js');
 var Server = require('./lib/server.js');
-var debug = require('./lib/utils/debug.js');
-var debugx = debug('devebot');
+var debugx = require('./lib/utils/debug.js')('devebot');
 
 function appLoader(params) {
   params = params || {};
@@ -47,7 +47,8 @@ function appLoader(params) {
 
   return {
     config: config,
-    server: Server(config)
+    runner: new Runner(config),
+    server: new Server(config)
   };
 }
 
@@ -138,7 +139,7 @@ var builtinPackages = ['bluebird', 'lodash', 'injektor'];
 
 appLoader.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
-  if (packageName == 'debug') return debug;
+  if (packageName == 'debug') return require('./lib/utils/debug.js');
   if (packageName == 'chores') return require('./lib/utils/chores.js');
   if (packageName == 'loader') return require('./lib/utils/loader.js');
   return null;
