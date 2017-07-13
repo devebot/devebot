@@ -10,6 +10,7 @@ var runhookDialect = {
   	description: 'Plugin1 - Routine1',
     options: []
   },
+  mode: 'direct',
   handler: function(opts, ctx) {
     return Promise.resolve([{
         type: 'json',

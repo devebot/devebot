@@ -11,6 +11,7 @@ var util = require('util');
 var debugx = debug('bdd:devebot:core:configuration');
 
 describe('devebot:configuration', function() {
+	this.timeout(lab.getDefaultTimeout());
 	var app;
 	describe('default configuration (without profile & sandbox)', function() {
 		before(function() {

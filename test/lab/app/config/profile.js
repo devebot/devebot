@@ -1,5 +1,5 @@
 module.exports = {
 	devebot: {
-		verbose: true
+		verbose: false
 	}
 }

@@ -12,7 +12,8 @@ var debugx = debug('bdd:devebot:command:runhook:call');
 var DevebotApi = require('devebot-api');
 
 describe('devebot:command:runhook:call', function() {
-	this.timeout(60000);
+	this.timeout(lab.getDefaultTimeout());
+
 	var app, api;
 
 	before(function() {

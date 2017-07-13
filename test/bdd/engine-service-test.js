@@ -11,6 +11,7 @@ var util = require('util');
 var debugx = debug('devebot:test:bdd:engine:service');
 
 describe('devebot:engine:server', function() {
+	this.timeout(lab.getDefaultTimeout());
 	var app;
 	describe('start/stop app engine-service', function() {
 		it('engine-service should be started/stopped properly', function(done) {

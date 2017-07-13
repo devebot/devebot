@@ -20,5 +20,8 @@ module.exports = {
 	},
 	getDevebot: function() {
 		return require(path.join(__dirname, '../../index'));
+	},
+	getDefaultTimeout: function() {
+		return 60000;
 	}
 }

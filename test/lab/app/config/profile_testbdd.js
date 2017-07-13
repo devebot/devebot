@@ -1,4 +1,7 @@
 module.exports = {
+  devebot: {
+    verbose: true
+  },
   logger: {
     transports: {
       console: {

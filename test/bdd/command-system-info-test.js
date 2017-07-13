@@ -12,7 +12,8 @@ var debugx = debug('bdd:devebot:command:system:info');
 var DevebotApi = require('devebot-api');
 
 describe('devebot:command:system:info', function() {
-	this.timeout(60000);
+	this.timeout(lab.getDefaultTimeout());
+
 	var app, api;
 
 	before(function() {
