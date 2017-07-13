@@ -45,11 +45,21 @@ function appLoader(params) {
   config.bridgeRefs = lodash.values(params.bridgeRefs);
   config.pluginRefs = [].concat(appRef, lodash.values(params.pluginRefs), devebotRef);
 
-  return {
-    config: config,
-    runner: new Runner(config),
-    server: new Server(config)
-  };
+  var app = { config: config };
+
+  var _runner;
+  Object.defineProperty(app, 'runner', {
+    get: function() { return _runner = _runner || new Runner(config) },
+    set: function(value) {}
+  });
+
+  var _server;
+  Object.defineProperty(app, 'server', {
+    get: function() { return _server = _server || new Server(config) },
+    set: function(value) {}
+  });
+
+  return app;
 }
 
 var ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs'];
