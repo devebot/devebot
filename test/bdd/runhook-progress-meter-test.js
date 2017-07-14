@@ -112,7 +112,7 @@ describe('devebot:runhook:progress:meter', function() {
 		});
 	});
 
-	it('return error when input data is invalid', function(done) {
+	it('return error when input data is invalid with schema', function(done) {
 		var number = 101;
 		new Promise(function(resolved, rejected) {
 			api.on('failure', function(result) {
@@ -135,6 +135,33 @@ describe('devebot:runhook:progress:meter', function() {
 		}).catch(function(error) {
 			debugx.enabled && debugx(JSON.stringify(error, null, 2));
 			assert.isObject(error.details[0].data.schema);
+			assert.isString(error.details[0].data.message);
+			done();
+		});
+	});
+
+	it('return error when input data cannot pass validate()', function(done) {
+		var number = 101;
+		new Promise(function(resolved, rejected) {
+			api.on('failure', function(result) {
+				rejected(result);
+			});
+			api.on('success', function(result) {
+				resolved(result);
+			});
+			api.execCommand({
+				name: 'runhook-call',
+				options: {
+					name: 'plugin2-routine3',
+					data: JSON.stringify({ 'number': number }),
+					mode: 'remote'
+				}
+			});
+		}).then(function(result) {
+			debugx.enabled && debugx(JSON.stringify(result, null, 2));
+			done();
+		}).catch(function(error) {
+			debugx.enabled && debugx(JSON.stringify(error, null, 2));
 			assert.isString(error.details[0].data.message);
 			done();
 		});

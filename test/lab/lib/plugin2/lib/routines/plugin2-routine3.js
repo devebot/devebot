@@ -8,7 +8,9 @@ var runhookSetting;
 var runhookDialect = {
   info: {
     description: 'Plugin2 - Routine3',
-    options: []
+    validate: function(data) {
+      return data && data.number < 10;
+    }
   },
   handler: function(opts, ctx) {
     return Promise.resolve([{
