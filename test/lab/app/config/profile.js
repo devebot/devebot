@@ -1,5 +1,8 @@
 module.exports = {
 	devebot: {
-		verbose: false
+		verbose: false,
+		jobqueue: {
+			enabled: true
+		}
 	}
 }
