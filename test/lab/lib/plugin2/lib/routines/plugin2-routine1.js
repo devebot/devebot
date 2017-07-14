@@ -14,7 +14,7 @@ var runhookDialect = {
         "number": {
           "type": "number",
           "minimum": 0,
-          "maximum": 16
+          "maximum": 100
         }
       }
     }
