@@ -2,7 +2,7 @@
 
 [![NPM](https://nodei.co/npm/devebot.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/devebot/)
 
-> An apptool framework for Devops
+> Nodejs Microservice Framework
 
 ## Usage
 

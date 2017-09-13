@@ -1,15 +1,10 @@
 {
   "name": "devebot",
-  "version": "0.1.24",
+  "version": "0.2.0",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "engines": {
-    "node": "0.10 || 0.12 || 4"
-  },
-  "scripts": {
-    "test": "npm run unitest",
-    "unitest": "./node_modules/.bin/mocha test/ut/**/*-test.js",
-    "e2etest": "./node_modules/.bin/cucumber.js test/et/features/*.feature"
+    "node": "0.10 || 0.12 || 4 || 5 || 6"
   },
   "repository": {
     "type": "git",
@@ -27,16 +22,19 @@
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
     "bluebird": "^3.4.0",
+    "death": "^1.1.0",
     "debug": "^2.2.0",
     "injektor": "^0.0.12",
     "jobdapter": "^0.1.0",
     "jsonschema": "^1.1.0",
     "lodash": "^4.13.0",
     "logdapter": "^0.0.15",
+    "os-homedir": "^1.0.2",
     "ws": "^1.1.0"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.0.0",
+    "devebot-api": "^0.1.5",
     "mocha": "^2.4.5",
     "nock": "^7.2.2",
     "rewire": "^2.5.1",

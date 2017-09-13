@@ -4,15 +4,15 @@ var path = require('path');
 var lodash = require('lodash');
 
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
-var configLoader = require('./lib/backbone/config-loader.js');
+var ConfigLoader = require('./lib/backbone/config-loader.js');
+var Runner = require('./lib/runner.js');
 var Server = require('./lib/server.js');
-var debug = require('./lib/utils/debug.js');
-var debuglog = debug('devebot');
+var debugx = require('./lib/utils/debug.js')('devebot');
 
 function appLoader(params) {
   params = params || {};
 
-  debuglog.isEnabled && debuglog(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
+  debugx.enabled && debugx(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
 
   var appRootPath = params.appRootPath;
   var libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
@@ -23,16 +23,19 @@ function appLoader(params) {
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
 
-  debuglog.isEnabled && debuglog(' - application name (appName): %s', appName);
+  debugx.enabled && debugx(' - application name (appName): %s', appName);
 
-  var config = configLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
+  var configLoader = new ConfigLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
+  var config = configLoader.config;
 
   var appRef = lodash.isEmpty(appRootPath) ? [] : {
+    type: 'application',
     name: appName,
     path: path.join(appRootPath, 'app.js')
   };
 
   var devebotRef = {
+    type: 'framework',
     name: 'devebot',
     path: path.join(topRootPath, 'index.js')
   };
@@ -42,10 +45,21 @@ function appLoader(params) {
   config.bridgeRefs = lodash.values(params.bridgeRefs);
   config.pluginRefs = [].concat(appRef, lodash.values(params.pluginRefs), devebotRef);
 
-  return {
-    config: config,
-    server: Server(config)
-  };
+  var app = { config: config };
+
+  var _runner;
+  Object.defineProperty(app, 'runner', {
+    get: function() { return _runner = _runner || new Runner(config) },
+    set: function(value) {}
+  });
+
+  var _server;
+  Object.defineProperty(app, 'server', {
+    get: function() { return _server = _server || new Server(config) },
+    set: function(value) {}
+  });
+
+  return app;
 }
 
 var ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs'];
@@ -135,7 +149,7 @@ var builtinPackages = ['bluebird', 'lodash', 'injektor'];
 
 appLoader.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
-  if (packageName == 'debug') return debug;
+  if (packageName == 'debug') return require('./lib/utils/debug.js');
   if (packageName == 'chores') return require('./lib/utils/chores.js');
   if (packageName == 'loader') return require('./lib/utils/loader.js');
   return null;

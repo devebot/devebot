@@ -1,0 +1,6 @@
+dist
+examples
+test
+.gitignore
+.npmignore
+*.log
