@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "engines": {
@@ -21,13 +21,13 @@
   },
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
-    "bluebird": "^3.4.0",
+    "bluebird": "^3.5.1",
     "death": "^1.1.0",
-    "debug": "^2.2.0",
+    "debug": "^3.1.0",
     "injektor": "^0.0.12",
     "jobdapter": "^0.1.0",
     "jsonschema": "^1.1.0",
-    "lodash": "^4.13.0",
+    "lodash": "^4.17.4",
     "logdapter": "^0.0.15",
     "os-homedir": "^1.0.2",
     "ws": "^1.1.0"
