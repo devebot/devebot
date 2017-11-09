@@ -45,7 +45,7 @@ describe('devebot:configuration', function() {
 						}
 					],
 					"framework": {
-						"version": "0.2.1",
+						"version": "0.2.2",
 						"name": "devebot",
 						"description": "Nodejs Microservice Framework",
 						"homepage": "https://github.com/devebot/devebot#readme",

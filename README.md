@@ -8,13 +8,13 @@
 
 Installs `devebot` module:
 
-```bash
+```shell
 $ npm install --save devebot
 ```
 
 Create your `app.js` source file, and appends the following block:
 
-```
+```javascript
 var Devebot = require('devebot');
 
 var app = Devebot({
