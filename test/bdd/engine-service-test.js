@@ -8,7 +8,7 @@ var debug = Devebot.require('debug');
 var assert = require('chai').assert;
 var expect = require('chai').expect;
 var util = require('util');
-var debugx = debug('devebot:test:bdd:engine:service');
+var debugx = debug('bdd:devebot:engine:service');
 
 describe('devebot:engine:server', function() {
 	this.timeout(lab.getDefaultTimeout());
@@ -16,12 +16,14 @@ describe('devebot:engine:server', function() {
 	describe('start/stop app engine-service', function() {
 		it('engine-service should be started/stopped properly', function(done) {
 			app = lab.getApp();
+			debugx.enabled && debugx('server.start()');
 			app.server.start().then(function() {
+				debugx.enabled && debugx('server.start() has done, teardown()');
 				return app.server.teardown();
 			}).then(function() {
+				debugx.enabled && debugx('server.teardown() has done');
 				done();
 			});
-			this.timeout(6000);
 		});
 	});
 });
