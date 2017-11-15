@@ -11,12 +11,9 @@ var Service = function(params) {
 
   params = params || {};
 
-  dgx.enabled && dgx(' - constructor end!');
-};
+  dgx.enabled && dgx(' - params: %s', JSON.stringify(params, null, 2));
 
-Service.argumentSchema = {
-  "id": "bridge2",
-  "type": "object"
+  dgx.enabled && dgx(' - constructor end!');
 };
 
 module.exports = Service;
