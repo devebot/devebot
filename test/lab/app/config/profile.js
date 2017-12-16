@@ -1,6 +1,5 @@
 module.exports = {
   devebot: {
-    mode: 'heartbeat',
     verbose: false,
     jobqueue: {
       enabled: true

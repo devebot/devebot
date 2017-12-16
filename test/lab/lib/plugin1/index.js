@@ -1,1 +1,1 @@
-module.exports = require('../../index').getDevebot().registerLayerware(__dirname, []);
+module.exports = Devebot.registerLayerware(__dirname, []);

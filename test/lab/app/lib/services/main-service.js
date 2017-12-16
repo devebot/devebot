@@ -1,10 +1,8 @@
 'use strict';
 
-var Devebot = require('../../../index').getDevebot();
 var Promise = Devebot.require('bluebird');
 var lodash = Devebot.require('lodash');
-var debug = Devebot.require('debug');
-var debugx = debug('devebot:test:lab:main:mainService');
+var debugx = Devebot.require('debug')('devebot:test:lab:main:mainService');
 
 var Service = function(params) {
   debugx.enabled && debugx(' + constructor begin ...');

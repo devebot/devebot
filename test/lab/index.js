@@ -1,10 +1,13 @@
-var lodash = require('lodash');
+'use strict';
+
 var path = require('path');
+var Devebot = require(path.join(__dirname, '../../index'));
+var lodash = require('lodash');
 
 module.exports = {
 	getApp: function(name) {
 		name = name || 'app';
-		return require(path.join(__dirname, './' + name));
+		return require(path.join(__dirname, name));
 	},
 	getApiConfig: function(ext) {
 		ext = ext || {};
@@ -19,7 +22,7 @@ module.exports = {
 		}, ext);
 	},
 	getDevebot: function() {
-		return require(path.join(__dirname, '../../index'));
+		return Devebot;
 	},
 	getDefaultTimeout: function() {
 		return 60000;

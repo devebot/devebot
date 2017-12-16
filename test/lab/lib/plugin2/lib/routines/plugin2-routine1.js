@@ -1,7 +1,7 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
+var Promise = Devebot.require('bluebird');
+var lodash = Devebot.require('lodash');
 
 var runhookSetting;
 
