@@ -28,6 +28,17 @@ describe('devebot:configuration', function() {
 					"description": "Devebot Demo Application",
 					"author": "devebot",
 					"license": "ISC",
+					"framework": {
+						"version": "0.2.4",
+						"name": "devebot",
+						"description": "Nodejs Microservice Framework",
+						"homepage": "https://github.com/devebot/devebot#readme",
+						"author": "Hung Pham <pnhung177@acegik.net> (http://acegik.net/blog)",
+						"license": "GPL-3.0"
+					}
+				});
+
+				false && expect(appinfo).to.deep.include({
 					"layerware": [
 						{
 							"version": "0.1.1",
@@ -43,15 +54,7 @@ describe('devebot:configuration', function() {
 							"author": "devebot",
 							"license": "ISC"
 						}
-					],
-					"framework": {
-						"version": "0.2.3",
-						"name": "devebot",
-						"description": "Nodejs Microservice Framework",
-						"homepage": "https://github.com/devebot/devebot#readme",
-						"author": "Hung Pham <pnhung177@acegik.net> (http://acegik.net/blog)",
-						"license": "GPL-3.0"
-					}
+					]
 				});
 
 				var profileConfig = injektor.lookup('profileConfig');
