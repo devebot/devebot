@@ -4,12 +4,11 @@ var lab = require('../lab');
 var Devebot = lab.getDevebot();
 var Promise = Devebot.require('bluebird');
 var lodash = Devebot.require('lodash');
-var debug = Devebot.require('debug');
+var debugx = Devebot.require('pinbug')('tdd:devebot:core:config:loader');
 var assert = require('chai').assert;
 var expect = require('chai').expect;
 var path = require('path');
 var util = require('util');
-var debugx = debug('tdd:devebot:core:config:loader');
 var CfgLoader = require('../../lib/backbone/config-loader');
 
 describe('devebot:config:loader', function() {

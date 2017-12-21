@@ -4,11 +4,10 @@ var lab = require('../lab');
 var Devebot = lab.getDevebot();
 var Promise = Devebot.require('bluebird');
 var lodash = Devebot.require('lodash');
-var debug = Devebot.require('debug');
+var debugx = Devebot.require('pinbug')('bdd:devebot:runhook:progress:meter');
 var assert = require('chai').assert;
 var expect = require('chai').expect;
 var util = require('util');
-var debugx = debug('bdd:devebot:runhook:progress:meter');
 var DevebotApi = require('devebot-api');
 
 describe('devebot:runhook:progress:meter', function() {

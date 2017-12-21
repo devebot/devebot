@@ -2,7 +2,7 @@
 
 var Promise = Devebot.require('bluebird');
 var lodash = Devebot.require('lodash');
-var debugx = Devebot.require('debug')('devebot:test:lab:plugin1:plugin1Service');
+var debugx = Devebot.require('pinbug')('devebot:test:lab:plugin1:plugin1Service');
 
 var Service = function(params) {
   debugx.enabled && debugx(' + constructor begin ...');
