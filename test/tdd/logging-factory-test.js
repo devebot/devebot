@@ -14,6 +14,17 @@ var LoggingFactory = require('../../lib/backbone/logging-factory');
 describe('devebot:loggingFactory', function() {
 	var app;
 	describe('extend Tracer using branch() method', function() {
+
+		var env_MOCKLOGGER_ENABLED = process.env.LOGOLITE_MOCKLOGGER_ENABLED;
+
+		before(function() {
+			process.env.LOGOLITE_MOCKLOGGER_ENABLED = 'true';
+		});
+
+		beforeEach(function() {
+			LoggingFactory.reset();
+		});
+
 		it('default Tracer must contain framework information', function() {
 			var factory = new LoggingFactory({
 				logger: {
@@ -30,9 +41,22 @@ describe('devebot:loggingFactory', function() {
 			});
 
 			var rootTracer = factory.getTracer();
+
+			var mockLogger = factory.getLogger({ type: 'shadow' });
+			var queue = mockLogger._probe();
+			mockLogger._reset();
+
+			assert.equal(queue.length, 2);
+			queue.forEach(function(item) {
+				item.payload = JSON.parse(item.payload);
+			});
+			assert.equal(lodash.get(queue, [1, 'payload', 'blockName']), 'devebot');
+
 			var logObject_1 = rootTracer.toMessage();
-			
-			console.log(logObject_1);
+			assert.deepEqual(
+				lodash.pick(JSON.parse(logObject_1), ['instanceId', 'blockId']),
+				lodash.pick(lodash.get(queue, [1, 'payload']), ['instanceId', 'blockId'])
+			);
 		});
 
 		it('recursive branch() calls will return hierarchical loggingFactory objects', function() {
@@ -51,17 +75,47 @@ describe('devebot:loggingFactory', function() {
 			});
 
 			var childFactory1 = factory.branch('child1');
+			var childFactory2 = factory.branch('child2');
+			var factory_2_1 = childFactory2.branch('grand-child-1');
+			var factory_2_2 = childFactory2.branch('grand-child-2');
+
 			var logObject_1 = childFactory1.getTracer().toMessage();
+
+			var mockLogger = factory.getLogger({ type: 'shadow' });
+			var queue = mockLogger._probe();
+			mockLogger._reset();
+
+			assert.equal(queue.length, 5);
+			queue.forEach(function(item) {
+				item.payload = JSON.parse(item.payload);
+			});
+
+			var logObject_2 = childFactory2.getTracer().toMessage();
+			var logObject_2_1 = factory_2_1.getTracer().toMessage();
+			var logObject_2_2 = factory_2_2.getTracer().toMessage();
+
 			assert.isTrue(factory.getTracer() !== childFactory1.getTracer());
 			assert.isTrue(factory.getLogger() === childFactory1.getLogger());
+			assert.isTrue(factory.getTracer() !== factory_2_1.getTracer());
+			assert.isTrue(factory.getLogger() === factory_2_1.getLogger());
 
-			var childFactory2 = factory.branch('child2');
-			var gchildFactory = childFactory2.branch('grand-children');
-			var logObject_2_1 = gchildFactory.getTracer().toMessage();
-			assert.isTrue(factory.getTracer() !== gchildFactory.getTracer());
-			assert.isTrue(factory.getLogger() === gchildFactory.getLogger());
+			assert.equal(lodash.get(queue, [0, 'payload', 'blockName']), 'devebot');
+			assert.equal(lodash.get(queue, [1, 'payload', 'blockName']), 'child1');
+			assert.equal(lodash.get(queue, [2, 'payload', 'blockName']), 'child2');
 
-			console.log(logObject_2_1);
+			assert.deepEqual(
+				lodash.pick(JSON.parse(logObject_1), ['instanceId', 'blockId']),
+				lodash.pick(lodash.get(queue, [1, 'payload']), ['instanceId', 'blockId'])
+			);
+
+			assert.deepEqual(
+				lodash.pick(JSON.parse(logObject_2), ['instanceId', 'blockId']),
+				lodash.pick(lodash.get(queue, [2, 'payload']), ['instanceId', 'blockId'])
+			);
+		});
+
+		after(function() {
+			process.env.LOGOLITE_MOCKLOGGER_ENABLED = env_MOCKLOGGER_ENABLED;
 		});
 	});
 });
