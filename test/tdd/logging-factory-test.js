@@ -12,7 +12,6 @@ var util = require('util');
 var LoggingFactory = require('../../lib/backbone/logging-factory');
 
 describe('devebot:loggingFactory', function() {
-	var app;
 	describe('extend Tracer using branch() method', function() {
 
 		var env_DEBUGLOG = process.env.LOGOLITE_DEBUGLOG;
@@ -86,7 +85,6 @@ describe('devebot:loggingFactory', function() {
 			var mockLogger = factory.getLogger({ type: 'shadow' });
 			var queue = mockLogger._probe();
 			mockLogger._reset();
-			console.log(queue);
 
 			assert.equal(queue.length, 5);
 			queue.forEach(function(item) {
@@ -97,6 +95,9 @@ describe('devebot:loggingFactory', function() {
 			var logObject_2_1 = factory_2_1.getTracer().toMessage();
 			var logObject_2_2 = factory_2_2.getTracer().toMessage();
 
+			assert.isTrue(factory.getLogger() === factory.getLogger());
+			assert.isTrue(factory.getTracer() === factory.getTracer());
+
 			assert.isTrue(factory.getTracer() !== childFactory1.getTracer());
 			assert.isTrue(factory.getLogger() !== childFactory1.getLogger());
 			assert.isTrue(factory.getTracer() !== factory_2_1.getTracer());
@@ -105,6 +106,8 @@ describe('devebot:loggingFactory', function() {
 			assert.equal(lodash.get(queue, [0, 'payload', 'blockName']), 'devebot');
 			assert.equal(lodash.get(queue, [1, 'payload', 'blockName']), 'child1');
 			assert.equal(lodash.get(queue, [2, 'payload', 'blockName']), 'child2');
+			assert.equal(lodash.get(queue, [3, 'payload', 'blockName']), 'grand-child-1');
+			assert.equal(lodash.get(queue, [4, 'payload', 'blockName']), 'grand-child-2');
 
 			assert.deepEqual(
 				lodash.pick(JSON.parse(logObject_1), ['instanceId', 'blockId']),
