@@ -15,9 +15,11 @@ describe('devebot:loggingFactory', function() {
 	var app;
 	describe('extend Tracer using branch() method', function() {
 
+		var env_DEBUGLOG = process.env.LOGOLITE_DEBUGLOG;
 		var env_MOCKLOGGER_ENABLED = process.env.LOGOLITE_MOCKLOGGER_ENABLED;
 
 		before(function() {
+			process.env.LOGOLITE_DEBUGLOG = null;
 			process.env.LOGOLITE_MOCKLOGGER_ENABLED = 'true';
 		});
 
@@ -84,6 +86,7 @@ describe('devebot:loggingFactory', function() {
 			var mockLogger = factory.getLogger({ type: 'shadow' });
 			var queue = mockLogger._probe();
 			mockLogger._reset();
+			console.log(queue);
 
 			assert.equal(queue.length, 5);
 			queue.forEach(function(item) {
@@ -95,9 +98,9 @@ describe('devebot:loggingFactory', function() {
 			var logObject_2_2 = factory_2_2.getTracer().toMessage();
 
 			assert.isTrue(factory.getTracer() !== childFactory1.getTracer());
-			assert.isTrue(factory.getLogger() === childFactory1.getLogger());
+			assert.isTrue(factory.getLogger() !== childFactory1.getLogger());
 			assert.isTrue(factory.getTracer() !== factory_2_1.getTracer());
-			assert.isTrue(factory.getLogger() === factory_2_1.getLogger());
+			assert.isTrue(factory.getLogger() !== factory_2_1.getLogger());
 
 			assert.equal(lodash.get(queue, [0, 'payload', 'blockName']), 'devebot');
 			assert.equal(lodash.get(queue, [1, 'payload', 'blockName']), 'child1');
@@ -115,6 +118,7 @@ describe('devebot:loggingFactory', function() {
 		});
 
 		after(function() {
+			process.env.LOGOLITE_DEBUGLOG = env_DEBUGLOG;
 			process.env.LOGOLITE_MOCKLOGGER_ENABLED = env_MOCKLOGGER_ENABLED;
 		});
 	});
