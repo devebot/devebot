@@ -12,11 +12,40 @@ var runhookDialect = {
   },
   mode: 'remote',
   handler: function(opts, ctx) {
-    return Promise.resolve([{
+    var LX = this.loggingFactory.getLogger();
+    var LT = this.loggingFactory.getTracer();
+
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      checkpoint: 'plugin1-routine2-begin'
+    }).toMessage({
+      text: ' - runhook start',
+      reset: true
+    }));
+
+    var result = { runhookName: 'Plugin1 - Routine2' }
+
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      checkpoint: 'plugin1-routine2-injected-names',
+      injectedServiceNames: Object.keys(this.injectedServices)
+    }).toMessage({
+      text: ' - injectedServices names: {injectedServiceNames}',
+      reset: true
+    }));
+
+    var output = Promise.resolve([{
         type: 'json',
         title: 'Plugin1 - Routine2',
         data: {}
     }]);
+
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      checkpoint: 'plugin1-routine2-end'
+    }).toMessage({
+      text: ' - runhook end',
+      reset: true
+    }));
+
+    return output;
   }
 };
 

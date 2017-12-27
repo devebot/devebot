@@ -20,13 +20,31 @@ var runhookDialect = {
     }
   },
   handler: function(opts, ctx) {
+    var LX = this.loggingFactory.getLogger();
+    var LT = this.loggingFactory.getTracer();
+
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      checkpoint: 'plugin2-routine1-begin'
+    }).toMessage({
+      text: ' - runhook start'
+    }));
+
     var number = opts.number;
     var result = fibonacci(number, number, ctx.progressMeter);
-    return Promise.resolve([{
+
+    var output = Promise.resolve([{
         type: 'json',
         title: 'Plugin2 - Routine1',
         data: { fibonacci: result }
     }]);
+
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      checkpoint: 'plugin2-routine1-end'
+    }).toMessage({
+      text: ' - runhook end'
+    }));
+
+    return output;
   }
 };
 
