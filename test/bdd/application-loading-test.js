@@ -35,7 +35,6 @@ describe('devebot:application', function() {
 				]
 			}
 		]);
-		app = lab.getApp();
 	});
 
 	beforeEach(function() {
@@ -43,6 +42,7 @@ describe('devebot:application', function() {
 	});
 
 	it('total of constructor startpoints must equal to constructor endpoints', function(done) {
+		app = lab.getApp();
 		app.server.start()
 			.then(function() {
 				false && console.log(JSON.stringify(logStats, null, 2));
