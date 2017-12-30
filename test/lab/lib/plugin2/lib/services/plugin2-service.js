@@ -2,21 +2,31 @@
 
 var Promise = Devebot.require('bluebird');
 var lodash = Devebot.require('lodash');
-var debugx = Devebot.require('pinbug')('devebot:test:lab:plugin2:plugin2Service');
 
 var Service = function(params) {
-  debugx.enabled && debugx(' + constructor begin ...');
-
+  var self = this;
   params = params || {};
 
-  var self = this;
+  var LX = params.loggingFactory.getLogger();
+  var LT = params.loggingFactory.getTracer();
 
-  var logger = self.logger = params.loggingFactory.getLogger();
+  LX.has('conlog') && LX.log('conlog', LT.stringify({
+    tags: [ 'test-plugin2', 'constructor-begin' ],
+    text: ' + constructor begin'
+  }));
 
   var pluginCfg = lodash.get(params, ['sandboxConfig', 'plugins', 'plugin2'], {});
-  debugx.enabled && debugx('configuration: %s', JSON.stringify(pluginCfg));
+  LX.has('conlog') && LX.log('conlog', LT.add({
+    pluginCfg: pluginCfg
+  }).stringify({
+    tags: [ 'test-plugin2' ],
+    text: ' - configuration: {pluginCfg}'
+  }));
 
-  debugx.enabled && debugx(' - constructor end!');
+  LX.has('conlog') && LX.log('conlog', LT.stringify({
+    tags: [ 'test-plugin2', 'constructor-end' ],
+    text: ' - constructor end!'
+  }));
 };
 
 Service.argumentSchema = {

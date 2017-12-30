@@ -2,39 +2,49 @@
 
 var Promise = Devebot.require('bluebird');
 var lodash = Devebot.require('lodash');
-var debugx = Devebot.require('pinbug')('devebot:test:lab:plugin2:plugin2Trigger');
 var http = require('http');
 
 var Service = function(params) {
-  debugx.enabled && debugx(' + constructor begin ...');
-
+  var self = this;
   params = params || {};
 
-  var self = this;
+  var LX = params.loggingFactory.getLogger();
+  var LT = params.loggingFactory.getTracer();
+
+  LX.has('conlog') && LX.log('conlog', LT.stringify({
+    tags: [ 'test-plugin2', 'constructor-begin' ],
+    text: ' + constructor begin'
+  }));
 
   self.logger = params.loggingFactory.getLogger();
 
-  var plugin2Cfg = lodash.get(params, ['sandboxConfig', 'plugins', 'plugin2'], {});
+  var pluginCfg = lodash.get(params, ['sandboxConfig', 'plugins', 'plugin2'], {});
 
   var server = http.createServer();
 
   server.on('error', function(err) {
-    debugx.enabled && debugx('Server Error: %s', JSON.stringify(err));
+    LX.has('error') && LX.log('error', LT.add({
+      error: err
+    }).stringify({
+      tags: [ 'test-plugin2', 'server-error' ],
+      text: ' - Server Error: {error}',
+      reset: true
+    }));
   });
 
   self.getServer = function() {
     return server;
   };
 
-  var configHost = lodash.get(plugin2Cfg, 'host', '0.0.0.0');
-  var configPort = lodash.get(plugin2Cfg, 'port', 8080);
+  var configHost = lodash.get(pluginCfg, 'host', '0.0.0.0');
+  var configPort = lodash.get(pluginCfg, 'port', 8080);
 
   self.start = function() {
     return new Promise(function(resolved, rejected) {
       var serverInstance = server.listen(configPort, configHost, function () {
         var host = serverInstance.address().address;
         var port = serverInstance.address().port;
-        (plugin2Cfg && plugin2Cfg.verbose !== false || debugx.enabled) &&
+        (pluginCfg && pluginCfg.verbose !== false || LX.has('conlog')) &&
         console.log('plugin2 webserver is listening at http://%s:%s', host, port);
         resolved(serverInstance);
       });
@@ -44,14 +54,17 @@ var Service = function(params) {
   self.stop = function() {
     return new Promise(function(resolved, rejected) {
       server.close(function () {
-        (plugin2Cfg && plugin2Cfg.verbose !== false || debugx.enabled) &&
+        (pluginCfg && pluginCfg.verbose !== false || LX.has('conlog')) &&
         console.log('plugin2 webserver has been closed');
         resolved();
       });
     });
   };
 
-  debugx.enabled && debugx(' - constructor end!');
+  LX.has('conlog') && LX.log('conlog', LT.stringify({
+    tags: [ 'test-plugin2', 'constructor-end' ],
+    text: ' - constructor end!'
+  }));
 };
 
 Service.argumentSchema = {

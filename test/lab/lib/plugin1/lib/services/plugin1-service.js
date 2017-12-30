@@ -5,13 +5,10 @@ var lodash = Devebot.require('lodash');
 var debugx = Devebot.require('pinbug')('devebot:test:lab:plugin1:plugin1Service');
 
 var Service = function(params) {
-  debugx.enabled && debugx(' + constructor begin ...');
-
+  var self = this;
   params = params || {};
 
-  var self = this;
-
-  var logger = self.logger = params.loggingFactory.getLogger();
+  debugx.enabled && debugx(' + constructor begin ...');
 
   var pluginCfg = lodash.get(params, ['sandboxConfig', 'plugins', 'plugin1'], {});
   debugx.enabled && debugx('configuration: %s', JSON.stringify(pluginCfg));

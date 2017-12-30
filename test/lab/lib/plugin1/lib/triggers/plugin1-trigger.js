@@ -6,15 +6,12 @@ var debugx = Devebot.require('pinbug')('devebot:test:lab:plugin1:plugin1Trigger'
 var http = require('http');
 
 var Service = function(params) {
-  debugx.enabled && debugx(' + constructor begin ...');
-
+  var self = this;
   params = params || {};
 
-  var self = this;
+  debugx.enabled && debugx(' + constructor begin ...');
 
-  self.logger = params.loggingFactory.getLogger();
-
-  var plugin1Cfg = lodash.get(params, ['sandboxConfig', 'plugins', 'plugin1'], {});
+  var pluginCfg = lodash.get(params, ['sandboxConfig', 'plugins', 'plugin1'], {});
 
   var server = http.createServer();
 
@@ -26,15 +23,15 @@ var Service = function(params) {
     return server;
   };
 
-  var configHost = lodash.get(plugin1Cfg, 'host', '0.0.0.0');
-  var configPort = lodash.get(plugin1Cfg, 'port', 8080);
+  var configHost = lodash.get(pluginCfg, 'host', '0.0.0.0');
+  var configPort = lodash.get(pluginCfg, 'port', 8080);
 
   self.start = function() {
     return new Promise(function(resolved, rejected) {
       var serverInstance = server.listen(configPort, configHost, function () {
         var host = serverInstance.address().address;
         var port = serverInstance.address().port;
-        (plugin1Cfg && plugin1Cfg.verbose !== false || debugx.enabled) &&
+        (pluginCfg && pluginCfg.verbose !== false || debugx.enabled) &&
         console.log('plugin1 webserver is listening at http://%s:%s', host, port);
         resolved(serverInstance);
       });
@@ -44,7 +41,7 @@ var Service = function(params) {
   self.stop = function() {
     return new Promise(function(resolved, rejected) {
       server.close(function () {
-        (plugin1Cfg && plugin1Cfg.verbose !== false || debugx.enabled) &&
+        (pluginCfg && pluginCfg.verbose !== false || debugx.enabled) &&
         console.log('plugin1 webserver has been closed');
         resolved();
       });
