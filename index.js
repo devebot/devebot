@@ -5,14 +5,24 @@ var lodash = require('lodash');
 
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
 var ConfigLoader = require('./lib/backbone/config-loader.js');
+var LoggingWrapper = require('./lib/backbone/logging-wrapper.js');
+var chores = require('./lib/utils/chores.js');
 var Runner = require('./lib/runner.js');
 var Server = require('./lib/server.js');
-var debugx = require('./lib/utils/pinbug.js')('devebot');
+
+var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
+var LX = loggingWrapper.getLogger();
+var LT = loggingWrapper.getTracer();
 
 function appLoader(params) {
   params = params || {};
 
-  debugx.enabled && debugx(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
+  LX.has('conlog') && LX.log('conlog', LT.stringify({
+    tags: [ 'constructor-begin' ],
+    text: ' + application loading start ...'
+  }));
+
+  LX.has('conlog') && LX.log('conlog', ' * application parameters: %s', JSON.stringify(params, null, 2));
 
   var appRootPath = params.appRootPath;
   var libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
@@ -23,7 +33,7 @@ function appLoader(params) {
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
 
-  debugx.enabled && debugx(' - application name (appName): %s', appName);
+  LX.has('conlog') && LX.log('conlog', ' - application name (appName): %s', appName);
 
   var configLoader = new ConfigLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
   var config = configLoader.config;
@@ -58,6 +68,11 @@ function appLoader(params) {
     get: function() { return _server = _server || new Server(config) },
     set: function(value) {}
   });
+
+  LX.has('conlog') && LX.log('conlog', LT.stringify({
+    tags: [ 'constructor-end' ],
+    text: ' - Application loading has done'
+  }));
 
   return app;
 }
