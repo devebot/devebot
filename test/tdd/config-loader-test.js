@@ -11,6 +11,7 @@ var expect = require('chai').expect;
 var path = require('path');
 var util = require('util');
 var ConfigLoader = require('../../lib/backbone/config-loader');
+var Envar = require('../lab/utils/envar');
 
 describe('devebot:config:loader', function() {
 
@@ -53,13 +54,12 @@ describe('devebot:config:loader', function() {
 	});
 
 	describe('staging configuration', function() {
-
-		var env_CONFIG_DIR = process.env.NODE_DEVEBOT_CONFIG_DIR;
-		var env_CONFIG_ENV = process.env.NODE_DEVEBOT_CONFIG_ENV;
-
+		var envar = new Envar();
 		before(function() {
-			process.env.NODE_DEVEBOT_CONFIG_DIR = path.join(__dirname, '../lab/app-tdd-cfg/newcfg');
-			process.env.NODE_DEVEBOT_CONFIG_ENV = 'dev';
+			envar.setup({
+				NODE_DEVEBOT_CONFIG_DIR: path.join(__dirname, '../lab/app-tdd-cfg/newcfg'),
+				NODE_DEVEBOT_CONFIG_ENV: 'dev'
+			});
 		});
 
 		it('load application configuration', function() {
@@ -99,8 +99,7 @@ describe('devebot:config:loader', function() {
 		});
 
 		after(function() {
-			process.env.NODE_DEVEBOT_CONFIG_DIR = env_CONFIG_DIR;
-			process.env.NODE_DEVEBOT_CONFIG_ENV = env_CONFIG_ENV;
+			envar.reset();
 		});
 	});
 });

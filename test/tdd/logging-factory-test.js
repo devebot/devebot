@@ -10,16 +10,18 @@ var expect = require('chai').expect;
 var path = require('path');
 var util = require('util');
 var LoggingFactory = require('../../lib/backbone/logging-factory');
+var Envar = require('../lab/utils/envar');
 
 describe('devebot:loggingFactory', function() {
 	describe('extend Tracer using branch() method', function() {
 
-		var env_DEBUGLOG = process.env.LOGOLITE_DEBUGLOG;
-		var env_MOCKLOGGER_ENABLED = process.env.LOGOLITE_MOCKLOGGER_ENABLED;
+		var envar = new Envar();
 
 		before(function() {
-			process.env.LOGOLITE_DEBUGLOG = null;
-			process.env.LOGOLITE_MOCKLOGGER_ENABLED = 'true';
+			envar.setup({
+				LOGOLITE_DEBUGLOG: null,
+				LOGOLITE_MOCKLOGGER_ENABLED: 'true'
+			});
 		});
 
 		beforeEach(function() {
@@ -121,8 +123,7 @@ describe('devebot:loggingFactory', function() {
 		});
 
 		after(function() {
-			process.env.LOGOLITE_DEBUGLOG = env_DEBUGLOG;
-			process.env.LOGOLITE_MOCKLOGGER_ENABLED = env_MOCKLOGGER_ENABLED;
+			envar.reset();
 		});
 	});
 });
