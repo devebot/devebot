@@ -5,10 +5,6 @@ var Devebot = require(path.join(__dirname, '../../index'));
 var lodash = require('lodash');
 
 module.exports = {
-	getApp: function(name) {
-		name = name || 'app';
-		return require(path.join(__dirname, name));
-	},
 	getApiConfig: function(ext) {
 		ext = ext || {};
 		return lodash.merge({
@@ -21,8 +17,34 @@ module.exports = {
 			}
 		}, ext);
 	},
+	getAppHome: function(appName) {
+		return path.join(__dirname, appName);
+	},
+	getApp: function(appName) {
+		appName = appName || 'app';
+		return require(this.getAppHome(appName));
+	},
+	getAppCfgDir: function(appName, cfgName) {
+		cfgName = cfgName || 'config';
+		return path.join(__dirname, appName, cfgName);
+	},
+	getLibHome: function(libName) {
+		return path.join(__dirname, './lib/', libName);
+	},
+	getLib: function(libName) {
+		return require(this.getLibHome(libName));
+	},
+	getLibCfgDir: function(libName) {
+		return path.join(this.getLibHome(libName), 'config');
+	},
+	getDevebotHome: function() {
+		return path.join(__dirname, '../../');
+	},
 	getDevebot: function() {
-		return Devebot;
+		return require(this.getDevebotHome());
+	},
+	getDevebotCfgDir: function() {
+		return path.join(this.getDevebotHome(), 'config');
 	},
 	getDefaultTimeout: function() {
 		return 60000;
