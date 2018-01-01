@@ -46,8 +46,7 @@ describe('devebot:command:definition', function() {
 			var fwCmdNames = [
 				'applica-info',
 				'logger-info', 'logger-reset', 'logger-set',
-				'sandbox-info', 'sandbox-use',
-				'system-info'
+				'sandbox-info', 'system-info'
 			];
 			assert.includeMembers(cmdNames, fwCmdNames);
 
