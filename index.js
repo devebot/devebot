@@ -32,10 +32,13 @@ function appLoader(params) {
 
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
+  var appOptions = {
+    privateSandbox: params.privateSandbox || params.privateSandboxes
+  };
 
   LX.has('conlog') && LX.log('conlog', ' - application name (appName): %s', appName);
 
-  var configLoader = new ConfigLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
+  var configLoader = new ConfigLoader(appName, appOptions, appRootPath, libRootPaths.concat(topRootPath));
   var config = configLoader.config;
 
   var appRef = lodash.isEmpty(appRootPath) ? [] : {

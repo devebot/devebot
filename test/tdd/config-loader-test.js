@@ -16,7 +16,7 @@ describe('devebot:config:loader', function() {
 
 	describe('default configuration (without profile & sandbox)', function() {
 		it('load application configuration', function() {
-			var cfgLoader = new ConfigLoader('app', lab.getAppHome('app-tdd-cfg'), [
+			var cfgLoader = new ConfigLoader('app', null, lab.getAppHome('app-tdd-cfg'), [
 				lab.getLibHome('plugin1'),
 				lab.getLibHome('plugin2'),
 				lab.getDevebotHome()
@@ -63,7 +63,7 @@ describe('devebot:config:loader', function() {
 		});
 
 		it('load application configuration', function() {
-			var cfgLoader = new ConfigLoader('app', lab.getAppHome('app-tdd-cfg'), [
+			var cfgLoader = new ConfigLoader('app', null, lab.getAppHome('app-tdd-cfg'), [
 				lab.getLibHome('plugin1'),
 				lab.getLibHome('plugin2'),
 				lab.getDevebotHome()
