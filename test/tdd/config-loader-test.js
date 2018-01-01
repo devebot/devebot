@@ -38,7 +38,7 @@ describe('devebot:config:loader', function() {
 
 			assert.deepEqual(
 				lodash.get(cfgLoader,"config.sandbox.default"),
-				lodash.get(cfgLoader,"config.sandbox.staging.default")
+				lodash.get(cfgLoader,"config.sandbox.staging")
 			);
 
 			assert.deepEqual(
@@ -85,7 +85,7 @@ describe('devebot:config:loader', function() {
 
 			assert.deepEqual(
 				lodash.get(cfgLoader,"config.sandbox.default"),
-				lodash.get(cfgLoader,"config.sandbox.staging.default")
+				lodash.get(cfgLoader,"config.sandbox.staging")
 			);
 
 			assert.deepEqual(
