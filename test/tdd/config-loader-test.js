@@ -25,6 +25,7 @@ describe('devebot:config:loader', function() {
 
 			false && console.log(JSON.stringify(cfgLoader.config, null, 2));
 
+			// Profile configuration
 			assert.deepEqual(
 				lodash.get(cfgLoader,"config.profile.default"),
 				lodash.get(cfgLoader,"config.profile.staging")
@@ -37,6 +38,7 @@ describe('devebot:config:loader', function() {
 					loader(path.join(lab.getDevebotCfgDir(), 'profile.js')),
 					{}));
 
+			// Sandbox configuration
 			assert.deepEqual(
 				lodash.get(cfgLoader,"config.sandbox.default"),
 				lodash.get(cfgLoader,"config.sandbox.staging")
@@ -53,7 +55,7 @@ describe('devebot:config:loader', function() {
 		});
 	});
 
-	describe('staging configuration', function() {
+	describe('customize configDir and staging', function() {
 		var envar = new Envar();
 		before(function() {
 			envar.setup({
@@ -71,6 +73,7 @@ describe('devebot:config:loader', function() {
 
 			false && console.log(JSON.stringify(cfgLoader.config, null, 2));
 
+			// Profile configuration
 			assert.deepEqual(
 				lodash.get(cfgLoader,"config.profile.default"),
 				lodash.get(cfgLoader,"config.profile.staging")
@@ -83,6 +86,7 @@ describe('devebot:config:loader', function() {
 					loader(path.join(lab.getDevebotCfgDir(), 'profile.js')),
 					{}));
 
+			// Sandbox configuration
 			assert.deepEqual(
 				lodash.get(cfgLoader,"config.sandbox.default"),
 				lodash.get(cfgLoader,"config.sandbox.staging")
@@ -103,7 +107,7 @@ describe('devebot:config:loader', function() {
 		});
 	});
 
-	describe('customize sandbox configuration', function() {
+	describe('private sandbox configurations', function() {
 		var envar = new Envar();
 		before(function() {
 			envar.setup({
@@ -113,7 +117,7 @@ describe('devebot:config:loader', function() {
 			});
 		});
 
-		it('load application configuration (without customized profile, sandbox)', function() {
+		it('load application configuration (without private sandboxes)', function() {
 			var cfgLoader = new ConfigLoader('app', null, lab.getAppHome('app-tdd-cfg'), [
 				lab.getLibHome('plugin1'),
 				lab.getLibHome('plugin2'),
@@ -122,6 +126,7 @@ describe('devebot:config:loader', function() {
 
 			false && console.log(JSON.stringify(cfgLoader.config, null, 2));
 
+			// Profile configuration
 			assert.deepEqual(
 				lodash.get(cfgLoader,"config.profile.staging"),
 				lodash.get(cfgLoader,"config.profile.default")
@@ -134,6 +139,7 @@ describe('devebot:config:loader', function() {
 					loader(path.join(lab.getDevebotCfgDir(), 'profile.js')),
 					{}));
 
+			// Sandbox configuration
 			assert.deepInclude(
 				lodash.get(cfgLoader,"config.sandbox.staging"),
 				lodash.assign(lodash.get(cfgLoader,"config.sandbox.default"), {
@@ -158,7 +164,59 @@ describe('devebot:config:loader', function() {
 					{}));
 		});
 
-		it('load application configuration with private sandboxes', function() {
+		it('load application configuration with single private sandboxes', function() {
+			var cfgLoader = new ConfigLoader('app', {
+				privateSandboxes: 'bs1'
+			}, lab.getAppHome('app-tdd-cfg'), [
+				lab.getLibHome('plugin1'),
+				lab.getLibHome('plugin2'),
+				lab.getDevebotHome()
+			]);
+
+			false && console.log(JSON.stringify(cfgLoader.config, null, 2));
+
+			// Profile configuration
+			assert.deepEqual(
+				lodash.get(cfgLoader,"config.profile.staging"),
+				lodash.get(cfgLoader,"config.profile.default")
+			);
+
+			assert.deepInclude(
+				lodash.get(cfgLoader,"config.profile.staging"),
+				lodash.defaultsDeep(
+					loader(path.join(lab.getAppCfgDir('app-tdd-cfg', 'newcfg/dev'), 'profile.js')),
+					loader(path.join(lab.getDevebotCfgDir(), 'profile.js')),
+					{}));
+
+			// Sandbox configuration
+			assert.deepInclude(
+				lodash.get(cfgLoader,"config.sandbox.staging"),
+				lodash.assign(lodash.get(cfgLoader,"config.sandbox.default"), {
+					"common": {
+						"bs": 1,
+						"bs1": [ "bootstrap", 1 ],
+						"ev": 2,
+						"ev1": [ "environment variable", 1 ],
+						"ev2": [ "environment variable", 2 ],
+						"name": "bs1"
+					}
+				})
+			);
+
+			assert.deepInclude(
+				lodash.get(cfgLoader,"config.sandbox.staging"),
+				lodash.defaultsDeep(
+					loader(path.join(lab.getAppCfgDir('app-tdd-cfg', 'newcfg/dev'), 'sandbox_bs1.js')),
+					loader(path.join(lab.getAppCfgDir('app-tdd-cfg', 'newcfg/dev'), 'sandbox_ev2.js')),
+					loader(path.join(lab.getAppCfgDir('app-tdd-cfg', 'newcfg/dev'), 'sandbox_ev1.js')),
+					loader(path.join(lab.getAppCfgDir('app-tdd-cfg', 'newcfg/dev'), 'sandbox.js')),
+					loader(path.join(lab.getLibCfgDir('plugin1'), 'sandbox.js')),
+					loader(path.join(lab.getLibCfgDir('plugin2'), 'sandbox.js')),
+					loader(path.join(lab.getDevebotCfgDir(), 'sandbox.js')),
+					{}));
+		});
+
+		it('load application configuration with multiple private sandboxes', function() {
 			var cfgLoader = new ConfigLoader('app', {
 				privateSandboxes: ['bs1', 'bs2']
 			}, lab.getAppHome('app-tdd-cfg'), [
@@ -167,7 +225,7 @@ describe('devebot:config:loader', function() {
 				lab.getDevebotHome()
 			]);
 
-			true && console.log(JSON.stringify(cfgLoader.config, null, 2));
+			false && console.log(JSON.stringify(cfgLoader.config, null, 2));
 
 			// Profile configuration
 			assert.deepEqual(

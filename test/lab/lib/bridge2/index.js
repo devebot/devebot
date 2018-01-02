@@ -11,7 +11,7 @@ var Service = function(params) {
 
   dgx.enabled && dgx(' - params: %s', JSON.stringify(params, null, 2));
 
-  this.logger.log('debug', this.tracer.add({
+  this.logger.has('debug') && this.logger.log('debug', this.tracer.add({
     message: 'configuration',
     data: params
   }).toMessage());

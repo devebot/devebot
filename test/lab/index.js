@@ -1,8 +1,7 @@
 'use strict';
 
-var path = require('path');
-var Devebot = require(path.join(__dirname, '../../index'));
 var lodash = require('lodash');
+var path = require('path');
 
 module.exports = {
 	getApiConfig: function(ext) {
