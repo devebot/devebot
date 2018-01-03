@@ -155,4 +155,4 @@ appLoader.require = function(packageName) {
   return null;
 };
 
-module.exports = appLoader;
+module.exports = global.devebot = global.Devebot = appLoader;
