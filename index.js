@@ -5,14 +5,24 @@ var lodash = require('lodash');
 
 var appinfoLoader = require('./lib/backbone/appinfo-loader.js');
 var ConfigLoader = require('./lib/backbone/config-loader.js');
+var LoggingWrapper = require('./lib/backbone/logging-wrapper.js');
+var chores = require('./lib/utils/chores.js');
 var Runner = require('./lib/runner.js');
 var Server = require('./lib/server.js');
-var debugx = require('./lib/utils/debug.js')('devebot');
+
+var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
+var LX = loggingWrapper.getLogger();
+var LT = loggingWrapper.getTracer();
 
 function appLoader(params) {
   params = params || {};
 
-  debugx.enabled && debugx(' * devebot is started with parameters: %s', JSON.stringify(params, null, 2));
+  LX.has('conlog') && LX.log('conlog', LT.stringify({
+    tags: [ 'constructor-begin' ],
+    text: ' + application loading start ...'
+  }));
+
+  LX.has('conlog') && LX.log('conlog', ' * application parameters: %s', JSON.stringify(params, null, 2));
 
   var appRootPath = params.appRootPath;
   var libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
@@ -22,10 +32,13 @@ function appLoader(params) {
 
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
+  var appOptions = {
+    privateSandbox: params.privateSandbox || params.privateSandboxes
+  };
 
-  debugx.enabled && debugx(' - application name (appName): %s', appName);
+  LX.has('conlog') && LX.log('conlog', ' - application name (appName): %s', appName);
 
-  var configLoader = new ConfigLoader(appName, appRootPath, libRootPaths.concat(topRootPath));
+  var configLoader = new ConfigLoader(appName, appOptions, appRootPath, libRootPaths.concat(topRootPath));
   var config = configLoader.config;
 
   var appRef = lodash.isEmpty(appRootPath) ? [] : {
@@ -58,6 +71,11 @@ function appLoader(params) {
     get: function() { return _server = _server || new Server(config) },
     set: function(value) {}
   });
+
+  LX.has('conlog') && LX.log('conlog', LT.stringify({
+    tags: [ 'constructor-end' ],
+    text: ' - Application loading has done'
+  }));
 
   return app;
 }
@@ -149,9 +167,10 @@ var builtinPackages = ['bluebird', 'lodash', 'injektor'];
 
 appLoader.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
-  if (packageName == 'debug') return require('./lib/utils/debug.js');
+  if (packageName == 'debug') return require('./lib/utils/pinbug.js');
   if (packageName == 'chores') return require('./lib/utils/chores.js');
   if (packageName == 'loader') return require('./lib/utils/loader.js');
+  if (packageName == 'pinbug') return require('./lib/utils/pinbug.js');
   return null;
 };
 
