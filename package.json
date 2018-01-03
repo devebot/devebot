@@ -3,9 +3,6 @@
   "version": "0.2.4",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
-  "engines": {
-    "node": "0.12 || 4 || 5 || 6 || 7 || 8"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/devebot/devebot.git"
@@ -24,11 +21,11 @@
     "bluebird": "^3.5.1",
     "death": "^1.1.0",
     "debug": "^3.1.0",
-    "injektor": "^0.1.14",
+    "injektor": "^0.1.15",
     "jsonschema": "^1.2.2",
     "lodash": "^4.17.4",
-    "logdapter": "^0.0.15",
     "logolite": "^0.1.5",
+    "logzilla": "^0.1.16",
     "uuid": "^3.1.0",
     "ws": "^3.3.2"
   },
