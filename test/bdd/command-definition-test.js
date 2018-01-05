@@ -55,9 +55,16 @@ describe('devebot:command:definition', function() {
 			];
 			assert.includeMembers(cmdNames, appCmdNames);
 
-			assert(cmdNames.length >= fwCmdNames.length + appCmdNames.length);
+			var pluginCmdNames = [
+				'plugin1-routine1', 'plugin1-routine2',
+				'plugin2-routine1', 'plugin2-routine3'
+			];
+			assert.includeMembers(cmdNames, pluginCmdNames);
+
+			assert(cmdNames.length >= fwCmdNames.length + appCmdNames.length + pluginCmdNames.length);
 
 			lodash.forEach(defs.commands, function(cmd) {
+				false && console.log('%s: %s', cmd.name, util.inspect(cmd, {depth: 8}));
 				assert.containsAllKeys(cmd, ['name', 'description', 'options']);
 			});
 			false && console.log('Definition: %s', JSON.stringify(defs, null, 2));

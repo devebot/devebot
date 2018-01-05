@@ -88,6 +88,8 @@ describe('devebot:command:applica:info', function() {
 				var cmd = lodash.keyBy(defs.commands, 'name')['applica-info'];
 				assert.isNotNull(cmd);
 				done();
+			}).catch(function(error) {
+				done(error);
 			});
 		});
 

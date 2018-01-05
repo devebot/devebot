@@ -52,12 +52,9 @@ describe('devebot:runhook:progress:meter', function() {
 				returnedPrgr.push(status.progress);
 			});
 			api.execCommand({
-				name: 'runhook-call',
-				options: {
-					name: 'plugin2-routine1',
-					data: JSON.stringify({ 'number': number }),
-					mode: 'direct'
-				}
+				name: 'plugin2-routine1',
+				data: { 'number': number },
+				mode: 'direct'
 			});
 		}).then(function(result) {
 			debugx.enabled && debugx('Expected progress: %s', JSON.stringify(expectedPrgr));
@@ -91,12 +88,9 @@ describe('devebot:runhook:progress:meter', function() {
 				returnedPrgr.push(status.progress);
 			});
 			api.execCommand({
-				name: 'runhook-call',
-				options: {
-					name: 'plugin2-routine1',
-					data: JSON.stringify({ 'number': number }),
-					mode: 'remote'
-				}
+				name: 'plugin2-routine1',
+				data: { 'number': number },
+				mode: 'remote'
 			});
 		}).then(function(result) {
 			debugx.enabled && debugx('Expected progress: %s', JSON.stringify(expectedPrgr));
@@ -121,12 +115,9 @@ describe('devebot:runhook:progress:meter', function() {
 				resolved(result);
 			});
 			api.execCommand({
-				name: 'runhook-call',
-				options: {
-					name: 'plugin2-routine1',
-					data: JSON.stringify({ 'number': number }),
-					mode: 'remote'
-				}
+				name: 'plugin2-routine1',
+				data: { 'number': number },
+				mode: 'remote'
 			});
 		}).then(function(result) {
 			debugx.enabled && debugx(JSON.stringify(result, null, 2));
@@ -149,12 +140,9 @@ describe('devebot:runhook:progress:meter', function() {
 				resolved(result);
 			});
 			api.execCommand({
-				name: 'runhook-call',
-				options: {
-					name: 'plugin2-routine3',
-					data: JSON.stringify({ 'number': number }),
-					mode: 'remote'
-				}
+				name: 'plugin2-routine3',
+				data: { 'number': number },
+				mode: 'remote'
 			});
 		}).then(function(result) {
 			debugx.enabled && debugx(JSON.stringify(result, null, 2));
@@ -168,8 +156,6 @@ describe('devebot:runhook:progress:meter', function() {
 });
 
 var fibonacci = function fibonacci(n) {
-  if (n == 0 || n == 1)
-    return n;
-  else
-    return fibonacci(n - 1) + fibonacci(n - 2);
+	if (n == 0 || n == 1) return n;
+	return fibonacci(n - 1) + fibonacci(n - 2);
 }

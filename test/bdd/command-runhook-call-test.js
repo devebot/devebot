@@ -76,7 +76,7 @@ describe('devebot:command:runhook:call', function() {
 				resolved(defs);
 			});
 		}).then(function(defs) {
-			var cmd = lodash.keyBy(defs.commands, 'name')['runhook-call'];
+			var cmd = lodash.keyBy(defs.commands, 'name')['plugin1-routine1'];
 			assert.isNotNull(cmd);
 			done();
 		});
@@ -91,11 +91,9 @@ describe('devebot:command:runhook:call', function() {
 				resolved(result);
 			});
 			api.execCommand({
-				name: 'runhook-call',
-				options: {
-					name: 'plugin1-routine1',
-					data: '{ "key": "hello", "value": "world" }'
-				}
+				name: 'plugin1-routine1',
+				options: {},
+				data: { "key": "hello", "value": "world" }
 			});
 		}).then(function(result) {
 			debugx.enabled && debugx(JSON.stringify(result, null, 2));
@@ -128,12 +126,8 @@ describe('devebot:command:runhook:call', function() {
 				resolved(result);
 			});
 			api.execCommand({
-				name: 'runhook-call',
-				options: {
-					name: 'plugin1-routine2',
-					mode: 'direct',
-					data: '{ "key": "hello", "value": "world" }'
-				}
+				name: 'plugin1-routine2',
+				data: { "key": "hello", "value": "world" }
 			});
 		}).then(function(result) {
 			debugx.enabled && debugx(JSON.stringify(result, null, 2));

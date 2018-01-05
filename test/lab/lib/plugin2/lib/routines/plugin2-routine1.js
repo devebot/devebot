@@ -17,9 +17,10 @@ var runhookDialect = {
           "maximum": 100
         }
       }
-    }
+    },
+    options: []
   },
-  handler: function(opts, ctx) {
+  handler: function(opts, payload, ctx) {
     var LX = this.loggingFactory.getLogger();
     var LT = this.loggingFactory.getTracer();
 
@@ -29,7 +30,7 @@ var runhookDialect = {
       text: ' - runhook start'
     }));
 
-    var number = opts.number;
+    var number = payload.number;
     var result = fibonacci(number, number, ctx.progressMeter);
 
     var output = Promise.resolve([{

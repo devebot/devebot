@@ -7,13 +7,13 @@ var commandConfig;
 
 var commandObject = {
   info: {
-  	description: 'Main Application Command1',
+  	description: 'Main Application Command2',
     options: []
   },
-  handler: function(opts, ctx) {
+  handler: function(opts, payload, ctx) {
     return Promise.resolve([{
         type: 'json',
-        title: 'Main Application Command1',
+        title: 'Main Application Command2',
         data: {}
     }]);
   }

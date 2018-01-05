@@ -11,7 +11,7 @@ var runhookDialect = {
     description: 'Plugin2 - Routine2',
     options: []
   },
-  handler: function(opts, ctx) {
+  handler: function(opts, payload, ctx) {
     return Promise.resolve([{
         type: 'json',
         title: 'Plugin2 - Routine2',
