@@ -47,10 +47,10 @@ describe('devebot:command:system:info', function() {
 
 	it('invoked [system-info] command return correct result', function(done) {
 		new Promise(function(resolved, rejected) {
-			api.on('failure', function(result) {
+			api.on('failed', function(result) {
 				rejected(result);
 			});
-			api.on('success', function(result) {
+			api.on('completed', function(result) {
 				resolved(result);
 			});
 			api.execCommand({

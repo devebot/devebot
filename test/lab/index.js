@@ -13,6 +13,17 @@ module.exports = {
 			authen: {
 				token_key: 'devebot',
 				token_secret: 's3cr3tpa$$w0rd'
+			},
+			stateMap: {
+				"definition": "definition",
+				"started": "started",
+				"progress": "progress",
+				"timeout": "timeout",
+				"failed": "failed",
+				"cancelled": "cancelled",
+				"completed": "completed",
+				"done": "done",
+				"noop": "noop"
 			}
 		}, ext);
 	},

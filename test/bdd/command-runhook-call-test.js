@@ -84,10 +84,10 @@ describe('devebot:command:runhook:call', function() {
 
 	it('remote runhook should return correct result', function(done) {
 		new Promise(function(resolved, rejected) {
-			api.on('failure', function(result) {
+			api.on('failed', function(result) {
 				rejected(result);
 			});
-			api.on('success', function(result) {
+			api.on('completed', function(result) {
 				resolved(result);
 			});
 			api.execCommand({
@@ -119,10 +119,10 @@ describe('devebot:command:runhook:call', function() {
 
 	it('direct runhook should return correct result', function(done) {
 		new Promise(function(resolved, rejected) {
-			api.on('failure', function(result) {
+			api.on('failed', function(result) {
 				rejected(result);
 			});
-			api.on('success', function(result) {
+			api.on('completed', function(result) {
 				resolved(result);
 			});
 			api.execCommand({
