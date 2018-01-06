@@ -32,7 +32,7 @@ describe('devebot:configuration', function() {
 						"name": "devebot",
 						"description": "Nodejs Microservice Framework",
 						"homepage": "https://github.com/devebot/devebot#readme",
-						"author": "Hung Pham <pnhung177@acegik.net> (http://acegik.net/blog)",
+						"author": "Hung Pham <pnhung177@acegik.net>",
 						"license": "GPL-3.0"
 					}
 				});

@@ -42,6 +42,7 @@ describe('devebot:runhook:progress:meter', function() {
 		});
 		var returnedPrgr = [];
 		new Promise(function(resolved, rejected) {
+			debugx.enabled && debugx('Invoke the command');
 			api.on('failure', function(result) {
 				rejected(result);
 			});

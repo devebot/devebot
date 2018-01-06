@@ -11,7 +11,7 @@
     "devebot",
     "framework"
   ],
-  "author": "Hung Pham <pnhung177@acegik.net> (http://acegik.net/blog)",
+  "author": "Hung Pham <pnhung177@acegik.net>",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/devebot/devebot/issues"
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "devebot-api": "^0.2.0",
+    "devebot-api": "^0.2.1",
     "minimist": "^1.2.0",
     "mocha": "^3.5.3",
     "nock": "^7.2.2",

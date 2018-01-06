@@ -11,7 +11,7 @@ var runhookDialect = {
     options: []
   },
   mode: 'remote',
-  handler: function(opts, ctx) {
+  handler: function(opts, payload, ctx) {
     var LX = this.loggingFactory.getLogger();
     var LT = this.loggingFactory.getTracer();
 
