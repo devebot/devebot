@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "repository": {
@@ -24,8 +24,8 @@
     "injektor": "^0.1.15",
     "jsonschema": "^1.2.2",
     "lodash": "^4.17.4",
-    "logolite": "^0.1.5",
-    "logzilla": "^0.1.16",
+    "logolite": "^0.1.6",
+    "logzilla": "^0.1.17",
     "uuid": "^3.1.0",
     "ws": "^3.3.2"
   },

@@ -28,7 +28,7 @@ describe('devebot:configuration', function() {
 					"author": "devebot",
 					"license": "ISC",
 					"framework": {
-						"version": "0.2.4",
+						"version": "0.2.5",
 						"name": "devebot",
 						"description": "Nodejs Microservice Framework",
 						"homepage": "https://github.com/devebot/devebot#readme",
