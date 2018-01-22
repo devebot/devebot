@@ -17,7 +17,7 @@ var LT = loggingWrapper.getTracer();
 function appLoader(params) {
   params = params || {};
 
-  LX.has('conlog') && LX.log('conlog', LT.stringify({
+  LX.has('conlog') && LX.log('conlog', LT.toMessage({
     tags: [ 'constructor-begin' ],
     text: ' + application loading start ...'
   }));
@@ -73,7 +73,7 @@ function appLoader(params) {
     set: function(value) {}
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.stringify({
+  LX.has('conlog') && LX.log('conlog', LT.toMessage({
     tags: [ 'constructor-end' ],
     text: ' - Application loading has done'
   }));
