@@ -33,6 +33,7 @@ function appLoader(params) {
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
   var appOptions = {
+    privateProfile: params.privateProfile || params.privateProfiles,
     privateSandbox: params.privateSandbox || params.privateSandboxes
   };
 
