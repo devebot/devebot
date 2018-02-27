@@ -17,7 +17,7 @@ var LT = loggingWrapper.getTracer();
 function appLoader(params) {
   params = params || {};
 
-  LX.has('conlog') && LX.log('conlog', LT.stringify({
+  LX.has('conlog') && LX.log('conlog', LT.toMessage({
     tags: [ 'constructor-begin' ],
     text: ' + application loading start ...'
   }));
@@ -33,6 +33,7 @@ function appLoader(params) {
   var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
   var appName = params.appName || appinfo.name || 'devebot-application';
   var appOptions = {
+    privateProfile: params.privateProfile || params.privateProfiles,
     privateSandbox: params.privateSandbox || params.privateSandboxes
   };
 
@@ -72,7 +73,7 @@ function appLoader(params) {
     set: function(value) {}
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.stringify({
+  LX.has('conlog') && LX.log('conlog', LT.toMessage({
     tags: [ 'constructor-end' ],
     text: ' - Application loading has done'
   }));

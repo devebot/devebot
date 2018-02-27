@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "repository": {
@@ -11,8 +11,12 @@
     "devebot",
     "framework"
   ],
-  "author": "Hung Pham <pnhung177@acegik.net> (http://acegik.net/blog)",
-  "license": "GPL-3.0",
+  "author": {
+    "name": "Devebot",
+    "email": "contact@devebot.com",
+    "url": "https://github.com/devebot"
+  },
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/devebot/devebot/issues"
   },
@@ -20,22 +24,11 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "death": "^1.1.0",
-    "debug": "^3.1.0",
     "injektor": "^0.1.15",
     "jsonschema": "^1.2.2",
     "lodash": "^4.17.4",
-    "logolite": "^0.1.5",
-    "logzilla": "^0.1.16",
-    "uuid": "^3.1.0",
+    "logolite": "^0.1.6",
+    "logzilla": "^0.1.17",
     "ws": "^3.3.2"
-  },
-  "devDependencies": {
-    "chai": "^4.1.2",
-    "devebot-api": "^0.2.0",
-    "minimist": "^1.2.0",
-    "mocha": "^3.5.3",
-    "nock": "^7.2.2",
-    "rewire": "^2.5.1",
-    "sinon": "^1.17.3"
   }
 }
