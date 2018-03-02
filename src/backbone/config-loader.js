@@ -11,8 +11,8 @@ var errorHandler = require('./error-handler').instance;
 var LoggingWrapper = require('./logging-wrapper');
 
 var CONFIG_SUBDIR = '/config';
-var CONFIG_PROFILE_NAME = process.env.NODE_DEVEBOT_CONFIG_PROFILE_NAME || 'profile';
-var CONFIG_SANDBOX_NAME = process.env.NODE_DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox';
+var CONFIG_PROFILE_NAME = process.env.DEVEBOT_CONFIG_PROFILE_NAME || 'profile';
+var CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox';
 var CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 var CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
@@ -125,12 +125,22 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     return content;
   }
 
-  var readVariable = function(appLabel, varName) {
-    var varLabel = util.format('NODE_%s_%s', appLabel, CONFIG_VAR_NAMES[varName]);
+  var readVariable = function readVariable(appLabel, varName) {
+    var varLabel = util.format('%s_%s', appLabel, CONFIG_VAR_NAMES[varName]);
     if (!process.env[varLabel]) {
-      LX.has('conlog') && LX.log('conlog', ' - %s not found. Use NODE_DEVEBOT_%s instead', varLabel, CONFIG_VAR_NAMES[varName]);
+      LX.has('conlog') && LX.log('conlog', ' - %s not found. Use DEVEBOT_%s instead', varLabel, CONFIG_VAR_NAMES[varName]);
     }
-    var value = process.env[varLabel] || process.env['NODE_DEVEBOT_' + CONFIG_VAR_NAMES[varName]];
+    var value = process.env[varLabel] || process.env['DEVEBOT_' + CONFIG_VAR_NAMES[varName]];
+
+    if (lodash.isUndefined(value)) {
+      LX.has('conlog') && LX.log('conlog', ' - check the old format environment variable with NODE_ prefix');
+      varLabel = util.format('NODE_%s_%s', appLabel, CONFIG_VAR_NAMES[varName]);
+      if (!process.env[varLabel]) {
+        LX.has('conlog') && LX.log('conlog', ' - %s not found. Use NODE_DEVEBOT_%s instead', varLabel, CONFIG_VAR_NAMES[varName]);
+      }
+      value = process.env[varLabel] || process.env['NODE_DEVEBOT_' + CONFIG_VAR_NAMES[varName]];
+    }
+
     LX.has('conlog') && LX.log('conlog', " - %s's value: %s", varLabel, value);
     return value;
   }

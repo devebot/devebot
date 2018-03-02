@@ -72,11 +72,11 @@ chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
 };
 
 chores.stringKebabCase = function kebabCase(str) {
-  return (str || '').toLowerCase().replace(' ', '-');
+  return (str || '').toLowerCase().replace(/\s/g, '-');
 };
 
 chores.stringLabelCase = function labelCase(str) {
-  return (str || '').toUpperCase().replace('-', '_');
+  return (str || '').toUpperCase().replace(/-/g, '_');
 };
 
 chores.stringCamelCase = function camelCase(str) {

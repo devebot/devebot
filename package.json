@@ -14,8 +14,8 @@
   "scripts": {
     "build": "babel src -d lib",
     "prepublish": "npm run build",
-    "bdd": "npm run build && mocha --recursive test/bdd/*-test.js",
-    "tdd": "npm run build && mocha --recursive test/tdd/*-test.js"
+    "pretest": "npm run build",
+    "test": "mocha --recursive test/**/*-test.js"
   },
   "repository": {
     "type": "git",
