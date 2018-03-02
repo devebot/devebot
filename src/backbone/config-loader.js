@@ -126,22 +126,19 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
   }
 
   var readVariable = function readVariable(appLabel, varName) {
-    var varLabel = util.format('%s_%s', appLabel, CONFIG_VAR_NAMES[varName]);
-    if (!process.env[varLabel]) {
-      LX.has('conlog') && LX.log('conlog', ' - %s not found. Use DEVEBOT_%s instead', varLabel, CONFIG_VAR_NAMES[varName]);
+    let varLabels = [
+      util.format('%s_%s', appLabel, varName),
+      'DEVEBOT_' + varName,
+      util.format('NODE_%s_%s', appLabel, varName),
+      'NODE_DEVEBOT_' + varName
+    ];
+    let value, varLabel;
+    for(const varLabel of varLabels) {
+      value = process.env[varLabel];
+      LX.has('conlog') && LX.log('conlog', ' - Get value of %s: %s', varLabel, value);
+      if (value) break;
     }
-    var value = process.env[varLabel] || process.env['DEVEBOT_' + CONFIG_VAR_NAMES[varName]];
-
-    if (lodash.isUndefined(value)) {
-      LX.has('conlog') && LX.log('conlog', ' - check the old format environment variable with NODE_ prefix');
-      varLabel = util.format('NODE_%s_%s', appLabel, CONFIG_VAR_NAMES[varName]);
-      if (!process.env[varLabel]) {
-        LX.has('conlog') && LX.log('conlog', ' - %s not found. Use NODE_DEVEBOT_%s instead', varLabel, CONFIG_VAR_NAMES[varName]);
-      }
-      value = process.env[varLabel] || process.env['NODE_DEVEBOT_' + CONFIG_VAR_NAMES[varName]];
-    }
-
-    LX.has('conlog') && LX.log('conlog', " - %s's value: %s", varLabel, value);
+    LX.has('conlog') && LX.log('conlog', " - Final value of %s: %s", varLabels[0], value);
     return value;
   }
 
@@ -193,7 +190,7 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
   var config = loadConfig
       .bind(null, appName, appOptions, appRootDir, libRootDirs)
       .apply(null, Object.keys(CONFIG_VAR_NAMES).map(function(varName) {
-        return readVariable(label, varName);
+        return readVariable(label, CONFIG_VAR_NAMES[varName]);
       }));
 
   Object.defineProperty(this, 'config', {
