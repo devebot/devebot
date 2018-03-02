@@ -1,6 +1,7 @@
 .idea/
 node_modules/
 doc/
+lib/
 log/
 *.log
 *test.sh

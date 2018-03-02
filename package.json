@@ -1,8 +1,22 @@
 {
   "name": "devebot",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
+  "directories": {
+    "lib": "lib/"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "lib/"
+  ],
+  "scripts": {
+    "build": "babel src -d lib",
+    "prepublish": "npm run build",
+    "bdd": "npm run build && mocha --recursive test/bdd/*-test.js",
+    "tdd": "npm run build && mocha --recursive test/tdd/*-test.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/devebot/devebot.git"
@@ -30,5 +44,10 @@
     "logzilla": "^0.1.17",
     "schemato": "^0.1.2",
     "ws": "^3.3.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "mocha": "^4.1.0"
   }
 }
