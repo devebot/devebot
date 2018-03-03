@@ -26,6 +26,12 @@ var constx = {
       error: 'red'
     }
   },
+  TRACER: {
+    SECTOR: {
+      ID_FIELD: 'blockId',
+      NAME_FIELD: 'blockName'
+    }
+  },
   ROUTINE: {
     ROOT_KEY: 'routine',
     SCRIPT_DIR: '/lib/routines',

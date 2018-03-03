@@ -4,6 +4,7 @@ var lodash = require('lodash');
 var LogAdapter = require('logolite').LogAdapter;
 var LogTracer = require('logolite').LogTracer;
 var chores = require('../utils/chores.js');
+var constx = require('../utils/constx.js');
 
 var Service = function(sectorName) {
   sectorName = sectorName || chores.getBlockRef(__filename);
@@ -21,7 +22,7 @@ var Service = function(sectorName) {
     if (__tracer == null) {
       var parentTracer = LogTracer.ROOT;
       __tracer = parentTracer.branch({
-        key: chores.DEFAULT_SECTOR_ID_FIELD,
+        key: constx.TRACER.SECTOR.ID_FIELD,
         value: LogTracer.getLogID()
       });
 
@@ -29,7 +30,7 @@ var Service = function(sectorName) {
         parentKey: parentTracer.key,
         parentValue: parentTracer.value
       }
-      blockInfo[chores.DEFAULT_SECTOR_NAME_FIELD] = sectorName;
+      blockInfo[constx.TRACER.SECTOR.NAME_FIELD] = sectorName;
 
       var rootLogger = this.getLogger();
       rootLogger.has('info') && rootLogger.log('info', __tracer.add(blockInfo)

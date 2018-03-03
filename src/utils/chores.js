@@ -140,9 +140,6 @@ chores.getBlockRef = function(filename, blockScope) {
   return blockScope.concat(blockName).join(chores.getSeparator());
 }
 
-chores.DEFAULT_SECTOR_ID_FIELD = 'blockId';
-chores.DEFAULT_SECTOR_NAME_FIELD = 'blockName';
-
 chores.getSeparator = function() {
   return '/';
 };

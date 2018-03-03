@@ -86,7 +86,7 @@ var LoggingFactory = function(args) {
     var parentTracer = args.parent.getTracer();
     if (subTracer == null) {
       subTracer = parentTracer.branch({
-        key: chores.DEFAULT_SECTOR_ID_FIELD,
+        key: constx.TRACER.SECTOR.ID_FIELD,
         value: args.sectorId || LogTracer.getLogID()
       });
 
@@ -95,7 +95,7 @@ var LoggingFactory = function(args) {
         parentValue: parentTracer.value
       }
       if (args.sectorName) {
-        blockInfo[chores.DEFAULT_SECTOR_NAME_FIELD] = args.sectorName;
+        blockInfo[constx.TRACER.SECTOR.NAME_FIELD] = args.sectorName;
       }
       var rootLogger = args.root.getLogger();
       rootLogger.has('info') && rootLogger.log('info', subTracer.add(blockInfo)
