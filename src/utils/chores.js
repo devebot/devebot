@@ -10,7 +10,9 @@ var constx = require('./constx.js');
 var loader = require('./loader.js');
 var debugx = require('./pinbug.js')('devebot:utils:chores');
 
-let store = {};
+let store = {
+  injektorContext: { scope: 'devebot' }
+};
 var chores = {};
 
 chores.getUUID = function() {
@@ -150,16 +152,14 @@ chores.getFullname = function(parts, separator) {
       .join(separator || chores.getSeparator());
 }
 
-var injektorContext = { scope: 'devebot' };
+chores.injektorContext = store.injektorContext;
 
-chores.injektorContext = injektorContext;
-
-chores.isVerboseForced = function(moduleId) {
+chores.isVerboseForced = function(moduleId, cfg) {
   if (!store.fvm) {
     let fvstr = process.env.DEVEBOT_FORCING_VERBOSE || '';
     store.fvm = fvstr.split(',');
   }
-  return store.fvm.indexOf(moduleId) >= 0;
+  return (store.fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
 }
 
 module.exports = chores;

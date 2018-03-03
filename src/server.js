@@ -84,8 +84,9 @@ function Server(params) {
         var serverInstance = server.listen(serverPort, serverHost, function () {
           var host = serverInstance.address().address;
           var port = serverInstance.address().port;
-          (devebotCfg && devebotCfg.verbose !== false || chores.isVerboseForced('devebot')) &&
-          console.log(appName + ' is listening at %s://%s:%s%s', sslEnabled?'wss':'ws', host, port, appRootUrl);
+          chores.isVerboseForced('devebot', devebotCfg) &&
+              console.log(appName + ' is listening at %s://%s:%s%s', 
+                  sslEnabled?'wss':'ws', host, port, appRootUrl);
           onResolved(serverInstance);
         });
       });
@@ -141,8 +142,8 @@ function Server(params) {
         tags: [ 'devebot-server-close', 'webserver-stopped' ],
         text: 'webserver has stopped'
       }));
-      (devebotCfg && devebotCfg.verbose !== false || chores.isVerboseForced('devebot')) &&
-      console.log(appName + ' has been closed');
+      chores.isVerboseForced('devebot', devebotCfg) &&
+          console.log(appName + ' has been closed');
       return Promise.resolve();
     });
   }
