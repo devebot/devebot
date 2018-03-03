@@ -134,7 +134,7 @@ var transformConfig = function(profileConfig) {
 };
 
 Service.argumentSchema = {
-  "id": "loggingFactory",
+  "$id": "loggingFactory",
   "type": "object",
   "properties": {
     "profileConfig": {

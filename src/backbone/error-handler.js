@@ -107,7 +107,7 @@ function ErrorHandler(params) {
 }
 
 ErrorHandler.argumentSchema = {
-  "id": "errorHandler",
+  "$id": "errorHandler",
   "type": "object",
   "properties": {}
 };

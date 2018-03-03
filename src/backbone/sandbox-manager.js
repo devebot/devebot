@@ -236,7 +236,7 @@ var Service = function(params) {
 };
 
 Service.argumentSchema = {
-  "id": "sandboxManager",
+  "$id": "sandboxManager",
   "type": "object",
   "properties": {
     "bridgeLoader": {

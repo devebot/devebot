@@ -34,7 +34,7 @@ function SchemaValidator(params) {
 }
 
 SchemaValidator.argumentSchema = {
-  "id": "schemaValidator",
+  "$id": "schemaValidator",
   "type": "object",
   "properties": {
     "loggingFactory": {

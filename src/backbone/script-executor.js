@@ -91,7 +91,7 @@ var ScriptExecutor = function(params) {
 };
 
 ScriptExecutor.argumentSchema = {
-  "id": "scriptExecutor",
+  "$id": "scriptExecutor",
   "type": "object",
   "properties": {
     "appinfo": {

@@ -264,7 +264,7 @@ function PluginLoader(params) {
     wrapperConstructor.prototype = Object.create(gadgetConstructor.prototype);
 
     var wrappedArgumentSchema = {
-      "id": wrapperName,
+      "$id": wrapperName,
       "type": "object",
       "properties": {
         "sandboxName": {
@@ -320,7 +320,7 @@ function PluginLoader(params) {
 }
 
 PluginLoader.argumentSchema = {
-  "id": "pluginLoader",
+  "$id": "pluginLoader",
   "type": "object",
   "properties": {
     "pluginRefs": {

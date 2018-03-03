@@ -67,7 +67,7 @@ var Service = function(params) {
 };
 
 Service.argumentSchema = {
-  "id": "jobqueueBinder",
+  "$id": "jobqueueBinder",
   "type": "object",
   "properties": {
     "sandboxName": {

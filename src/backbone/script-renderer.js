@@ -145,7 +145,7 @@ var WebSocketOutlet = function(params) {
 util.inherits(WebSocketOutlet, AbstractOutlet);
 
 ScriptRenderer.argumentSchema = {
-  "id": "scriptRenderer",
+  "$id": "scriptRenderer",
   "type": "object",
   "properties": {
     "loggingFactory": {

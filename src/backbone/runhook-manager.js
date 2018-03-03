@@ -252,7 +252,7 @@ var Service = function(params) {
 };
 
 Service.argumentSchema = {
-  "id": "runhookManager",
+  "$id": "runhookManager",
   "type": "object",
   "properties": {
     "sandboxName": {

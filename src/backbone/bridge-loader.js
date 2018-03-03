@@ -203,7 +203,7 @@ function BridgeLoader(params) {
     dialectConstructor.prototype = Object.create(bridgeConstructor.prototype);
 
     dialectConstructor.argumentSchema = {
-      "id": dialectName,
+      "$id": dialectName,
       "type": "object",
       "properties": {
         "sandboxName": {
@@ -286,7 +286,7 @@ function BridgeLoader(params) {
 }
 
 BridgeLoader.argumentSchema = {
-  "id": "bridgeLoader",
+  "$id": "bridgeLoader",
   "type": "object",
   "properties": {
     "bridgeRefs": {
