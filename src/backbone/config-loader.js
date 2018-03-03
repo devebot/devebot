@@ -128,9 +128,9 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
   var readVariable = function readVariable(appLabel, varName) {
     let varLabels = [
       util.format('%s_%s', appLabel, varName),
-      'DEVEBOT_' + varName,
+      util.format('%s_%s', 'DEVEBOT', varName),
       util.format('NODE_%s_%s', appLabel, varName),
-      'NODE_DEVEBOT_' + varName
+      util.format('NODE_%s_%s', 'DEVEBOT', varName)
     ];
     let value, varLabel;
     for(const varLabel of varLabels) {
