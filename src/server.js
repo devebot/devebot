@@ -43,7 +43,7 @@ function Server(params) {
   var appRootUrl = '/' + chores.stringKebabCase(appName);
 
   // devebot configures
-  var devebotCfg = lodash.get(params, ['profile', 'staging', 'devebot'], {});
+  var devebotCfg = lodash.get(params, ['profile', 'mixture', 'devebot'], {});
 
   var tunnelCfg = lodash.get(devebotCfg, ['tunnel'], {});
   var sslEnabled = tunnelCfg.enabled && tunnelCfg.key_file && tunnelCfg.crt_file;

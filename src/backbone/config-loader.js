@@ -84,18 +84,18 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
       });
 
       LX.has('conlog') && LX.log('conlog', ' + load the custom config of %s', configType);
-      config[configType]['staging'] = {};
+      config[configType]['mixture'] = {};
 
-      var stagingNames = filterConfigBy(configInfos, includedNames, configType);
+      var mixtureNames = filterConfigBy(configInfos, includedNames, configType);
 
       config[configType]['names'] = ['default'];
       if (configDir) {
-        config[configType]['staging'] = lodash.reduce(stagingNames, function(accum, stagingItem) {
-          var configFile = path.join(configDir, stagingItem.join('_') + '.js');
+        config[configType]['mixture'] = lodash.reduce(mixtureNames, function(accum, mixtureItem) {
+          var configFile = path.join(configDir, mixtureItem.join('_') + '.js');
           LX.has('conlog') && LX.log('conlog', ' - load the environment config: %s', configFile);
           var configObj = lodash.defaultsDeep(loadConfigFile(configFile), accum);
           if (configObj.disabled) return accum;
-          config[configType]['names'].push(stagingItem[1]);
+          config[configType]['names'].push(mixtureItem[1]);
           return configObj;
         }, lodash.cloneDeep(config[configType]['default']));
       }
