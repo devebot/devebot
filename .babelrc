@@ -1,6 +1,5 @@
 {
   "plugins": [
-    "minify-mangle-names",
     ["transform-async-to-module-method", {
       "module": "bluebird",
       "method": "coroutine"
@@ -12,5 +11,12 @@
         "node": "4.0"
       }
     }]
-  ]
+  ],
+  "env": {
+    "production": {
+      "plugins": [
+        "minify-mangle-names"
+      ]
+    }
+  }
 }
