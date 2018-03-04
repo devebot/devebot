@@ -39,7 +39,7 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
 
     var config = {};
 
-    var configDir = resolveConfigDir(customDir, appName, appRootDir, customEnv);
+    var configDir = resolveConfigDir(appName, appRootDir, customDir, customEnv);
 
     LX.has('conlog') && LX.log('conlog', LT.add({
       configDir: configDir
@@ -47,12 +47,10 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
       text: ' - configDir: {configDir}'
     }));
 
-    if (configDir === null) {
-      LX.has('conlog') && LX.log('conlog', 'Run in production mode, but configDir not found');
-      errorHandler.exit(1);
+    var configFiles = [];
+    if (configDir) {
+      configFiles = chores.filterFiles(configDir, '.*\.js');
     }
-
-    var configFiles = chores.filterFiles(configDir, '.*\.js');
     var configInfos = lodash.map(configFiles, function(file) {
       return file.replace('.js', '').split(/[_]/);
     });
@@ -72,13 +70,15 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     CONFIG_TYPES.forEach(function(configType) {
       config[configType] = config[configType] || {};
 
-      var defaultFile = path.join(configDir, configType + '.js');
-      LX.has('conlog') && LX.log('conlog', ' + load the default config: %s', defaultFile);
-      config[configType]['default'] = loadConfigFile(defaultFile);
+      if (configDir) {
+        var defaultFile = path.join(configDir, configType + '.js');
+        LX.has('conlog') && LX.log('conlog', ' + load the default config: %s', defaultFile);
+        config[configType]['default'] = loadConfigFile(defaultFile);
+      }
 
       LX.has('conlog') && LX.log('conlog', ' + load the default config from plugins');
       libRootDirs.forEach(function(libRootDir) {
-        defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
+        var defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
         config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
           loadConfigFile(defaultFile));
       });
@@ -89,14 +89,16 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
       var stagingNames = filterConfigBy(configInfos, includedNames, configType);
 
       config[configType]['names'] = ['default'];
-      config[configType]['staging'] = lodash.reduce(stagingNames, function(accum, stagingItem) {
-        var configFile = path.join(configDir, stagingItem.join('_') + '.js');
-        LX.has('conlog') && LX.log('conlog', ' - load the environment config: %s', configFile);
-        var configObj = lodash.defaultsDeep(loadConfigFile(configFile), accum);
-        if (configObj.disabled) return accum;
-        config[configType]['names'].push(stagingItem[1]);
-        return configObj;
-      }, lodash.cloneDeep(config[configType]['default']));
+      if (configDir) {
+        config[configType]['staging'] = lodash.reduce(stagingNames, function(accum, stagingItem) {
+          var configFile = path.join(configDir, stagingItem.join('_') + '.js');
+          LX.has('conlog') && LX.log('conlog', ' - load the environment config: %s', configFile);
+          var configObj = lodash.defaultsDeep(loadConfigFile(configFile), accum);
+          if (configObj.disabled) return accum;
+          config[configType]['names'].push(stagingItem[1]);
+          return configObj;
+        }, lodash.cloneDeep(config[configType]['default']));
+      }
 
       LX.has('conlog') && LX.log('conlog', ' - environment config object: %s',
           util.inspect(config[configType], {depth: 8}));
@@ -142,16 +144,24 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     return value;
   }
 
-  var resolveConfigDir = function(configDir, appName, appRootDir, configEnv) {
+  var resolveConfigDir = function(appName, appRootDir, configDir, configEnv) {
     var dirPath = configDir;
     if (lodash.isEmpty(dirPath)) {
       if (['production'].indexOf(process.env.NODE_ENV) >= 0) {
         dirPath = chores.assertDir(appName);
+        if (dirPath == null) {
+          LX.has('conlog') && LX.log('conlog', LT.toMessage({
+            text: 'Run in production mode, but config directory not found'
+          }));
+          errorHandler.exit(1);
+        }
       } else {
-        dirPath = path.join(appRootDir, CONFIG_SUBDIR);
+        if (!lodash.isEmpty(appRootDir)) {
+          dirPath = path.join(appRootDir, CONFIG_SUBDIR);
+        }
       }
     }
-    if (!lodash.isEmpty(configEnv)) {
+    if (!lodash.isEmpty(dirPath) && !lodash.isEmpty(configEnv)) {
       dirPath = path.join(dirPath, configEnv);
     }
     return dirPath;
