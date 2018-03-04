@@ -10,19 +10,29 @@ var chores = require('./utils/chores.js');
 var Runner = require('./runner.js');
 var Server = require('./server.js');
 
-var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
-var LX = loggingWrapper.getLogger();
-var LT = loggingWrapper.getTracer();
+function runLoggingWrapper() {
+  let loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
+  return {
+    logger: loggingWrapper.getLogger(),
+    tracer: loggingWrapper.getTracer()
+  }
+}
 
 function appLoader(params) {
   params = params || {};
 
+  let { logger: LX, tracer: LT } = runLoggingWrapper();
+
   LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+    tags: [ 'constructor-begin', 'appLoader' ],
     text: ' + application loading start ...'
   }));
 
-  LX.has('conlog') && LX.log('conlog', ' * application parameters: %s', JSON.stringify(params, null, 2));
+  LX.has('conlog') && LX.log('conlog', LT.add({
+    appParams: params
+  }).toMessage({
+    text: ' * application parameters: ${appParams}'
+  }));
 
   var appRootPath = params.appRootPath;
   var libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
@@ -37,7 +47,11 @@ function appLoader(params) {
     privateSandbox: params.privateSandbox || params.privateSandboxes
   };
 
-  LX.has('conlog') && LX.log('conlog', ' - application name (appName): %s', appName);
+  LX.has('conlog') && LX.log('conlog', LT.add({
+    appName: appName
+  }).toMessage({
+    text: ' - application name (appName): ${appName}'
+  }));
 
   var configLoader = new ConfigLoader(appName, appOptions, appRootPath, libRootPaths.concat(topRootPath));
   var config = configLoader.config;
@@ -45,7 +59,7 @@ function appLoader(params) {
   var appRef = lodash.isEmpty(appRootPath) ? [] : {
     type: 'application',
     name: appName,
-    path: path.join(appRootPath, 'app.js')
+    path: path.join(appRootPath, 'index.js')
   };
 
   var devebotRef = {
@@ -74,7 +88,7 @@ function appLoader(params) {
   });
 
   LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+    tags: [ 'constructor-end', 'appLoader' ],
     text: ' - Application loading has done'
   }));
 
@@ -164,7 +178,7 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
 
-var builtinPackages = ['bluebird', 'lodash', 'injektor'];
+var builtinPackages = ['bluebird', 'lodash', 'injektor', 'logolite', 'schemato'];
 
 appLoader.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
