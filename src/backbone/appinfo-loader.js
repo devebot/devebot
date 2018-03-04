@@ -7,7 +7,7 @@ var constx = require('../utils/constx.js');
 
 var LoggingWrapper = require('./logging-wrapper');
 
-function appinfoLoader(appRootPath, libRootPaths, botRootPath) {
+function appinfoLoader(appRootPath, libRootPaths, topRootPath) {
   var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
@@ -15,17 +15,17 @@ function appinfoLoader(appRootPath, libRootPaths, botRootPath) {
   if (LX.has('conlog')) {
     LX.log('conlog', ' + load the application package at: %s', appRootPath);
     LX.log('conlog', ' - load the layerware packages at: %s', JSON.stringify(libRootPaths, null, 2));
-    LX.log('conlog', ' - load the framework package at: %s', botRootPath);
+    LX.log('conlog', ' - load the framework package at: %s', topRootPath);
   }
 
-  var appinfo = chores.loadPkginfo(appRootPath);
+  var appinfo = chores.loadPackageInfo(appRootPath);
 
   if (!lodash.isArray(libRootPaths)) libRootPaths = [];
   appinfo.layerware = libRootPaths.map(function(libRootPath) {
-    return chores.loadPkginfo(libRootPath);
+    return chores.loadPackageInfo(libRootPath);
   });
 
-  appinfo.framework = chores.loadPkginfo(botRootPath);
+  appinfo.framework = chores.loadPackageInfo(topRootPath);
 
   LX.has('conlog') && LX.log('conlog', ' - appinfo object: %s', JSON.stringify(appinfo, null, 2));
 

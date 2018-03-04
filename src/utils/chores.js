@@ -19,7 +19,7 @@ chores.getUUID = function() {
   return uuidv4();
 }
 
-chores.loadPkginfo = function(pkgRootPath) {
+chores.loadPackageInfo = function(pkgRootPath) {
   try {
     return lodash.pick(JSON.parse(fs.readFileSync(pkgRootPath + '/package.json', 'utf8')),
       constx.APPINFO.FIELDS);
