@@ -7,7 +7,6 @@ var util = require('util');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
-var onDeath = require('death');
 var WebSocketServer = require('ws').Server;
 
 var Kernel = require('./kernel.js');
@@ -123,16 +122,16 @@ function Server(params) {
       return new Promise(function(onResolved, onRejected) {
         var timeoutHandler = setTimeout(function() {
           LX.has('conlog') && LX.log('conlog', 'Timeout closing Server');
-          onResolved();
-        }, 10000);
+          onRejected();
+        }, 60000);
         if (typeof(serverCloseEvent) === 'function') {
           server.removeListener("close", serverCloseEvent);
         }
         server.on("close", serverCloseEvent = function() {
-          LX.has('conlog') && LX.log('conlog', 'Server is closing ...');
+          LX.has('conlog') && LX.log('conlog', 'HTTP Server is invoked');
         });
         server.close(function() {
-          LX.has('conlog') && LX.log('conlog', 'Server has been closed');
+          LX.has('conlog') && LX.log('conlog', 'HTTP Server has been closed');
           clearTimeout(timeoutHandler);
           onResolved();
         });
@@ -147,20 +146,6 @@ function Server(params) {
       return Promise.resolve();
     });
   }
-
-  var self = this;
-  var offDeath = onDeath(function(signal, err) {
-    if (err) {
-      LX.has('conlog') && LX.log('conlog', 'Signal: %s is raised by error: %s', signal, JSON.stringify(err));
-    } else {
-      LX.has('conlog') && LX.log('conlog', 'Signal: %s is raised', signal);
-    }
-    self.teardown().finally(function() {
-      LX.has('conlog') && LX.log('conlog', 'Server is terminated by signal: %s', signal);
-      offDeath && offDeath();
-      offDeath = null;
-    });
-  });
 
   var wss = new WebSocketServer({
     server: server,
