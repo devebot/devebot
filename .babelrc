@@ -1,4 +1,11 @@
 {
+  "plugins": [
+    "minify-mangle-names",
+    ["transform-async-to-module-method", {
+      "module": "bluebird",
+      "method": "coroutine"
+    }]
+  ],
   "presets": [
     ["env", {
       "targets": {
