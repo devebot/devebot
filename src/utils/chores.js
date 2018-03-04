@@ -19,6 +19,15 @@ chores.getUUID = function() {
   return uuidv4();
 }
 
+chores.loadPkginfo = function(pkgRootPath) {
+  try {
+    return lodash.pick(JSON.parse(fs.readFileSync(pkgRootPath + '/package.json', 'utf8')),
+      constx.APPINFO.FIELDS);
+  } catch(err) {
+    return {};
+  }
+};
+
 chores.pickProperty = function(propName, containers, propDefault) {
   if (!lodash.isString(propName) || !lodash.isArray(containers)) return null;
   for(var i=0; i<containers.length; i++) {
