@@ -14,7 +14,7 @@ var Service = function(params) {
   params = params || {};
 
   var more = {};
-  var logFactory = new LogFactory(transformConfig(params.profileConfig, more));
+  var logFactory = new LogFactory(transformLoggingConfig(params.profileConfig, more));
 
   lodash.assign(this, lodash.mapValues(lodash.pick(logFactory, [
     'getServiceInfo', 'getServiceHelp'
@@ -111,17 +111,18 @@ var LoggingFactory = function(args) {
   this.getTracer();
 };
 
-var transformConfig = function(profileConfig, derivative) {
+var transformLoggingConfig = function(profileConfig, derivative) {
   profileConfig = profileConfig || {};
   var loggingConfig = profileConfig.logger;
 
   derivative = derivative || {};
   if (lodash.isObject(loggingConfig)) {
+    var defaultLabels = transformLoggingLabels(constx.LOGGER.LABELS);
     var labels = transformLoggingLabels(loggingConfig.labels);
 
     derivative.mappings = labels.mappings;
-    loggingConfig.levels = lodash.isEmpty(labels.levels) ? constx.LOGGER.LEVELS : labels.levels;
-    loggingConfig.colors = lodash.isEmpty(labels.colors) ? constx.LOGGER.COLORS : labels.colors;
+    loggingConfig.levels = lodash.isEmpty(labels.levels) ? defaultLabels.levels : labels.levels;
+    loggingConfig.colors = lodash.isEmpty(labels.colors) ? defaultLabels.colors : labels.colors;
 
     var transportDefs = loggingConfig.transports;
     if (lodash.isObject(transportDefs)) {
