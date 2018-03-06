@@ -12,7 +12,9 @@ var DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
 
 var Service = function(params) {
   params = params || {};
-  var logFactory = new LogFactory(transformConfig(params.profileConfig));
+
+  var more = {};
+  var logFactory = new LogFactory(transformConfig(params.profileConfig, more));
 
   lodash.assign(this, lodash.mapValues(lodash.pick(logFactory, [
     'getServiceInfo', 'getServiceHelp'
@@ -22,6 +24,7 @@ var Service = function(params) {
 
   return new LoggingFactory({
     sectorName: 'devebot',
+    mappings: more.mappings,
     originalLogger: logFactory.getLogger()
   });
 };
@@ -108,13 +111,15 @@ var LoggingFactory = function(args) {
   this.getTracer();
 };
 
-var transformConfig = function(profileConfig) {
+var transformConfig = function(profileConfig, derivative) {
   profileConfig = profileConfig || {};
   var loggingConfig = profileConfig.logger;
 
+  derivative = derivative || {};
   if (lodash.isObject(loggingConfig)) {
     var labels = transformLoggingLabels(loggingConfig.labels);
 
+    derivative.mappings = labels.mappings;
     loggingConfig.levels = lodash.isEmpty(labels.levels) ? constx.LOGGER.LEVELS : labels.levels;
     loggingConfig.colors = lodash.isEmpty(labels.colors) ? constx.LOGGER.COLORS : labels.colors;
 
