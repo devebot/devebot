@@ -110,28 +110,45 @@ var LoggingFactory = function(args) {
 
 var transformConfig = function(profileConfig) {
   profileConfig = profileConfig || {};
+  var loggingConfig = profileConfig.logger;
 
-  if (!profileConfig.logger || !lodash.isObject(profileConfig.logger)) return profileConfig;
+  if (lodash.isObject(loggingConfig)) {
+    var labels = transformLoggingLabels(loggingConfig.labels);
 
-  profileConfig.logger.levels = profileConfig.logger.levels || constx.LOGGER.LEVELS;
-  profileConfig.logger.colors = profileConfig.logger.colors || constx.LOGGER.COLORS;
+    loggingConfig.levels = lodash.isEmpty(labels.levels) ? constx.LOGGER.LEVELS : labels.levels;
+    loggingConfig.colors = lodash.isEmpty(labels.colors) ? constx.LOGGER.COLORS : labels.colors;
 
-  var transportDefs = profileConfig.logger.transports;
-  if (!lodash.isObject(transportDefs)) return profileConfig;
-
-  var transports = [];
-  lodash.forOwn(transportDefs, function(transportDef, key) {
-    if (lodash.isObject(transportDef)) {
-      if (!transportDef.type) {
-        transportDef.type = key;
-      }
-      transports.push(transportDef);
+    var transportDefs = loggingConfig.transports;
+    if (lodash.isObject(transportDefs)) {
+      var transports = [];
+      lodash.forOwn(transportDefs, function(transportDef, key) {
+        if (lodash.isObject(transportDef)) {
+          if (!transportDef.type) {
+            transportDef.type = key;
+          }
+          transports.push(transportDef);
+        }
+      });
+      loggingConfig.transports = transports;
     }
-  });
-  profileConfig.logger.transports = transports;
+  };
 
+  profileConfig.logger = loggingConfig;
   return profileConfig;
 };
+
+var transformLoggingLabels = function(loglabelConfig) {
+  if (lodash.isEmpty(loglabelConfig)) return {};
+  var result = { levels: {}, colors: {}, mappings: {} };
+  lodash.forOwn(loglabelConfig, function(info, label) {
+    result.levels[label] = info.level;
+    result.colors[label] = info.color;
+    if (lodash.isString(info.link) && !lodash.isEmpty(info.link)) {
+      result.mappings[info.link] = label;
+    }
+  });
+  return result;
+}
 
 Service.argumentSchema = {
   "$id": "loggingFactory",
