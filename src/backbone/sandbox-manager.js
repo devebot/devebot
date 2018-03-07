@@ -54,18 +54,15 @@ var Service = function(params) {
   }));
 
   var sandboxInjektor = new Injektor({ separator: chores.getSeparator() });
+  [ 'appName', 'appInfo',
+    'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
+    'pluginLoader', 'schemaValidator', 'loggingFactory'
+  ].forEach(function(refName) {
+    sandboxInjektor.registerObject(refName, params[refName], chores.injektorContext);
+  });
   sandboxInjektor
-    .registerObject('appName', params['appName'], chores.injektorContext)
-    .registerObject('appInfo', params['appInfo'], chores.injektorContext)
     .registerObject('sandboxName', params['sandboxNames'].join(','), chores.injektorContext)
-    .registerObject('sandboxNames', params['sandboxNames'], chores.injektorContext)
-    .registerObject('sandboxConfig', params['sandboxConfig'], chores.injektorContext)
-    .registerObject('profileName', params['profileNames'].join(','), chores.injektorContext)
-    .registerObject('profileNames', params['profileNames'], chores.injektorContext)
-    .registerObject('profileConfig', params['profileConfig'], chores.injektorContext)
-    .registerObject('pluginLoader', params['pluginLoader'], chores.injektorContext)
-    .registerObject('schemaValidator', params['schemaValidator'], chores.injektorContext)
-    .registerObject('loggingFactory', params['loggingFactory'], chores.injektorContext);
+    .registerObject('profileName', params['profileNames'].join(','), chores.injektorContext);
 
   lodash.forOwn(managerMap, function(managerConstructor, managerName) {
     sandboxInjektor.defineService(managerName, managerConstructor, chores.injektorContext);

@@ -2,18 +2,15 @@
 
 var Injektor = require('injektor');
 var lodash = require('lodash');
-
-var SandboxManager = require('./backbone/sandbox-manager.js');
-var SchemaValidator = require('./backbone/schema-validator.js');
-var ScriptExecutor = require('./backbone/script-executor.js');
-var ScriptRenderer = require('./backbone/script-renderer.js');
-var SecurityManager = require('./backbone/security-manager.js');
-var BridgeLoader = require('./backbone/bridge-loader.js');
-var PluginLoader = require('./backbone/plugin-loader.js');
-var LoggingFactory = require('./backbone/logging-factory.js');
+var path = require('path');
+var chores = require('./utils/chores.js');
 var LoggingWrapper = require('./backbone/logging-wrapper.js');
 
-var chores = require('./utils/chores.js');
+var CONSTRUCTORS = {};
+chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), [
+  'sandbox-manager', 'schema-validator', 'script-executor', 'script-renderer',
+  'security-manager', 'bridge-loader', 'plugin-loader', 'logging-factory'
+]);
 
 function Kernel(params) {
   var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
@@ -31,23 +28,19 @@ function Kernel(params) {
   // create injektor instance
   var injektor = new Injektor({ separator: chores.getSeparator() });
 
+  ['appName', 'appInfo', 'bridgeRefs', 'pluginRefs'].forEach(function(refName) {
+    injektor.registerObject(refName, params[refName], chores.injektorContext);
+  });
+
   injektor
-    .registerObject('appName', params['appName'], chores.injektorContext)
-    .registerObject('appInfo', params['appInfo'], chores.injektorContext)
-    .registerObject('bridgeRefs', params['bridgeRefs'], chores.injektorContext)
-    .registerObject('pluginRefs', params['pluginRefs'], chores.injektorContext)
     .registerObject('sandboxNames', params['sandbox']['names'], chores.injektorContext)
     .registerObject('sandboxConfig', params['sandbox']['mixture'], chores.injektorContext)
     .registerObject('profileNames', params['profile']['names'], chores.injektorContext)
-    .registerObject('profileConfig', params['profile']['mixture'], chores.injektorContext)
-    .defineService('sandboxManager', SandboxManager, chores.injektorContext)
-    .defineService('schemaValidator', SchemaValidator, chores.injektorContext)
-    .defineService('scriptExecutor', ScriptExecutor, chores.injektorContext)
-    .defineService('scriptRenderer', ScriptRenderer, chores.injektorContext)
-    .defineService('securityManager', SecurityManager, chores.injektorContext)
-    .defineService('bridgeLoader', BridgeLoader, chores.injektorContext)
-    .defineService('pluginLoader', PluginLoader, chores.injektorContext)
-    .defineService('loggingFactory', LoggingFactory, chores.injektorContext);
+    .registerObject('profileConfig', params['profile']['mixture'], chores.injektorContext);
+
+  lodash.forOwn(CONSTRUCTORS, function(constructor, serviceName) {
+    injektor.defineService(serviceName, constructor, chores.injektorContext);
+  });
 
   this.invoke = function(block) {
     return lodash.isFunction(block) && Promise.resolve(block(injektor));
