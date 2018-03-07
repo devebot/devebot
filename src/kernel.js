@@ -32,7 +32,8 @@ function Kernel(params) {
   var injektor = new Injektor({ separator: chores.getSeparator() });
 
   injektor
-    .registerObject('appinfo', params['appinfo'], chores.injektorContext)
+    .registerObject('appName', params['appName'], chores.injektorContext)
+    .registerObject('appInfo', params['appInfo'], chores.injektorContext)
     .registerObject('bridgeRefs', params['bridgeRefs'], chores.injektorContext)
     .registerObject('pluginRefs', params['pluginRefs'], chores.injektorContext)
     .registerObject('sandboxNames', params['sandbox']['names'], chores.injektorContext)

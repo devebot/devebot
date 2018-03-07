@@ -18,18 +18,18 @@ function appinfoLoader(appRootPath, libRootPaths, topRootPath) {
     LX.log('conlog', ' - load the framework package at: %s', topRootPath);
   }
 
-  var appinfo = chores.loadPackageInfo(appRootPath);
+  var appInfo = chores.loadPackageInfo(appRootPath);
 
   if (!lodash.isArray(libRootPaths)) libRootPaths = [];
-  appinfo.layerware = libRootPaths.map(function(libRootPath) {
+  appInfo.layerware = libRootPaths.map(function(libRootPath) {
     return chores.loadPackageInfo(libRootPath);
   });
 
-  appinfo.framework = chores.loadPackageInfo(topRootPath);
+  appInfo.framework = chores.loadPackageInfo(topRootPath);
 
-  LX.has('conlog') && LX.log('conlog', ' - appinfo object: %s', JSON.stringify(appinfo, null, 2));
+  LX.has('conlog') && LX.log('conlog', ' - appInfo object: %s', JSON.stringify(appInfo, null, 2));
 
-  return appinfo;
+  return appInfo;
 }
 
 module.exports = appinfoLoader;

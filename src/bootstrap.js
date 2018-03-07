@@ -40,8 +40,8 @@ function appLoader(params) {
   });
   var topRootPath = path.join(__dirname, '/..');
 
-  var appinfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
-  var appName = params.appName || appinfo.name || 'devebot-application';
+  var appInfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
+  var appName = params.appName || appInfo.name || 'devebot-application';
   var appOptions = {
     privateProfile: params.privateProfile || params.privateProfiles,
     privateSandbox: params.privateSandbox || params.privateSandboxes
@@ -69,7 +69,7 @@ function appLoader(params) {
   };
 
   config.appName = appName;
-  config.appinfo = appinfo;
+  config.appInfo = appInfo;
   config.bridgeRefs = lodash.values(params.bridgeRefs);
   config.pluginRefs = [].concat(appRef, lodash.values(params.pluginRefs), devebotRef);
 
