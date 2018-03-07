@@ -20,22 +20,20 @@ var Service = function(params) {
   params = params || {};
   var self = this;
 
-  var getSandboxName = function() {
-    return params.sandboxName;
-  };
-
   var loggingFactory = params.loggingFactory.branch(chores.getBlockRef(__filename));
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
   LX.has('conlog') && LX.log('conlog', LT.add({
-    sandboxName: getSandboxName()
+    sandboxName: params.sandboxName
   }).toMessage({
     tags: [ 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
   var runhookInstance = {
+    appName: params.appName,
+    appInfo: params.appInfo,
     sandboxName: params.sandboxName,
     sandboxConfig: params.sandboxConfig,
     loggingFactory: params.loggingFactory,
@@ -255,6 +253,12 @@ Service.argumentSchema = {
   "$id": "runhookManager",
   "type": "object",
   "properties": {
+    "appName": {
+      "type": "string"
+    },
+    "appInfo": {
+      "type": "object"
+    },
     "sandboxName": {
       "type": "string"
     },

@@ -55,6 +55,8 @@ var Service = function(params) {
 
   var sandboxInjektor = new Injektor({ separator: chores.getSeparator() });
   sandboxInjektor
+    .registerObject('appName', params['appName'], chores.injektorContext)
+    .registerObject('appInfo', params['appInfo'], chores.injektorContext)
     .registerObject('sandboxName', params['sandboxNames'].join(','), chores.injektorContext)
     .registerObject('sandboxNames', params['sandboxNames'], chores.injektorContext)
     .registerObject('sandboxConfig', params['sandboxConfig'], chores.injektorContext)
@@ -239,6 +241,12 @@ Service.argumentSchema = {
   "$id": "sandboxManager",
   "type": "object",
   "properties": {
+    "appName": {
+      "type": "string"
+    },
+    "appInfo": {
+      "type": "object"
+    },
     "bridgeLoader": {
       "type": "object"
     },
