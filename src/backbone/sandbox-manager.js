@@ -91,10 +91,11 @@ var Service = function(params) {
   sandboxInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
 
   var injectedHandlers = {};
-  sandboxInjektor.registerObject('injectedHandlers', injectedHandlers, chores.injektorContext);
-  sandboxInjektor.registerObject('bridgeDialectNames', lodash.keys(dialectMap), chores.injektorContext);
-  sandboxInjektor.registerObject('pluginServiceNames', lodash.keys(serviceMap), chores.injektorContext);
-  sandboxInjektor.registerObject('pluginTriggerNames', lodash.keys(triggerMap), chores.injektorContext);
+  sandboxInjektor
+    .registerObject('injectedHandlers', injectedHandlers, chores.injektorContext)
+    .registerObject('bridgeDialectNames', lodash.keys(dialectMap), chores.injektorContext)
+    .registerObject('pluginServiceNames', lodash.keys(serviceMap), chores.injektorContext)
+    .registerObject('pluginTriggerNames', lodash.keys(triggerMap), chores.injektorContext);
 
   var instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers) {
     var exceptions = [];
