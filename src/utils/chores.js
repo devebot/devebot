@@ -78,6 +78,8 @@ chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
       lodash.defaults(serviceMap, serviceEntry);
     }
   });
+
+  return serviceMap;
 };
 
 chores.isArray = function(a) {

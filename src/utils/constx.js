@@ -45,36 +45,60 @@ var constx = {
   ROUTINE: {
     ROOT_KEY: 'routine',
     SCRIPT_DIR: '/lib/routines',
-    SCHEMA: {
-      OBJECT: {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "info": {
-            "type": "object",
-            "properties": {
-              "description": {
-                "type": "string"
-              },
-              "options": {
-                "type": "array"
-              },
-              "schema": {
-                "type": "object",
-                "oneOf": [{
-                  "$ref": "http://json-schema.org/draft-04/schema#"
-                }]
-              },
-              "validate": {}
-            }
-          },
-          "handler": {},
-          "mode": {
-            "type": "string",
-            "enum": ["direct", "remote", "worker"]
+    SCHEMA_OBJECT: {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "info": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "options": {
+              "type": "array"
+            },
+            "schema": {
+              "type": "object",
+              "oneOf": [{
+                "$ref": "http://json-schema.org/draft-04/schema#"
+              }]
+            },
+            "validate": {}
           }
+        },
+        "handler": {},
+        "mode": {
+          "type": "string",
+          "enum": ["direct", "remote", "worker"]
+        }
+      }
+    }
+  },
+  SCHEMA: {
+    ROOT_KEY: 'schema',
+    SCRIPT_DIR: '/lib/schemas',
+    SCHEMA_OBJECT: {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "subtype": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "object",
+          "oneOf": [
+            {
+              "$ref": "http://json-schema.org/draft-04/schema#"
+            }
+          ]
         }
       }
     }
