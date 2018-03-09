@@ -124,8 +124,7 @@ function PluginLoader(params) {
           var scriptName = scriptFile.replace('.js', '').toLowerCase();
           var uniqueName = [pluginRootDir.name, scriptName].join(chores.getSeparator());
           var entry = {};
-          entry[constx[scriptType].ROOT_KEY] = {};
-          entry[constx[scriptType].ROOT_KEY][uniqueName] = {
+          entry[uniqueName] = {
             moduleId: pluginRootDir.name,
             name: scriptName,
             object: scriptObject

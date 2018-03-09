@@ -55,7 +55,7 @@ var Service = function(params) {
   var routineStore = new Injektor();
 
   var getRunhooks = function() {
-    return (routineMap[constx.ROUTINE.ROOT_KEY] = routineMap[constx.ROUTINE.ROOT_KEY] || {});
+    return (routineMap = routineMap || {});
   };
 
   var getRunhook = function(command) {
@@ -264,6 +264,9 @@ Service.argumentSchema = {
     },
     "sandboxConfig": {
       "type": "object"
+    },
+    "profileName": {
+      "type": "string"
     },
     "profileConfig": {
       "type": "object"
