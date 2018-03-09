@@ -377,7 +377,9 @@ function PluginLoader(params) {
       wrapperConstructor.argumentSchema = lodash.merge(wrappedArgumentSchema, gadgetConstructor.argumentSchema);
     } else {
       var referenceList = gadgetConstructor.referenceList || [];
-      wrapperConstructor.argumentProperties = undefined && wrappedArgumentFields.concat(referenceList);
+      if (!lodash.isEmpty(referenceList)) {
+        wrapperConstructor.argumentProperties = wrappedArgumentFields.concat(referenceList);
+      }
       lodash.forEach(referenceList, function(refName) {
         wrappedArgumentSchema.properties[refName] = wrappedArgumentSchema.properties[refName] || {type: "object"};
       });
