@@ -20,10 +20,10 @@ function BridgeLoader(params) {
 
   LX.has('conlog') && LX.log('conlog', ' + bridgeLoader start with bridgeRefs: %s', JSON.stringify(params.bridgeRefs));
 
-  this.loadDialects = function(dialectMap, dialectOptions) {
+  this.loadDialects = function(dialectMap, dialectOptions, optType) {
     dialectMap = dialectMap || {};
     var loaderCtx = {};
-    lodash.defaultsDeep(dialectMap, buildBridgeDialects.call(loaderCtx, params.bridgeRefs, dialectOptions));
+    lodash.defaultsDeep(dialectMap, buildBridgeDialects.call(loaderCtx, params.bridgeRefs, dialectOptions, optType));
     return dialectMap;
   };
 
@@ -243,6 +243,20 @@ function BridgeLoader(params) {
     LX.has('conlog') && LX.log('conlog', ' - bridgeDialects will be built: %s', JSON.stringify(bridgeRefs));
 
     var bridgeConstructors = loadBridgeConstructors.call(self, bridgeRefs);
+
+    if (lodash.isEmpty(dialectOptions)) {
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        options: dialectOptions
+      }).toMessage({
+        text: ' - dialectOptions is not provided, nothing is created'
+      }));
+    } else {
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        options: dialectOptions
+      }).toMessage({
+        text: ' - dialectInstances will be built with options: ${options}'
+      }));
+    }
 
     var bridgeDialects = {};
     switch(optType) {

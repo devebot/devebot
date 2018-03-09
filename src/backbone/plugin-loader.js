@@ -51,7 +51,7 @@ function PluginLoader(params) {
 
   var hasSeparatedDir = function(scriptType) {
     return lodash.filter(constx, function(obj, key) {
-      // return ['ROUTINE', 'SERVICE', 'TRIGGER'].indexOf(key) >= 0;
+      // return ['ROUTINE', 'SCHEMA', 'SERVICE', 'TRIGGER'].indexOf(key) >= 0;
       return obj.ROOT_KEY && obj.SCRIPT_DIR;
     }).filter(function(info) {
       return info.ROOT_KEY !== constx[scriptType].ROOT_KEY &&
