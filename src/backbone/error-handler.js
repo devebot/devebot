@@ -12,8 +12,8 @@ function ErrorHandler(params) {
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ 'devebot-error-handler', 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -47,8 +47,11 @@ function ErrorHandler(params) {
   this.barrier = function(options) {
     options = options || {};
     var summary = this.examine();
+    LX.has('silly') && LX.log('silly', LT.add(summary).toMessage({
+      tags: [ 'devebot-error-handler', 'barrier' ],
+      text: ' - Total of errors: ${totalOfErrors}'
+    }));
     if (summary.numberOfErrors > 0) {
-      LX.has('conlog') && LX.log('conlog', ' - %s constructor(s) has been load failed', summary.numberOfErrors);
       if (options && (options.verbose !== false || options.exitOnError !== false) || LX.has('conlog')) {
         console.log('[x] Failed to load %s script file(s):', summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
@@ -97,27 +100,33 @@ function ErrorHandler(params) {
           }
         });
       }
+      LX.has('silly') && LX.log('silly', LT.add({
+        exitOnError: (options.exitOnError !== false)
+      }).toMessage({
+        tags: [ 'devebot-error-handler', 'barrier-exit-on-error' ],
+        text: ' - Program will be exited? (${exitOnError})'
+      }));
       if (options.exitOnError !== false) {
         console.log('[x] The program will exit now.');
-        console.log('[x] Please fix the issues and then retry again.');
-        this.exit(1, true);
+        console.log('... Please fix the issues and then retry again.');
+        this.exit(1);
       }
     }
   }
 
-  self.exit = function(code, forced) {
-    code = lodash.isNumber(code) ? code : 1;
-    forced = lodash.isUndefined(forced) ? false : forced;
-    LX.has('conlog') && LX.log('conlog', 'exit(%s, %s) is invoked', code, forced);
-    if (forced) {
-      process.exit(code);
-    } else {
-      process.exitCode = code;
-    }
+  self.exit = function(code) {
+    code = lodash.isNumber(code) ? code : 0;
+    LX.has('silly') && LX.log('silly', LT.add({
+      exitCode: code
+    }).toMessage({
+      tags: [ 'devebot-error-handler', 'exit' ],
+      text: 'process.exit(${exitCode}) is invoked'
+    }));
+    process.exit(code);
   }
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ 'devebot-error-handler', 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

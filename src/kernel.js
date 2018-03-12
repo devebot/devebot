@@ -19,7 +19,7 @@ function Kernel(params) {
   var LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+    tags: [ 'devebot-kernel', 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -51,7 +51,7 @@ function Kernel(params) {
     configMap: params,
     schemaMap: schemaMap
   }).toMessage({
-    tags: [ 'devebot-kernel', 'loadSchemas' ],
+    tags: [ 'devebot-kernel', 'config-schema-loading' ],
     text: ' - Sandbox schemas: ${schemaMap}'
   }));
 
@@ -149,7 +149,7 @@ function Kernel(params) {
   this._injektor = injektor;
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ 'constructor-end' ],
+    tags: [ 'devebot-kernel', 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }
