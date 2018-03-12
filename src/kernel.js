@@ -74,14 +74,18 @@ function Kernel(params) {
   }
   var configSchema = extractConfigSchema(schemaMap);
 
-  false && console.log('configSchema: %s', JSON.stringify(configSchema, null, 2));
-
   var configObject = {
     profile: lodash.get(params, ['profile', 'mixture'], {}),
     sandbox: lodash.get(params, ['sandbox', 'mixture'], {})
   }
-  
-  false && console.log('configObject: %s', JSON.stringify(configObject, null, 2));
+
+  LX.has('silly') && LX.log('silly', LT.add({
+    configObject: configObject,
+    configSchema: configSchema
+  }).toMessage({
+    tags: [ 'devebot-kernel', 'config-schema-synchronizing' ],
+    text: ' - Synchronize the structure of configuration data and schemas'
+  }));
 
   var schemaValidator = injektor.lookup('schemaValidator', chores.injektorContext);
   var result = [];
@@ -127,12 +131,12 @@ function Kernel(params) {
     });
   }
 
-  false && lodash.forEach(result, function(item) {
-    console.log('- validation result: %s', JSON.stringify(lodash.omit(item, ['stack'])));
-    if (item.hasError) {
-      console.log('  - stack:\n%s', item.stack);
-    }
-  });
+  LX.has('silly') && LX.log('silly', LT.add({
+    validatingResult: result
+  }).toMessage({
+    tags: [ 'devebot-kernel', 'config-schema-validating' ],
+    text: ' - Validating sandbox configuration using schemas'
+  }));
 
   errorHandler.collect(result).barrier();
 
