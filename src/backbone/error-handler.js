@@ -12,22 +12,28 @@ function ErrorHandler(params) {
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ 'devebot-error-handler', 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
   var opStates = [];
 
   this.init = function() {
-    opStates.splice(0, opStates.length);
+    return this.reset();
   }
 
   this.collect = function(info) {
-    opStates.push(info);
+    if (info instanceof Array) {
+      opStates.push.apply(opStates, info);
+    } else {
+      opStates.push(info);
+    }
+    return this;
   }
 
-  this.examine = function() {
+  this.examine = function(options) {
+    options = options || {};
     var summary = lodash.reduce(opStates, function(store, item) {
       if (item.hasError) {
         store.numberOfErrors += 1;
@@ -35,17 +41,35 @@ function ErrorHandler(params) {
       }
       return store;
     }, { numberOfErrors: 0, failedServices: [] });
-
+    LX.has('silly') && LX.log('silly', LT.add({
+      invoker: options.invoker,
+      totalOfErrors: summary.numberOfErrors,
+      errors: summary.failedServices
+    }).toMessage({
+      tags: [ 'devebot-error-handler', 'examine' ],
+      text: ' - Total of errors: ${totalOfErrors}'
+    }));
     return summary;
   }
 
   this.barrier = function(options) {
-    var summary = this.examine();
+    options = options || {};
+    var silent = chores.isSilentForced('error-handler', options);
+    var summary = this.examine(options);
     if (summary.numberOfErrors > 0) {
-      LX.has('conlog') && LX.log('conlog', ' - %s constructor(s) has been load failed', summary.numberOfErrors);
-      if (options && (options.verbose !== false || options.exitOnError !== false) || LX.has('conlog')) {
+      if (!silent) {
         console.log('[x] Failed to load %s script file(s):', summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
+          if (fsv.stage == 'config/schema') {
+            switch(fsv.type) {
+              case 'application':
+              case 'plugin':
+              case 'devebot':
+              console.log('--> [%s:%s] sandbox config is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              break;
+            }
+            return;
+          }
           if (fsv.stage == 'instantiating') {
             switch(fsv.type) {
               case 'ROUTINE':
@@ -81,33 +105,50 @@ function ErrorHandler(params) {
           }
         });
       }
+      LX.has('silly') && LX.log('silly', LT.add({
+        invoker: options.invoker,
+        silent: silent,
+        exitOnError: (options.exitOnError !== false)
+      }).toMessage({
+        tags: [ 'devebot-error-handler', 'barrier' ],
+        text: ' - Program will be exited? (${exitOnError})'
+      }));
       if (options.exitOnError !== false) {
-        console.log('[x] The program will exit now.');
-        console.log('[x] Please fix the issues and then retry again.');
-        this.exit(1, true);
+        if (!silent) {
+          console.log('==@ The program will exit now.');
+          console.log('... Please fix the issues and then retry again.');
+        }
+        this.exit(1);
       }
     }
   }
 
-  self.exit = function(code, forced) {
-    code = lodash.isNumber(code) ? code : 1;
-    forced = lodash.isUndefined(forced) ? false : forced;
-    LX.has('conlog') && LX.log('conlog', 'exit(%s, %s) is invoked', code, forced);
-    if (forced) {
+  this.exit = function(code) {
+    code = lodash.isNumber(code) ? code : 0;
+    LX.has('silly') && LX.log('silly', LT.add({
+      exitCode: code
+    }).toMessage({
+      tags: [ 'devebot-error-handler', 'exit' ],
+      text: 'process.exit(${exitCode}) is invoked'
+    }));
+    if (!chores.skipProcessExit()) {
       process.exit(code);
-    } else {
-      process.exitCode = code;
     }
   }
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  this.reset = function() {
+    opStates.splice(0, opStates.length);
+    return this;
+  }
+
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ 'devebot-error-handler', 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }
 
 ErrorHandler.argumentSchema = {
-  "id": "errorHandler",
+  "$id": "errorHandler",
   "type": "object",
   "properties": {}
 };

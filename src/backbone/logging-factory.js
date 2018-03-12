@@ -12,7 +12,9 @@ var DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
 
 var Service = function(params) {
   params = params || {};
-  var logFactory = new LogFactory(transformConfig(params.profileConfig));
+
+  var more = {};
+  var logFactory = new LogFactory(transformLoggingConfig(params.profileConfig, more));
 
   lodash.assign(this, lodash.mapValues(lodash.pick(logFactory, [
     'getServiceInfo', 'getServiceHelp'
@@ -22,6 +24,7 @@ var Service = function(params) {
 
   return new LoggingFactory({
     sectorName: 'devebot',
+    mappings: more.mappings,
     originalLogger: logFactory.getLogger()
   });
 };
@@ -52,6 +55,9 @@ var LoggingFactory = function(args) {
       if (logger == null) {
         opts = lodash.omit(opts, ['type', 'origin', 'shadow']);
         opts.sector = opts.sector || DEFAULT_SECTOR_NAME;
+        if (args.mappings) {
+          opts.mappings = args.mappings;
+        }
         logoliteLogger[opts.sector] = logoliteLogger[opts.sector] || LogAdapter.getLogger(opts);
         logger = logoliteLogger[opts.sector];
       }
@@ -86,7 +92,7 @@ var LoggingFactory = function(args) {
     var parentTracer = args.parent.getTracer();
     if (subTracer == null) {
       subTracer = parentTracer.branch({
-        key: chores.DEFAULT_SECTOR_ID_FIELD,
+        key: constx.TRACER.SECTOR.ID_FIELD,
         value: args.sectorId || LogTracer.getLogID()
       });
 
@@ -95,7 +101,7 @@ var LoggingFactory = function(args) {
         parentValue: parentTracer.value
       }
       if (args.sectorName) {
-        blockInfo[chores.DEFAULT_SECTOR_NAME_FIELD] = args.sectorName;
+        blockInfo[constx.TRACER.SECTOR.NAME_FIELD] = args.sectorName;
       }
       var rootLogger = args.root.getLogger();
       rootLogger.has('info') && rootLogger.log('info', subTracer.add(blockInfo)
@@ -108,33 +114,57 @@ var LoggingFactory = function(args) {
   this.getTracer();
 };
 
-var transformConfig = function(profileConfig) {
+var transformLoggingConfig = function(profileConfig, derivative) {
   profileConfig = profileConfig || {};
+  var loggingConfig = profileConfig.logger;
 
-  if (!profileConfig.logger || !lodash.isObject(profileConfig.logger)) return profileConfig;
+  derivative = derivative || {};
+  if (lodash.isObject(loggingConfig)) {
+    var defaultLabels = transformLoggingLabels(constx.LOGGER.LABELS);
+    var labels = transformLoggingLabels(loggingConfig.labels);
 
-  profileConfig.logger.levels = profileConfig.logger.levels || constx.LOGGER.LEVELS;
-  profileConfig.logger.colors = profileConfig.logger.colors || constx.LOGGER.COLORS;
+    derivative.mappings = labels.mappings;
+    loggingConfig.levels = lodash.isEmpty(labels.levels) ? defaultLabels.levels : labels.levels;
+    loggingConfig.colors = lodash.isEmpty(labels.colors) ? defaultLabels.colors : labels.colors;
+    delete loggingConfig.labels;
 
-  var transportDefs = profileConfig.logger.transports;
-  if (!lodash.isObject(transportDefs)) return profileConfig;
-
-  var transports = [];
-  lodash.forOwn(transportDefs, function(transportDef, key) {
-    if (lodash.isObject(transportDef)) {
-      if (!transportDef.type) {
-        transportDef.type = key;
-      }
-      transports.push(transportDef);
+    var transportDefs = loggingConfig.transports;
+    if (lodash.isObject(transportDefs)) {
+      var transports = [];
+      lodash.forOwn(transportDefs, function(transportDef, key) {
+        if (lodash.isObject(transportDef)) {
+          if (!transportDef.type) {
+            transportDef.type = key;
+          }
+          transports.push(transportDef);
+        }
+      });
+      loggingConfig.transports = transports;
     }
-  });
-  profileConfig.logger.transports = transports;
+  };
 
+  profileConfig.logger = loggingConfig;
   return profileConfig;
 };
 
+var transformLoggingLabels = function(loglabelConfig) {
+  if (lodash.isEmpty(loglabelConfig)) return {};
+  var result = { levels: {}, colors: {}, mappings: {} };
+  lodash.forOwn(loglabelConfig, function(info, label) {
+    result.levels[label] = info.level;
+    result.colors[label] = info.color;
+    var links = lodash.isArray(info.inflow) ? info.inflow : [info.inflow];
+    lodash.forEach(links, function(link) {
+      if (lodash.isString(link) && !lodash.isEmpty(link)) {
+        result.mappings[link] = label;
+      }
+    });
+  });
+  return result;
+};
+
 Service.argumentSchema = {
-  "id": "loggingFactory",
+  "$id": "loggingFactory",
   "type": "object",
   "properties": {
     "profileConfig": {

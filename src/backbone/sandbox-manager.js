@@ -54,16 +54,15 @@ var Service = function(params) {
   }));
 
   var sandboxInjektor = new Injektor({ separator: chores.getSeparator() });
+  [ 'appName', 'appInfo',
+    'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
+    'pluginLoader', 'schemaValidator', 'loggingFactory'
+  ].forEach(function(refName) {
+    sandboxInjektor.registerObject(refName, params[refName], chores.injektorContext);
+  });
   sandboxInjektor
     .registerObject('sandboxName', params['sandboxNames'].join(','), chores.injektorContext)
-    .registerObject('sandboxNames', params['sandboxNames'], chores.injektorContext)
-    .registerObject('sandboxConfig', params['sandboxConfig'], chores.injektorContext)
-    .registerObject('profileName', params['profileNames'].join(','), chores.injektorContext)
-    .registerObject('profileNames', params['profileNames'], chores.injektorContext)
-    .registerObject('profileConfig', params['profileConfig'], chores.injektorContext)
-    .registerObject('pluginLoader', params['pluginLoader'], chores.injektorContext)
-    .registerObject('schemaValidator', params['schemaValidator'], chores.injektorContext)
-    .registerObject('loggingFactory', params['loggingFactory'], chores.injektorContext);
+    .registerObject('profileName', params['profileNames'].join(','), chores.injektorContext);
 
   lodash.forOwn(managerMap, function(managerConstructor, managerName) {
     sandboxInjektor.defineService(managerName, managerConstructor, chores.injektorContext);
@@ -92,10 +91,11 @@ var Service = function(params) {
   sandboxInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
 
   var injectedHandlers = {};
-  sandboxInjektor.registerObject('injectedHandlers', injectedHandlers, chores.injektorContext);
-  sandboxInjektor.registerObject('bridgeDialectNames', lodash.keys(dialectMap), chores.injektorContext);
-  sandboxInjektor.registerObject('pluginServiceNames', lodash.keys(serviceMap), chores.injektorContext);
-  sandboxInjektor.registerObject('pluginTriggerNames', lodash.keys(triggerMap), chores.injektorContext);
+  sandboxInjektor
+    .registerObject('injectedHandlers', injectedHandlers, chores.injektorContext)
+    .registerObject('bridgeDialectNames', lodash.keys(dialectMap), chores.injektorContext)
+    .registerObject('pluginServiceNames', lodash.keys(serviceMap), chores.injektorContext)
+    .registerObject('pluginTriggerNames', lodash.keys(triggerMap), chores.injektorContext);
 
   var instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers) {
     var exceptions = [];
@@ -132,7 +132,7 @@ var Service = function(params) {
   sandboxInjektor.lookup('runhookManager', chores.injektorContext);
 
   var devebotCfg = lodash.get(params, ['profileConfig', 'devebot'], {});
-  errorHandler.barrier(devebotCfg);
+  errorHandler.barrier(lodash.assign({ invoker: chores.getBlockRef(__filename) }, devebotCfg));
 
   self.getSandboxNames = function() {
     return sandboxNames;
@@ -236,9 +236,15 @@ var Service = function(params) {
 };
 
 Service.argumentSchema = {
-  "id": "sandboxManager",
+  "$id": "sandboxManager",
   "type": "object",
   "properties": {
+    "appName": {
+      "type": "string"
+    },
+    "appInfo": {
+      "type": "object"
+    },
     "bridgeLoader": {
       "type": "object"
     },

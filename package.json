@@ -1,8 +1,23 @@
 {
   "name": "devebot",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
+  "directories": {
+    "lib": "lib/"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "lib/"
+  ],
+  "scripts": {
+    "build": "babel src -d lib",
+    "prepublish": "NODE_ENV=production npm run build",
+    "pretest": "NODE_ENV=test npm run build",
+    "test": "mocha --recursive test/**/*-test.js",
+    "verify": "npm run prepublish && mocha --recursive test/**/*-test.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/devebot/devebot.git"
@@ -23,12 +38,18 @@
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
     "bluebird": "^3.5.1",
-    "death": "^1.1.0",
     "injektor": "^0.1.15",
-    "jsonschema": "^1.2.2",
     "lodash": "^4.17.4",
     "logolite": "^0.1.6",
     "logzilla": "^0.1.17",
+    "schemato": "^0.1.2",
     "ws": "^3.3.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-minify-mangle-names": "^0.3.0",
+    "babel-plugin-transform-async-to-module-method": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "mocha": "^4.1.0"
   }
 }

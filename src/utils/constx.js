@@ -9,56 +9,96 @@ var constx = {
     MUST_SPECIFY_IN_ENV: true
   },
   LOGGER: {
-    LEVELS: {
-      silly: 5,
-      debug: 4,
-      trace: 3,
-      info: 2,
-      warn: 1,
-      error: 0
-    },
-    COLORS: {
-      silly: 'magenta',
-      debug: 'blue',
-      trace: 'cyan',
-      info: 'green',
-      warn: 'yellow',
-      error: 'red'
+    LABELS: {
+      silly: {
+        level: 5,
+        color: 'magenta'
+      },
+      debug: {
+        level: 4,
+        color: 'blue'
+      },
+      trace: {
+        level: 3,
+        color: 'cyan'
+      },
+      info: {
+        level: 2,
+        color: 'green'
+      },
+      warn: {
+        level: 1,
+        color: 'yellow'
+      },
+      error: {
+        level: 0,
+        color: 'red'
+      }
+    }
+  },
+  TRACER: {
+    SECTOR: {
+      ID_FIELD: 'blockId',
+      NAME_FIELD: 'blockName'
     }
   },
   ROUTINE: {
     ROOT_KEY: 'routine',
     SCRIPT_DIR: '/lib/routines',
-    SCHEMA: {
-      OBJECT: {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "info": {
-            "type": "object",
-            "properties": {
-              "description": {
-                "type": "string"
-              },
-              "options": {
-                "type": "array"
-              },
-              "schema": {
-                "type": "object",
-                "oneOf": [{
-                  "$ref": "http://json-schema.org/draft-04/schema#"
-                }]
-              },
-              "validate": {}
-            }
-          },
-          "handler": {},
-          "mode": {
-            "type": "string",
-            "enum": ["direct", "remote", "worker"]
+    SCHEMA_OBJECT: {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "info": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "options": {
+              "type": "array"
+            },
+            "schema": {
+              "type": "object",
+              "oneOf": [{
+                "$ref": "http://json-schema.org/draft-04/schema#"
+              }]
+            },
+            "validate": {}
           }
+        },
+        "handler": {},
+        "mode": {
+          "type": "string",
+          "enum": ["direct", "remote", "worker"]
+        }
+      }
+    }
+  },
+  SCHEMA: {
+    ROOT_KEY: 'schema',
+    SCRIPT_DIR: '/lib/schemas',
+    SCHEMA_OBJECT: {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "subtype": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "object",
+          "oneOf": [
+            {
+              "$ref": "http://json-schema.org/draft-04/schema#"
+            }
+          ]
         }
       }
     }

@@ -20,7 +20,7 @@ var commandObject = {
     return Promise.resolve([{
         type: 'json',
         title: 'Application Information',
-        data: chores.pickProperty('appinfo', [ctx, this, commandConfig], {})
+        data: chores.pickProperty('appInfo', [ctx, this, commandConfig], {})
     }]);
   }
 };

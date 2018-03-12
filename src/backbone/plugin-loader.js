@@ -35,6 +35,10 @@ function PluginLoader(params) {
     return loadAllScripts.call(loaderClass, routineMap, 'ROUTINE', routineContext, pluginRootDirs);
   };
 
+  this.loadSchemas = function(schemaMap) {
+    return loadAllSchemas.call(loaderClass, schemaMap, pluginRootDirs);
+  }
+
   this.loadServices = function(serviceMap) {
     return loadAllGadgets.call(loaderClass, serviceMap, 'SERVICE', pluginRootDirs);
   };
@@ -47,7 +51,7 @@ function PluginLoader(params) {
 
   var hasSeparatedDir = function(scriptType) {
     return lodash.filter(constx, function(obj, key) {
-      // return ['ROUTINE', 'SERVICE', 'TRIGGER'].indexOf(key) >= 0;
+      // return ['ROUTINE', 'SCHEMA', 'SERVICE', 'TRIGGER'].indexOf(key) >= 0;
       return obj.ROOT_KEY && obj.SCRIPT_DIR;
     }).filter(function(info) {
       return info.ROOT_KEY !== constx[scriptType].ROOT_KEY &&
@@ -57,6 +61,17 @@ function PluginLoader(params) {
 
   var getFilterPattern = function(scriptType) {
     return hasSeparatedDir(scriptType) ? '.*\.js' : constx[scriptType].ROOT_KEY + '_.*\.js';
+  }
+
+  var specialPlugins = ['application', 'devebot'];
+
+  var getPluginName = function(pluginRootDir) {
+    pluginRootDir.code = pluginRootDir.code || chores.stringCamelCase(pluginRootDir.name);
+    var pluginName = pluginRootDir.code;
+    if (specialPlugins.indexOf(pluginRootDir.type) >= 0) {
+      pluginName = pluginRootDir.type;
+    }
+    return pluginName;
   }
 
   var loadAllScripts = function(scriptMap, scriptType, scriptContext, pluginRootDirs) {
@@ -109,8 +124,7 @@ function PluginLoader(params) {
           var scriptName = scriptFile.replace('.js', '').toLowerCase();
           var uniqueName = [pluginRootDir.name, scriptName].join(chores.getSeparator());
           var entry = {};
-          entry[constx[scriptType].ROOT_KEY] = {};
-          entry[constx[scriptType].ROOT_KEY][uniqueName] = {
+          entry[uniqueName] = {
             moduleId: pluginRootDir.name,
             name: scriptName,
             object: scriptObject
@@ -149,7 +163,7 @@ function PluginLoader(params) {
     scriptObject = scriptObject || {};
     var results = [];
 
-    results.push(self.schemaValidator.validate(scriptObject, constx[scriptType].SCHEMA.OBJECT));
+    results.push(self.schemaValidator.validate(scriptObject, constx[scriptType].SCHEMA_OBJECT));
 
     if (!lodash.isFunction(scriptObject.handler)) {
       results.push({
@@ -160,6 +174,83 @@ function PluginLoader(params) {
       });
     }
 
+    return results.reduce(function(output, result) {
+      output.valid = output.valid && (result.valid != false);
+      output.errors = output.errors.concat(result.errors);
+      return output;
+    }, { valid: true, errors: [] });
+  };
+
+  var loadAllSchemas = function(schemaMap, pluginRootDirs) {
+    var self = this;
+    var schemaType = 'SCHEMA';
+    schemaMap = schemaMap || {};
+    var schemaSubDir = constx[schemaType].SCRIPT_DIR;
+    pluginRootDirs.forEach(function(pluginRootDir) {
+      loadSchemaEntries.call(self, schemaMap, schemaSubDir, pluginRootDir);
+    });
+    return schemaMap;
+  }
+
+  var loadSchemaEntries = function(schemaMap, schemaSubDir, pluginRootDir) {
+    var self = this;
+    var schemaType = 'SCHEMA';
+    var schemaFolder = pluginRootDir.pathDir + schemaSubDir;
+    LX.has('conlog') && LX.log('conlog', ' - load schemas from folder: %s', schemaFolder);
+    var schemaFiles = chores.filterFiles(schemaFolder, getFilterPattern(schemaType));
+    schemaFiles.forEach(function(schemaFile) {
+      loadSchemaEntry.call(self, schemaMap, schemaSubDir, schemaFile, pluginRootDir);
+    });
+  }
+
+  var loadSchemaEntry = function(schemaMap, schemaSubDir, schemaFile, pluginRootDir) {
+    var self = this;
+    var schemaType = 'SCHEMA';
+    var opStatus = lodash.assign({ type: 'SCHEMA', file: schemaFile, subDir: schemaSubDir }, pluginRootDir);
+    var filepath = path.join(pluginRootDir.pathDir, schemaSubDir, schemaFile);
+    try {
+      var schemaObject = loader(filepath, { stopWhenError: true });
+      var output = validateSchema.call(self, schemaObject, schemaType);
+      if (!output.valid) {
+        LX.has('conlog') && LX.log('conlog', ' - schema validation fail: %s', JSON.stringify(output));
+        opStatus.hasError = true;
+      } else if (schemaObject.enabled === false) {
+        LX.has('conlog') && LX.log('conlog', ' - schema is disabled');
+        opStatus.hasError = false;
+        opStatus.isSkipped = true;
+      } else {
+        LX.has('conlog') && LX.log('conlog', ' - schema validation pass');
+        opStatus.hasError = false;
+        var pluginName = getPluginName(pluginRootDir);
+        var typeName = schemaObject.type || schemaFile.replace('.js', '').toLowerCase();
+        var subtypeName = schemaObject.subtype || 'default';
+        var uniqueName = [pluginRootDir.name, typeName].join(chores.getSeparator());
+        var entry = {};
+        entry[uniqueName] = entry[uniqueName] || {};
+        entry[uniqueName][subtypeName] = {
+          moduleId: pluginRootDir.name,
+          pluginName: pluginName,
+          type: typeName,
+          subtype: subtypeName,
+          schema: schemaObject.schema
+        };
+        lodash.defaultsDeep(schemaMap, entry);
+      }
+    } catch(err) {
+      console.log(err);
+      LX.has('conlog') && LX.log('conlog', ' - schema file %s loading has failed', filepath);
+      opStatus.hasError = true;
+      opStatus.stack = err.stack;
+    }
+    errorHandler.collect(opStatus);
+  }
+
+  var validateSchema = function(schemaObject) {
+    var self = this;
+    var schemaType = 'SCHEMA';
+    schemaObject = schemaObject || {};
+    var results = [];
+    results.push(self.schemaValidator.validate(schemaObject, constx[schemaType].SCHEMA_OBJECT));
     return results.reduce(function(output, result) {
       output.valid = output.valid && (result.valid != false);
       output.errors = output.errors.concat(result.errors);
@@ -218,8 +309,6 @@ function PluginLoader(params) {
     errorHandler.collect(opStatus);
   };
 
-  var specialPlugins = ['application', 'devebot'];
-
   var buildGadgetWrapper = function(gadgetConstructor, wrapperName, pluginRootDir) {
     var result = {};
 
@@ -228,12 +317,8 @@ function PluginLoader(params) {
       return result;
     }
 
+    var pluginName = getPluginName(pluginRootDir);
     var uniqueName = [pluginRootDir.name, wrapperName].join(chores.getSeparator());
-
-    var pluginName = pluginRootDir.code;
-    if (specialPlugins.indexOf(pluginRootDir.type) >= 0) {
-      pluginName = pluginRootDir.type;
-    }
 
     function wrapperConstructor(kwargs) {
       kwargs = kwargs || {};
@@ -264,7 +349,7 @@ function PluginLoader(params) {
     wrapperConstructor.prototype = Object.create(gadgetConstructor.prototype);
 
     var wrappedArgumentSchema = {
-      "id": wrapperName,
+      "$id": wrapperName,
       "type": "object",
       "properties": {
         "sandboxName": {
@@ -291,7 +376,9 @@ function PluginLoader(params) {
       wrapperConstructor.argumentSchema = lodash.merge(wrappedArgumentSchema, gadgetConstructor.argumentSchema);
     } else {
       var referenceList = gadgetConstructor.referenceList || [];
-      wrapperConstructor.argumentProperties = undefined && wrappedArgumentFields.concat(referenceList);
+      if (!lodash.isEmpty(referenceList)) {
+        wrapperConstructor.argumentProperties = wrappedArgumentFields.concat(referenceList);
+      }
       lodash.forEach(referenceList, function(refName) {
         wrappedArgumentSchema.properties[refName] = wrappedArgumentSchema.properties[refName] || {type: "object"};
       });
@@ -320,7 +407,7 @@ function PluginLoader(params) {
 }
 
 PluginLoader.argumentSchema = {
-  "id": "pluginLoader",
+  "$id": "pluginLoader",
   "type": "object",
   "properties": {
     "pluginRefs": {

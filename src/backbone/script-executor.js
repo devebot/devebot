@@ -58,7 +58,9 @@ var ScriptExecutor = function(params) {
       promize = Promise.resolve().then(function() {
         outlet.render('definition', {
           value: {
-            appinfo: params.appinfo,
+            appName: params.appName,
+            appInfo: params.appInfo,
+            appinfo: params.appInfo, // deprecated
             commands: runhookManager.getDefinitions()
           }
         });
@@ -91,10 +93,13 @@ var ScriptExecutor = function(params) {
 };
 
 ScriptExecutor.argumentSchema = {
-  "id": "scriptExecutor",
+  "$id": "scriptExecutor",
   "type": "object",
   "properties": {
-    "appinfo": {
+    "appName": {
+      "type": "string"
+    },
+    "appInfo": {
       "type": "object"
     },
     "loggingFactory": {

@@ -10,11 +10,23 @@ var constx = require('./constx.js');
 var loader = require('./loader.js');
 var debugx = require('./pinbug.js')('devebot:utils:chores');
 
+let store = {
+  injektorContext: { scope: 'devebot' }
+};
 var chores = {};
 
 chores.getUUID = function() {
   return uuidv4();
 }
+
+chores.loadPackageInfo = function(pkgRootPath) {
+  try {
+    return lodash.pick(JSON.parse(fs.readFileSync(pkgRootPath + '/package.json', 'utf8')),
+      constx.APPINFO.FIELDS);
+  } catch(err) {
+    return {};
+  }
+};
 
 chores.pickProperty = function(propName, containers, propDefault) {
   if (!lodash.isString(propName) || !lodash.isArray(containers)) return null;
@@ -62,25 +74,34 @@ chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
     var serviceConstructor = loader(filepath);
     if (lodash.isFunction(serviceConstructor)) {
       var serviceEntry = {};
-      var entryPath = serviceName.replace(/-([a-z])/g, function (m, w) {
-        return w.toUpperCase();
-      });
-      serviceEntry[entryPath] = serviceConstructor;
+      serviceEntry[chores.stringCamelCase(serviceName)] = serviceConstructor;
       lodash.defaults(serviceMap, serviceEntry);
     }
   });
+
+  return serviceMap;
 };
 
+chores.isArray = function(a) {
+  return a instanceof Array;
+}
+
+chores.isString = function(s) {
+  return typeof(s) === 'string';
+}
+
 chores.stringKebabCase = function kebabCase(str) {
-  return (str || '').toLowerCase().replace(' ', '-');
+  if (!chores.isString(str)) return str;
+  return str.toLowerCase().replace(/\s{1,}/g, '-');
 };
 
 chores.stringLabelCase = function labelCase(str) {
-  return (str || '').toUpperCase().replace('-', '_');
+  if (!chores.isString(str)) return str;
+  return str.toUpperCase().replace(/\W{1,}/g, '_');
 };
 
 chores.stringCamelCase = function camelCase(str) {
-  if (!str) return str;
+  if (!chores.isString(str)) return str;
   return str.replace(/-([a-z])/g, function (m, w) {
     return w.toUpperCase();
   });
@@ -127,13 +148,11 @@ chores.homedir = (typeof os.homedir === 'function') ? os.homedir : function() {
 
 chores.getBlockRef = function(filename, blockScope) {
   if (filename == null) return null;
-  blockScope = blockScope || 'devebot';
   var blockName = chores.stringCamelCase(path.basename(filename, '.js'));
-  return [blockScope, blockName].join(chores.getSeparator());
+  blockScope = blockScope || 'devebot';
+  if (!chores.isArray(blockScope)) blockScope = [blockScope];
+  return blockScope.concat(blockName).join(chores.getSeparator());
 }
-
-chores.DEFAULT_SECTOR_ID_FIELD = 'blockId';
-chores.DEFAULT_SECTOR_NAME_FIELD = 'blockName';
 
 chores.getSeparator = function() {
   return '/';
@@ -144,8 +163,32 @@ chores.getFullname = function(parts, separator) {
       .join(separator || chores.getSeparator());
 }
 
-var injektorContext = { scope: 'devebot' };
+chores.injektorContext = store.injektorContext;
 
-chores.injektorContext = injektorContext;
+chores.skipProcessExit = function() {
+  return process.env.DEVEBOT_SKIP_PROCESS_EXIT === 'true';
+}
+
+chores.isSilentForced = function(moduleId, cfg) {
+  if (process.env.NODE_ENV === 'test') {
+    store.fsm = null;
+  }
+  if (!store.fsm) {
+    let fsstr = process.env.DEVEBOT_FORCING_SILENT || '';
+    store.fsm = fsstr.split(',');
+  }
+  return (store.fsm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose === false);
+}
+
+chores.isVerboseForced = function(moduleId, cfg) {
+  if (process.env.NODE_ENV === 'test') {
+    store.fvm = null;
+  }
+  if (!store.fvm) {
+    let fvstr = process.env.DEVEBOT_FORCING_VERBOSE || '';
+    store.fvm = fvstr.split(',');
+  }
+  return (store.fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
+}
 
 module.exports = chores;

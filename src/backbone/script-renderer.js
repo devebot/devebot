@@ -111,7 +111,7 @@ var AbstractOutlet = function(params) {
       return lodash.isObject(outputObject) && !lodash.isEmpty(outputObject);
     });
     var result = params.schemaValidator.validate(outputArray, constx.WEBSOCKET.DETAILS.SCHEMA);
-    if (result.errors.length > 0) {
+    if (!result.valid) {
       outputArray = [{
         type: 'json',
         title: isError ? constx.WEBSOCKET.MSG_ON.FAILED : constx.WEBSOCKET.MSG_ON.COMPLETED,
@@ -145,7 +145,7 @@ var WebSocketOutlet = function(params) {
 util.inherits(WebSocketOutlet, AbstractOutlet);
 
 ScriptRenderer.argumentSchema = {
-  "id": "scriptRenderer",
+  "$id": "scriptRenderer",
   "type": "object",
   "properties": {
     "loggingFactory": {

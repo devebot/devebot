@@ -87,7 +87,7 @@ var Service = function(params) {
 };
 
 Service.argumentSchema = {
-  "id": "securityManager",
+  "$id": "securityManager",
   "type": "object",
   "properties": {
     "profileConfig": {
