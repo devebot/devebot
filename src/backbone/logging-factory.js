@@ -55,6 +55,9 @@ var LoggingFactory = function(args) {
       if (logger == null) {
         opts = lodash.omit(opts, ['type', 'origin', 'shadow']);
         opts.sector = opts.sector || DEFAULT_SECTOR_NAME;
+        if (args.mappings) {
+          opts.mappings = args.mappings;
+        }
         logoliteLogger[opts.sector] = logoliteLogger[opts.sector] || LogAdapter.getLogger(opts);
         logger = logoliteLogger[opts.sector];
       }
@@ -123,6 +126,7 @@ var transformLoggingConfig = function(profileConfig, derivative) {
     derivative.mappings = labels.mappings;
     loggingConfig.levels = lodash.isEmpty(labels.levels) ? defaultLabels.levels : labels.levels;
     loggingConfig.colors = lodash.isEmpty(labels.colors) ? defaultLabels.colors : labels.colors;
+    delete loggingConfig.labels;
 
     var transportDefs = loggingConfig.transports;
     if (lodash.isObject(transportDefs)) {
@@ -149,12 +153,15 @@ var transformLoggingLabels = function(loglabelConfig) {
   lodash.forOwn(loglabelConfig, function(info, label) {
     result.levels[label] = info.level;
     result.colors[label] = info.color;
-    if (lodash.isString(info.link) && !lodash.isEmpty(info.link)) {
-      result.mappings[info.link] = label;
-    }
+    var links = lodash.isArray(info.inflow) ? info.inflow : [info.inflow];
+    lodash.forEach(links, function(link) {
+      if (lodash.isString(link) && !lodash.isEmpty(link)) {
+        result.mappings[link] = label;
+      }
+    });
   });
   return result;
-}
+};
 
 Service.argumentSchema = {
   "$id": "loggingFactory",

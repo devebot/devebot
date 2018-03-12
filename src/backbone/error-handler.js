@@ -24,7 +24,12 @@ function ErrorHandler(params) {
   }
 
   this.collect = function(info) {
-    opStates.push(info);
+    if (info instanceof Array) {
+      opStates.push.apply(opStates, info);
+    } else {
+      opStates.push(info);
+    }
+    return this;
   }
 
   this.examine = function() {
@@ -40,12 +45,23 @@ function ErrorHandler(params) {
   }
 
   this.barrier = function(options) {
+    options = options || {};
     var summary = this.examine();
     if (summary.numberOfErrors > 0) {
       LX.has('conlog') && LX.log('conlog', ' - %s constructor(s) has been load failed', summary.numberOfErrors);
       if (options && (options.verbose !== false || options.exitOnError !== false) || LX.has('conlog')) {
         console.log('[x] Failed to load %s script file(s):', summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
+          if (fsv.stage == 'config/schema') {
+            switch(fsv.type) {
+              case 'application':
+              case 'plugin':
+              case 'devebot':
+              console.log('|-| [%s:%s] sandbox config is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              break;
+            }
+            return;
+          }
           if (fsv.stage == 'instantiating') {
             switch(fsv.type) {
               case 'ROUTINE':
