@@ -104,7 +104,7 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
           util.inspect(config[configType], {depth: 8}));
     });
 
-    errorHandler.barrier({ exitOnError: true, verbose: true });
+    errorHandler.barrier({ invoker: chores.getBlockRef(__filename) });
 
     return config;
   };

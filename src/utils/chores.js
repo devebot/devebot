@@ -165,7 +165,25 @@ chores.getFullname = function(parts, separator) {
 
 chores.injektorContext = store.injektorContext;
 
+chores.skipProcessExit = function() {
+  return process.env.DEVEBOT_SKIP_PROCESS_EXIT === 'true';
+}
+
+chores.isSilentForced = function(moduleId, cfg) {
+  if (process.env.NODE_ENV === 'test') {
+    store.fsm = null;
+  }
+  if (!store.fsm) {
+    let fsstr = process.env.DEVEBOT_FORCING_SILENT || '';
+    store.fsm = fsstr.split(',');
+  }
+  return (store.fsm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose === false);
+}
+
 chores.isVerboseForced = function(moduleId, cfg) {
+  if (process.env.NODE_ENV === 'test') {
+    store.fvm = null;
+  }
   if (!store.fvm) {
     let fvstr = process.env.DEVEBOT_FORCING_VERBOSE || '';
     store.fvm = fvstr.split(',');

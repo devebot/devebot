@@ -20,7 +20,7 @@ function ErrorHandler(params) {
   var opStates = [];
 
   this.init = function() {
-    opStates.splice(0, opStates.length);
+    return this.reset();
   }
 
   this.collect = function(info) {
@@ -32,7 +32,8 @@ function ErrorHandler(params) {
     return this;
   }
 
-  this.examine = function() {
+  this.examine = function(options) {
+    options = options || {};
     var summary = lodash.reduce(opStates, function(store, item) {
       if (item.hasError) {
         store.numberOfErrors += 1;
@@ -40,19 +41,23 @@ function ErrorHandler(params) {
       }
       return store;
     }, { numberOfErrors: 0, failedServices: [] });
-
+    LX.has('silly') && LX.log('silly', LT.add({
+      invoker: options.invoker,
+      totalOfErrors: summary.numberOfErrors,
+      errors: summary.failedServices
+    }).toMessage({
+      tags: [ 'devebot-error-handler', 'examine' ],
+      text: ' - Total of errors: ${totalOfErrors}'
+    }));
     return summary;
   }
 
   this.barrier = function(options) {
     options = options || {};
-    var summary = this.examine();
-    LX.has('silly') && LX.log('silly', LT.add(summary).toMessage({
-      tags: [ 'devebot-error-handler', 'barrier' ],
-      text: ' - Total of errors: ${totalOfErrors}'
-    }));
+    var silent = chores.isSilentForced('error-handler', options);
+    var summary = this.examine(options);
     if (summary.numberOfErrors > 0) {
-      if (options && (options.verbose !== false || options.exitOnError !== false) || LX.has('conlog')) {
+      if (!silent) {
         console.log('[x] Failed to load %s script file(s):', summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
           if (fsv.stage == 'config/schema') {
@@ -60,7 +65,7 @@ function ErrorHandler(params) {
               case 'application':
               case 'plugin':
               case 'devebot':
-              console.log('|-| [%s:%s] sandbox config is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              console.log('--> [%s:%s] sandbox config is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
               break;
             }
             return;
@@ -101,20 +106,24 @@ function ErrorHandler(params) {
         });
       }
       LX.has('silly') && LX.log('silly', LT.add({
+        invoker: options.invoker,
+        silent: silent,
         exitOnError: (options.exitOnError !== false)
       }).toMessage({
-        tags: [ 'devebot-error-handler', 'barrier-exit-on-error' ],
+        tags: [ 'devebot-error-handler', 'barrier' ],
         text: ' - Program will be exited? (${exitOnError})'
       }));
       if (options.exitOnError !== false) {
-        console.log('[x] The program will exit now.');
-        console.log('... Please fix the issues and then retry again.');
+        if (!silent) {
+          console.log('==@ The program will exit now.');
+          console.log('... Please fix the issues and then retry again.');
+        }
         this.exit(1);
       }
     }
   }
 
-  self.exit = function(code) {
+  this.exit = function(code) {
     code = lodash.isNumber(code) ? code : 0;
     LX.has('silly') && LX.log('silly', LT.add({
       exitCode: code
@@ -122,7 +131,14 @@ function ErrorHandler(params) {
       tags: [ 'devebot-error-handler', 'exit' ],
       text: 'process.exit(${exitCode}) is invoked'
     }));
-    process.exit(code);
+    if (!chores.skipProcessExit()) {
+      process.exit(code);
+    }
+  }
+
+  this.reset = function() {
+    opStates.splice(0, opStates.length);
+    return this;
   }
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
