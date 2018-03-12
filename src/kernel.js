@@ -127,7 +127,9 @@ function Kernel(params) {
 
   if (sandboxObject.plugins) {
     lodash.forOwn(sandboxObject.plugins, function(pluginConfig, pluginName) {
-      validateCrateConfig(result, pluginConfig, sandboxSchema.plugins[pluginName], pluginName);
+      if (lodash.isObject(sandboxSchema.plugins)) {
+        validateCrateConfig(result, pluginConfig, sandboxSchema.plugins[pluginName], pluginName);
+      }
     });
   }
 
