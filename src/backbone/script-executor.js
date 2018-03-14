@@ -8,12 +8,13 @@ var ScriptExecutor = function(params) {
   var self = this;
   params = params || {};
 
-  var loggingFactory = params.loggingFactory.branch(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(crateID);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -36,7 +37,7 @@ var ScriptExecutor = function(params) {
       command = resolveCommand(command);
     } catch(error) {
       LX.has('error') && LX.log('error', LT.toMessage({
-        tick: 'DEVEBOT_CMD_INVALID_OBJECT',
+        tags: [ crateID, 'executeCommand', 'invalid-command-object' ],
         text: ' - Invalid command object'
       }));
       outlet.render('error');
@@ -49,7 +50,7 @@ var ScriptExecutor = function(params) {
       commandName: command.name,
       command: command
     }).toMessage({
-      tick: 'DEVEBOT_CMD_BEGIN',
+      tags: [ crateID, 'executeCommand', 'begin' ],
       text: '{commandName}#{requestId} start, details: {command}'
     }));
 
@@ -70,24 +71,25 @@ var ScriptExecutor = function(params) {
     }
 
     promize.catch(function(error) {
-      LX.has('conlog') && LX.log('conlog', reqTr.add({
+      LX.has('silly') && LX.log('silly', reqTr.add({
         commandName: command.name
       }).toMessage({
+        tags: [ crateID, 'executeCommand', 'failed' ],
         text: '{commandName}#{requestId} is failed'
       }));
     }).finally(function() {
       LX.has('info') && LX.log('info', reqTr.add({
         commandName: command.name
       }).toMessage({
-        tick: 'DEVEBOT_CMD_END',
+        tags: [ crateID, 'executeCommand', 'done' ],
         text: '{commandName}#{requestId} has done'
       }));
       outlet.render('done');
     });
   };
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

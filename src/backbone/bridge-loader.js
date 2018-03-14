@@ -9,16 +9,21 @@ var errorHandler = require('./error-handler').instance;
 function BridgeLoader(params) {
   params = params || {};
 
-  var loggingFactory = params.loggingFactory.branch(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(crateID);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  LX.has('conlog') && LX.log('conlog', ' + bridgeLoader start with bridgeRefs: %s', JSON.stringify(params.bridgeRefs));
+  LX.has('conlog') && LX.log('conlog', LT.add({
+    bridgeRefs: params.bridgeRefs
+  }).toMessage({
+    text: ' + bridgeLoader start with bridgeRefs: ${bridgeRefs}'
+  }));
 
   this.loadDialects = function(dialectMap, dialectOptions, optType) {
     dialectMap = dialectMap || {};
@@ -40,7 +45,11 @@ function BridgeLoader(params) {
       if (bridgeName.match(bridgeNamePatterns[info.i])) break;
     }
     if (info.i >= bridgeNamePatterns.length) {
-      LX.has('conlog') && LX.log('conlog', ' - bridge with name "%s" is invalid', bridgeName);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        bridgeName: bridgeName
+      }).toMessage({
+        text: ' - bridge with name "${bridgeName}" is invalid'
+      }));
       return info;
     }
     info.code = bridgeName.replace(bridgeNamePatterns[info.i], '\$1')
@@ -58,7 +67,11 @@ function BridgeLoader(params) {
     var bridgeName = bridgeRef.name;
     var bridgePath = bridgeRef.path;
 
-    LX.has('conlog') && LX.log('conlog', ' - bridge constructor (%s) loading is started', bridgeName);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      bridgeName: bridgeName
+    }).toMessage({
+      text: ' - bridge constructor (${bridgeName}) loading is started'
+    }));
 
     var result = {};
 
@@ -69,7 +82,11 @@ function BridgeLoader(params) {
 
     try {
       var bridgeConstructor = loader(bridgePath, { stopWhenError: true });
-      LX.has('conlog') && LX.log('conlog', ' - bridge constructor (%s) loading has done.', bridgeName);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        bridgeName: bridgeName
+      }).toMessage({
+        text: ' - bridge constructor (${bridgeName}) loading has done.'
+      }));
       if (lodash.isFunction(bridgeConstructor)) {
         result[bridgeCode] = {
           moduleId: bridgeName,
@@ -77,11 +94,19 @@ function BridgeLoader(params) {
         };
         opStatus.hasError = false;
       } else {
-        LX.has('conlog') && LX.log('conlog', ' - bridge "%s" is not a constructor', bridgeName);
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          bridgeName: bridgeName
+        }).toMessage({
+          text: ' - bridge "${bridgeName}" is not a constructor'
+        }));
         opStatus.hasError = true;
       }
     } catch(err) {
-      LX.has('conlog') && LX.log('conlog', ' - bridge constructor (%s) loading has failed', bridgeName);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        bridgeName: bridgeName
+      }).toMessage({
+        text: ' - bridge constructor (${bridgeName}) loading has failed'
+      }));
       opStatus.hasError = true;
       opStatus.stack = err.stack;
     }
@@ -100,14 +125,22 @@ function BridgeLoader(params) {
       return lodash.isString(bridgeRef.name) && lodash.isString(bridgeRef.path);
     });
 
-    LX.has('conlog') && LX.log('conlog', ' - load a list of bridge constructors: %s', JSON.stringify(bridgeRefs));
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      bridgeRefs: bridgeRefs
+    }).toMessage({
+      text: ' - load a list of bridge constructors: ${bridgeRefs}'
+    }));
 
     var bridgeConstructors = {};
     bridgeRefs.forEach(function(bridgeRef) {
       lodash.assign(bridgeConstructors, loadBridgeContructor.call(self, bridgeRef));
     });
 
-    LX.has('conlog') && LX.log('conlog', ' - bridge constructors have been loaded: %s', JSON.stringify(lodash.keys(bridgeConstructors)));
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      bridgeConstructorNames: lodash.keys(bridgeConstructors)
+    }).toMessage({
+      text: ' - bridge constructors have been loaded: ${bridgeConstructorNames}'
+    }));
 
     return bridgeConstructors;
   };
@@ -118,7 +151,9 @@ function BridgeLoader(params) {
     var result = {};
 
     if (!lodash.isString(bridgeCode)) {
-      LX.has('conlog') && LX.log('conlog', ' - bridgeCode is invalid');
+      LX.has('conlog') && LX.log('conlog', LT.toMessage({
+        text: ' - bridgeCode is invalid (not a string)'
+      }));
       return result;
     }
 
@@ -126,13 +161,19 @@ function BridgeLoader(params) {
 
     var bridgeConstructor = bridgeRecord.construktor;
     if (!lodash.isFunction(bridgeConstructor)) {
-      LX.has('conlog') && LX.log('conlog', ' - bridgeConstructor is invalid');
+      LX.has('conlog') && LX.log('conlog', LT.toMessage({
+        text: ' - bridgeConstructor is invalid (not a function)'
+      }));
       return result;
     }
 
     dialectName = dialectName || bridgeCode + 'Wrapper';
 
-    LX.has('conlog') && LX.log('conlog', ' - build bridgeDialect (%s) is started', dialectName);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      dialectName: dialectName
+    }).toMessage({
+      text: ' - building bridgeDialect (${dialectName}) is started'
+    }));
 
     var configPath;
     switch(optType) {
@@ -169,14 +210,19 @@ function BridgeLoader(params) {
         this.logger = kwargs.loggingFactory.getLogger({ sector: uniqueName });
       }
 
-      this.logger.has('conlog') && this.logger.log('conlog',
-        ' - newFeatures[%s]: %s', dialectName, JSON.stringify(newFeatures));
+      this.logger.has('silly') && this.logger.log('silly', this.tracer.add({
+        dialectName: dialectName,
+        newFeatures: newFeatures
+      }).toMessage({
+        tags: [ uniqueName, 'apply-features' ],
+        text: ' - newFeatures[${dialectName}]: ${newFeatures}'
+      }));
 
       var opStatus = { stage: 'instantiating', type: 'DIALECT', name: dialectName, code: bridgeCode };
       try {
         if (newFeatures.logoliteEnabled) {
-          this.logger.has('conlog') && this.logger.log('conlog', this.tracer.toMessage({
-            tags: [ 'constructor-begin' ],
+          this.logger.has('silly') && this.logger.log('silly', this.tracer.toMessage({
+            tags: [ uniqueName, 'constructor-begin' ],
             text: ' + constructor start ...'
           }));
         }
@@ -186,14 +232,18 @@ function BridgeLoader(params) {
         }, lodash.get(kwargs, configPath, {})));
 
         if (newFeatures.logoliteEnabled) {
-          this.logger.has('conlog') && this.logger.log('conlog', this.tracer.toMessage({
-            tags: [ 'constructor-end' ],
+          this.logger.has('silly') && this.logger.log('silly', this.tracer.toMessage({
+            tags: [ uniqueName, 'constructor-end' ],
             text: ' - constructor has finished'
           }));
         }
       } catch(err) {
-        this.logger.has('conlog') && this.logger.log('conlog',
-          ' - bridgeConstructor (%s) call has failed', bridgeCode);
+        this.logger.has('silly') && this.logger.log('silly', this.tracer.add({
+          bridgeCode: bridgeCode
+        }).toMessage({
+          tags: [ uniqueName, 'constructor-failed' ],
+          text: ' - bridgeConstructor (${bridgeCode}) call has failed'
+        }));
         opStatus.hasError = true;
         opStatus.stack = err.stack;
       }
@@ -230,7 +280,11 @@ function BridgeLoader(params) {
       construktor: dialectConstructor
     };
 
-    LX.has('conlog') && LX.log('conlog', ' - build bridgeDialect (%s) has done.', dialectName);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      dialectName: dialectName
+    }).toMessage({
+      text: ' - building bridgeDialect (${dialectName}) has done.'
+    }));
 
     return result;
   };
@@ -240,7 +294,11 @@ function BridgeLoader(params) {
 
     optType = (lodash.isNumber(optType)) ? optType : 0;
 
-    LX.has('conlog') && LX.log('conlog', ' - bridgeDialects will be built: %s', JSON.stringify(bridgeRefs));
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      bridgeRefs: bridgeRefs
+    }).toMessage({
+      text: ' - bridgeDialects will be built: ${bridgeRefs}'
+    }));
 
     var bridgeConstructors = loadBridgeConstructors.call(self, bridgeRefs);
 
@@ -286,15 +344,19 @@ function BridgeLoader(params) {
         });
     }
 
-    LX.has('conlog') && LX.log('conlog', ' - bridgeDialects have been built: %s', JSON.stringify(lodash.keys(bridgeDialects)));
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      bridgeDialectNames: lodash.keys(bridgeDialects)
+    }).toMessage({
+      text: ' - bridgeDialects have been built: ${bridgeDialectNames}'
+    }));
 
     return bridgeDialects;
   };
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

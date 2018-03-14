@@ -11,12 +11,13 @@ var errorHandler = require('./error-handler').instance;
 function PluginLoader(params) {
   params = params || {};
 
-  var loggingFactory = params.loggingFactory.branch(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(crateID);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [crateID, 'constructor-begin'],
     text: ' + constructor start ...'
   }));
 
@@ -25,19 +26,23 @@ function PluginLoader(params) {
     return pluginRef;
   });
 
-  LX.has('conlog') && LX.log('conlog', ' - pluginRootDirs: %s', JSON.stringify(pluginRootDirs, null, 2));
+  LX.has('conlog') && LX.log('conlog', LT.add({
+    pluginRootDirs: pluginRootDirs
+  }).toMessage({
+    text: ' - pluginRootDirs: ${pluginRootDirs}'
+  }));
 
   var loaderClass = {
     schemaValidator: params.schemaValidator
   };
 
-  this.loadRoutines = function(routineMap, routineContext) {
-    return loadAllScripts.call(loaderClass, routineMap, 'ROUTINE', routineContext, pluginRootDirs);
-  };
-
   this.loadSchemas = function(schemaMap) {
     return loadAllSchemas.call(loaderClass, schemaMap, pluginRootDirs);
   }
+
+  this.loadRoutines = function(routineMap, routineContext) {
+    return loadAllScripts.call(loaderClass, routineMap, 'ROUTINE', routineContext, pluginRootDirs);
+  };
 
   this.loadServices = function(serviceMap) {
     return loadAllGadgets.call(loaderClass, serviceMap, 'SERVICE', pluginRootDirs);
@@ -93,7 +98,12 @@ function PluginLoader(params) {
     var self = this;
 
     var scriptFolder = pluginRootDir.pathDir + scriptSubDir;
-    LX.has('conlog') && LX.log('conlog', ' - load %ss from folder: %s', constx[scriptType].ROOT_KEY, scriptFolder);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      scriptKey: constx[scriptType].ROOT_KEY,
+      scriptFolder: scriptFolder
+    }).toMessage({
+      text: ' - load ${scriptKey}s from folder: ${scriptFolder}'
+    }));
 
     var scriptFiles = chores.filterFiles(scriptFolder, getFilterPattern(scriptType));
     scriptFiles.forEach(function(scriptFile) {
@@ -108,18 +118,30 @@ function PluginLoader(params) {
     try {
       var scriptInit = loader(filepath, { stopWhenError: true });
       if (lodash.isFunction(scriptInit)) {
-        LX.has('conlog') && LX.log('conlog', ' - script file %s is ok', filepath);
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          filepath: filepath
+        }).toMessage({
+          text: ' - script file ${filepath} is ok'
+        }));
         var scriptObject = scriptInit(scriptContext);
         var output = validateScript.call(self, scriptObject, scriptType);
         if (!output.valid) {
-          LX.has('conlog') && LX.log('conlog', ' - script validation fail: %s', JSON.stringify(output));
+          LX.has('conlog') && LX.log('conlog', LT.add({
+            validationResult: output
+          }).toMessage({
+            text: ' - validating script fail: ${validationResult}'
+          }));
           opStatus.hasError = true;
         } else if (scriptObject.enabled === false) {
-          LX.has('conlog') && LX.log('conlog', ' - script is disabled');
+          LX.has('conlog') && LX.log('conlog', LT.toMessage({
+            text: ' - script is disabled'
+          }));
           opStatus.hasError = false;
           opStatus.isSkipped = true;
         } else {
-          LX.has('conlog') && LX.log('conlog', ' - script validation pass');
+          LX.has('conlog') && LX.log('conlog', LT.toMessage({
+            text: ' - script validation pass'
+          }));
           opStatus.hasError = false;
           var scriptName = scriptFile.replace('.js', '').toLowerCase();
           var uniqueName = [pluginRootDir.name, scriptName].join(chores.getSeparator());
@@ -132,11 +154,19 @@ function PluginLoader(params) {
           lodash.defaultsDeep(scriptMap, entry);
         }
       } else {
-        LX.has('conlog') && LX.log('conlog', ' - script file %s doesnot contain a function.', filepath);
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          filepath: filepath
+        }).toMessage({
+          text: ' - script file ${filepath} doesnot contain a function.'
+        }));
         opStatus.hasError = true;
       }
     } catch (err) {
-      LX.has('conlog') && LX.log('conlog', ' - script file %s loading has failed.', filepath);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        filepath: filepath
+      }).toMessage({
+        text: ' - script file ${filepath} loading has failed.'
+      }));
       opStatus.hasError = true;
       opStatus.stack = err.stack;
     }
@@ -196,7 +226,12 @@ function PluginLoader(params) {
     var self = this;
     var schemaType = 'SCHEMA';
     var schemaFolder = pluginRootDir.pathDir + schemaSubDir;
-    LX.has('conlog') && LX.log('conlog', ' - load schemas from folder: %s', schemaFolder);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      schemaKey: constx[schemaType].ROOT_KEY,
+      schemaFolder: schemaFolder
+    }).toMessage({
+      text: ' - load ${schemaKey}s from folder: ${schemaFolder}'
+    }));
     var schemaFiles = chores.filterFiles(schemaFolder, getFilterPattern(schemaType));
     schemaFiles.forEach(function(schemaFile) {
       loadSchemaEntry.call(self, schemaMap, schemaSubDir, schemaFile, pluginRootDir);
@@ -212,14 +247,22 @@ function PluginLoader(params) {
       var schemaObject = loader(filepath, { stopWhenError: true });
       var output = validateSchema.call(self, schemaObject, schemaType);
       if (!output.valid) {
-        LX.has('conlog') && LX.log('conlog', ' - schema validation fail: %s', JSON.stringify(output));
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          validationResult: output
+        }).toMessage({
+          text: ' - validating schema fail: ${validationResult}'
+        }));
         opStatus.hasError = true;
       } else if (schemaObject.enabled === false) {
-        LX.has('conlog') && LX.log('conlog', ' - schema is disabled');
+        LX.has('conlog') && LX.log('conlog', LT.toMessage({
+          text: ' - schema is disabled'
+        }));
         opStatus.hasError = false;
         opStatus.isSkipped = true;
       } else {
-        LX.has('conlog') && LX.log('conlog', ' - schema validation pass');
+        LX.has('conlog') && LX.log('conlog', LT.toMessage({
+          text: ' - schema validation pass'
+        }));
         opStatus.hasError = false;
         var pluginName = getPluginName(pluginRootDir);
         var typeName = schemaObject.type || schemaFile.replace('.js', '').toLowerCase();
@@ -237,8 +280,12 @@ function PluginLoader(params) {
         lodash.defaultsDeep(schemaMap, entry);
       }
     } catch(err) {
-      console.log(err);
-      LX.has('conlog') && LX.log('conlog', ' - schema file %s loading has failed', filepath);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        filepath: filepath
+      }).toMessage({
+        text: ' - schema file ${filepath} loading has failed'
+      }));
+      LX.has('conlog') && console.log(err);
       opStatus.hasError = true;
       opStatus.stack = err.stack;
     }
@@ -278,7 +325,12 @@ function PluginLoader(params) {
     var self = this;
 
     var gadgetFolder = pluginRootDir.pathDir + gadgetSubDir;
-    LX.has('conlog') && LX.log('conlog', ' - load %ss from folder: %s', constx[gadgetType].ROOT_KEY, gadgetFolder);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      gadgetKey: constx[gadgetType].ROOT_KEY,
+      gadgetFolder: gadgetFolder
+    }).toMessage({
+      text: ' - load ${gadgetKey}s from folder: ${gadgetFolder}'
+    }));
 
     var gadgetFiles = chores.filterFiles(gadgetFolder, getFilterPattern(gadgetType));
     gadgetFiles.forEach(function(gadgetFile) {
@@ -292,17 +344,30 @@ function PluginLoader(params) {
     var filepath = path.join(pluginRootDir.pathDir, gadgetSubDir, gadgetFile);
     try {
       var gadgetConstructor = loader(filepath, { stopWhenError: true });
-      LX.has('conlog') && LX.log('conlog', ' - gadget file %s loading has done', filepath);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        filepath: filepath
+      }).toMessage({
+        text: ' - gadget file ${filepath} loading has done'
+      }));
       if (lodash.isFunction(gadgetConstructor)) {
         var gadgetName = chores.stringCamelCase(gadgetFile.replace('.js', ''));
         lodash.defaults(gadgetMap, buildGadgetWrapper(gadgetConstructor, gadgetName, pluginRootDir));
         opStatus.hasError = false;
       } else {
-        LX.has('conlog') && LX.log('conlog', ' - gadget file %s doesnot contain a function', filepath);
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          filepath: filepath
+        }).toMessage({
+          text: ' - gadget file ${filepath} doesnot contain a function'
+        }));
         opStatus.hasError = true;
       }
     } catch(err) {
-      LX.has('conlog') && LX.log('conlog', ' - gadget file %s loading has failed', filepath);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        filepath: filepath
+      }).toMessage({
+        text: ' - gadget file ${filepath} loading has failed'
+      }));
+      LX.has('conlog') && console.log(err);
       opStatus.hasError = true;
       opStatus.stack = err.stack;
     }
@@ -313,7 +378,9 @@ function PluginLoader(params) {
     var result = {};
 
     if (!lodash.isFunction(gadgetConstructor)) {
-      LX.has('conlog') && LX.log('conlog', ' - gadgetConstructor is invalid');
+      LX.has('conlog') && LX.log('conlog', LT.toMessage({
+        text: ' - gadgetConstructor is invalid'
+      }));
       return result;
     }
 
@@ -329,7 +396,12 @@ function PluginLoader(params) {
         return kwargs = lodash.clone(kwargs);
       }
       var newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', pluginName], {});
-      LX.has('conlog') && LX.log('conlog', ' - newFeatures[%s]: %s', pluginName, JSON.stringify(newFeatures));
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        pluginName: pluginName,
+        newFeatures: newFeatures
+      }).toMessage({
+        text: ' - newFeatures[${pluginName}]: ${newFeatures}'
+      }));
       if (newFeatures.sandboxConfig) {
         kwargs = getWrappedParams();
         if (specialPlugins.indexOf(pluginRootDir.type) >= 0) {
@@ -385,7 +457,11 @@ function PluginLoader(params) {
       wrapperConstructor.argumentSchema = wrappedArgumentSchema;
     }
 
-    LX.has('conlog') && LX.log('conlog', ' - argumentSchema: %s', JSON.stringify(wrapperConstructor.argumentSchema));
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      argumentSchema: wrapperConstructor.argumentSchema
+    }).toMessage({
+      text: ' - wrapperConstructor.argumentSchema: ${argumentSchema}'
+    }));
 
     result[uniqueName] = {
       moduleId: pluginRootDir.name,
@@ -393,15 +469,21 @@ function PluginLoader(params) {
       construktor: wrapperConstructor
     };
 
-    LX.has('conlog') && LX.log('conlog', ' - build gadget wrapper (%s) has done.', wrapperName);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      uniqueName: uniqueName,
+      moduleId: pluginRootDir.name,
+      name: wrapperName
+    }).toMessage({
+      text: ' - build gadget wrapper (${name}) has done.'
+    }));
 
     return result;
   };
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }
