@@ -16,7 +16,7 @@ var RepeatedTimer = function(kwargs) {
   var LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -48,9 +48,8 @@ var RepeatedTimer = function(kwargs) {
   var startTime, finishTime;
 
   this.start = function() {
-    LX.has('trace') && LX.log('trace', LT.add({
-      checkpoint: 'RepeatedTimer started'
-    }).toMessage({
+    LX.has('trace') && LX.log('trace', LT.toMessage({
+      tags: [ crateID, 'starting' ],
       text: 'RepeatedTimer daemon is starting'
     }));
     this.emit('started', {});
@@ -75,9 +74,8 @@ var RepeatedTimer = function(kwargs) {
   }
 
   this.stop = function() {
-    LX.has('trace') && LX.log('trace', LT.add({
-      checkpoint: 'RepeatedTimer stopped'
-    }).toMessage({
+    LX.has('trace') && LX.log('trace', LT.toMessage({
+      tags: [ crateID, 'stopping' ],
       text: 'RepeatedTimer daemon will be stopped'
     }));
     this.emit('stopped', {});
@@ -116,7 +114,7 @@ var RepeatedTimer = function(kwargs) {
   });
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ 'constructor-end' ],
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

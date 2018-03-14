@@ -60,12 +60,35 @@ var Service = function(params) {
   };
 
   var getRunhook = function(command) {
-    if (!command || !command.name) return {};
+    if (!command || !command.name) return {
+      code: -1,
+      message: 'command.name is undefined'
+    };
     var fn = routineStore.suggest(command.name);
-    if (fn == null || fn.length == 0 || fn.length >= 2) return {};
-    return routineStore.lookup(command.name, {
-      scope: command.package
-    });
+    if (fn == null || fn.length == 0) return {
+      code: -2,
+      message: 'command.name not found'
+    };
+    if (fn.length >= 2) {
+      try {
+        return routineStore.lookup(command.name, {
+          scope: command.package
+        });
+      } catch (err) {
+        if (err.name === 'DuplicatedRelativeNameError') {
+          return {
+            code: -3,
+            message: 'command.name is duplicated'
+          };
+        } else {
+          return {
+            code: -9,
+            message: 'unknown error'
+          };
+        }
+      }
+    }
+    return routineStore.lookup(fn[0]);
   }
 
   self.getDefinitions = function(defs) {
@@ -78,6 +101,10 @@ var Service = function(params) {
     });
     return defs;
   };
+
+  self.getRunhook = function(command) {
+    return getRunhook(command);
+  }
 
   self.isAvailable = function(command) {
     return lodash.isFunction(getRunhook(command).handler);
@@ -95,8 +122,33 @@ var Service = function(params) {
       tags: [ crateID, 'execute', 'begin' ],
       text: '{commandName}#{requestId} - validate: {command}'
     }));
+
     var routine = getRunhook(command);
     var validationError = null;
+
+    if (lodash.isEmpty(routine) || routine.code === -1) {
+      validationError = {
+        message: routine.message || 'command.name is undefined'
+      }
+    }
+    if (routine.code === -2) {
+      validationError = {
+        name: command.name,
+        message: routine.message || 'command.name not found'
+      }
+    }
+    if (routine.code === -3) {
+      validationError = {
+        name: command.name,
+        message: routine.message || 'command.name is duplicated'
+      }
+    }
+
+    if (validationError) {
+      context.outlet && context.outlet.render('invalid', validationError);
+      return Promise.reject(validationError);
+    }
+
     var payload = command.data;
     var schema = routine && routine.info && routine.info.schema;
     if (schema && lodash.isObject(schema)) {
