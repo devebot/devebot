@@ -17,18 +17,19 @@ var CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 var CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
 function Loader(appName, appOptions, appRootDir, libRootDirs) {
-  var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(crateID);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
   var label = chores.stringLabelCase(appName);
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  LX.has('silly') && LX.log('silly', LT.add({
     appName: appName,
     label: label
   }).toMessage({
-    tags: [ 'constructor-begin' ],
-    text: ' + Config of application ({appName}) is loaded in name: {label}'
+    tags: [ crateID, 'constructor-begin' ],
+    text: ' + Config of application (${appName}) is loaded in name: ${label}'
   }));
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
@@ -41,10 +42,11 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
 
     var configDir = resolveConfigDir(appName, appRootDir, customDir, customEnv);
 
-    LX.has('conlog') && LX.log('conlog', LT.add({
+    LX.has('silly') && LX.log('silly', LT.add({
       configDir: configDir
     }).toMessage({
-      text: ' - configDir: {configDir}'
+      tags: [ crateID, 'config-dir' ],
+      text: ' - configDir: ${configDir}'
     }));
 
     var configFiles = [];
@@ -72,18 +74,27 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
 
       if (configDir) {
         var defaultFile = path.join(configDir, configType + '.js');
-        LX.has('conlog') && LX.log('conlog', ' + load the default config: %s', defaultFile);
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          defaultFile: defaultFile
+        }).toMessage({
+          text: ' + load the default config: ${defaultFile}'}));
         config[configType]['default'] = loadConfigFile(defaultFile);
       }
 
-      LX.has('conlog') && LX.log('conlog', ' + load the default config from plugins');
+      LX.has('conlog') && LX.log('conlog', LT.toMessage({
+        text: ' + load the default config from plugins'
+      }));
       libRootDirs.forEach(function(libRootDir) {
         var defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
         config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
           loadConfigFile(defaultFile));
       });
 
-      LX.has('conlog') && LX.log('conlog', ' + load the custom config of %s', configType);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        configType: configType
+      }).toMessage({
+        text: ' + load the custom config of ${configType}'
+      }));
       config[configType]['mixture'] = {};
 
       var mixtureNames = filterConfigBy(configInfos, includedNames, configType);
@@ -92,7 +103,11 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
       if (configDir) {
         config[configType]['mixture'] = lodash.reduce(mixtureNames, function(accum, mixtureItem) {
           var configFile = path.join(configDir, mixtureItem.join('_') + '.js');
-          LX.has('conlog') && LX.log('conlog', ' - load the environment config: %s', configFile);
+          LX.has('conlog') && LX.log('conlog', LT.add({
+            configFile: configFile
+          }).toMessage({
+            text: ' - load the environment config: ${configFile}'
+          }));
           var configObj = lodash.defaultsDeep(loadConfigFile(configFile), accum);
           if (configObj.disabled) return accum;
           config[configType]['names'].push(mixtureItem[1]);
@@ -104,7 +119,7 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
           util.inspect(config[configType], {depth: 8}));
     });
 
-    errorHandler.barrier({ invoker: chores.getBlockRef(__filename) });
+    errorHandler.barrier({ invoker: crateID });
 
     return config;
   };
@@ -115,10 +130,18 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     try {
       content = loader(configFile, { stopWhenError: true });
       opStatus.hasError = false;
-      LX.has('conlog') && LX.log('conlog', ' - config file %s loading has done.', configFile);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        configFile: configFile
+      }).toMessage({
+        text: ' - config file ${configFile} loading has done.'
+      }));
     } catch(err) {
       if (err.code != 'MODULE_NOT_FOUND') {
-        LX.has('conlog') && LX.log('conlog', ' - config file %s loading is failed.', configFile);
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          configFile: configFile
+        }).toMessage({
+          text: ' - config file ${configFile} loading is failed.'
+        }));
         opStatus.hasError = true;
         opStatus.stack = err.stack;
       }
@@ -137,10 +160,20 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     let value, varLabel;
     for(const varLabel of varLabels) {
       value = process.env[varLabel];
-      LX.has('conlog') && LX.log('conlog', ' - Get value of %s: %s', varLabel, value);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        label: varLabel,
+        value: value
+      }).toMessage({
+        text: ' - Get value of ${label}: ${value}'
+      }));
       if (value) break;
     }
-    LX.has('conlog') && LX.log('conlog', " - Final value of %s: %s", varLabels[0], value);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      label: varLabels[0],
+      value: value
+    }).toMessage({
+      text: ' - Final value of ${label}: ${value}'
+    }));
     return value;
   }
 
@@ -208,8 +241,8 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     set: function(value) {}
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }
