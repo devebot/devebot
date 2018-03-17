@@ -14,12 +14,13 @@ chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), [
 ]);
 
 function Kernel(params) {
-  var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(crateID);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ 'devebot-kernel', 'constructor-begin' ],
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -27,7 +28,7 @@ function Kernel(params) {
   params = params || {};
 
   // create injektor instance
-  var injektor = new Injektor({ separator: chores.getSeparator() });
+  var injektor = new Injektor(chores.injektorOptions);
 
   ['appName', 'appInfo', 'bridgeRefs', 'pluginRefs'].forEach(function(refName) {
     injektor.registerObject(refName, params[refName], chores.injektorContext);
@@ -51,7 +52,7 @@ function Kernel(params) {
     configMap: params,
     schemaMap: schemaMap
   }).toMessage({
-    tags: [ 'devebot-kernel', 'config-schema-loading' ],
+    tags: [ crateID, 'config-schema-loading' ],
     text: ' - Sandbox schemas: ${schemaMap}'
   }));
 
@@ -83,7 +84,7 @@ function Kernel(params) {
     configObject: configObject,
     configSchema: configSchema
   }).toMessage({
-    tags: [ 'devebot-kernel', 'config-schema-synchronizing' ],
+    tags: [ crateID, 'config-schema-synchronizing' ],
     text: ' - Synchronize the structure of configuration data and schemas'
   }));
 
@@ -115,7 +116,7 @@ function Kernel(params) {
         config: crateConfig,
         schema: crateSchema
       }).toMessage({
-        tags: [ 'devebot-kernel', 'sandbox-config-validation-skipped' ],
+        tags: [ crateID, 'sandbox-config-validation-skipped' ],
         text: ' - Validate sandboxConfig[${name}] is skipped'
       }));
     }
@@ -136,7 +137,7 @@ function Kernel(params) {
   LX.has('silly') && LX.log('silly', LT.add({
     validatingResult: result
   }).toMessage({
-    tags: [ 'devebot-kernel', 'config-schema-validating' ],
+    tags: [ crateID, 'config-schema-validating' ],
     text: ' - Validating sandbox configuration using schemas'
   }));
 
@@ -149,7 +150,7 @@ function Kernel(params) {
   this._injektor = injektor;
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ 'devebot-kernel', 'constructor-end' ],
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

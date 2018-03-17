@@ -53,10 +53,7 @@ function appLoader(params) {
     text: ' - application name (appName): ${appName}'
   }));
 
-  var configLoader = new ConfigLoader(appName, appOptions, appRootPath, libRootPaths.concat(topRootPath));
-  var config = configLoader.config;
-
-  var appRef = lodash.isEmpty(appRootPath) ? [] : {
+  var appRef = lodash.isEmpty(appRootPath) ? null : {
     type: 'application',
     name: appName,
     path: path.join(appRootPath, 'index.js')
@@ -68,10 +65,15 @@ function appLoader(params) {
     path: path.join(topRootPath, 'index.js')
   };
 
+  var libRefs = [].concat(lodash.values(params.pluginRefs), devebotRef);
+
+  var configLoader = new ConfigLoader(appName, appOptions, appRef, libRefs);
+  var config = configLoader.config;
+
   config.appName = appName;
   config.appInfo = appInfo;
   config.bridgeRefs = lodash.values(params.bridgeRefs);
-  config.pluginRefs = [].concat(appRef, lodash.values(params.pluginRefs), devebotRef);
+  config.pluginRefs = [].concat(appRef || [], lodash.values(params.pluginRefs), devebotRef);
 
   var app = { config: config };
 

@@ -10,12 +10,13 @@ var RepeatedTimer = function(kwargs) {
 
   kwargs = kwargs || {};
 
-  var loggingFactory = kwargs.loggingFactory.branch(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingFactory = kwargs.loggingFactory.branch(crateID);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -47,9 +48,8 @@ var RepeatedTimer = function(kwargs) {
   var startTime, finishTime;
 
   this.start = function() {
-    LX.has('trace') && LX.log('trace', LT.add({
-      checkpoint: 'RepeatedTimer started'
-    }).toMessage({
+    LX.has('trace') && LX.log('trace', LT.toMessage({
+      tags: [ crateID, 'starting' ],
       text: 'RepeatedTimer daemon is starting'
     }));
     this.emit('started', {});
@@ -74,9 +74,8 @@ var RepeatedTimer = function(kwargs) {
   }
 
   this.stop = function() {
-    LX.has('trace') && LX.log('trace', LT.add({
-      checkpoint: 'RepeatedTimer stopped'
-    }).toMessage({
+    LX.has('trace') && LX.log('trace', LT.toMessage({
+      tags: [ crateID, 'stopping' ],
       text: 'RepeatedTimer daemon will be stopped'
     }));
     this.emit('stopped', {});
@@ -114,8 +113,8 @@ var RepeatedTimer = function(kwargs) {
     }
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

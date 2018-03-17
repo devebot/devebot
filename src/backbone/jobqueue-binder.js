@@ -9,18 +9,15 @@ var Service = function(params) {
   var self = this;
   params = params || {};
 
-  var getSandboxName = function() {
-    return params.sandboxName;
-  };
-
-  var loggingFactory = params.loggingFactory.branch(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(crateID);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
-    sandboxName: getSandboxName()
+  LX.has('silly') && LX.log('silly', LT.add({
+    sandboxName: params.sandboxName
   }).toMessage({
-    tags: [ 'constructor-begin' ],
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
@@ -44,7 +41,7 @@ var Service = function(params) {
         var enabled = jqCfg.enabled !== false && getJobQueueMaster() != null;
         LX.has('conlog') && LX.log('conlog', LT.add({
           enabled: enabled,
-          sandboxName: getSandboxName()
+          sandboxName: params.sandboxName
         }).toMessage({
           text: ' - jobqueueMaster in sandbox <{sandboxName}> status (enabled): {enabled}'
         }));
@@ -60,8 +57,8 @@ var Service = function(params) {
     }
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

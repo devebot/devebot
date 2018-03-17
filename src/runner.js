@@ -12,12 +12,13 @@ var LoggingWrapper = require('./backbone/logging-wrapper.js');
 function Runner(params) {
   Kernel.call(this, params);
 
-  var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(crateID);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -31,7 +32,12 @@ function Runner(params) {
   var outlet = scriptRenderer.createOutlet({ ws: ws });
 
   ws.on('message', function(command) {
-    LX.has('conlog') && LX.log('conlog', ' - Runner receives a command: <%s>', command);
+    LX.has('silly') && LX.log('silly', LT.add({
+      command: command
+    }).toMessage({
+      tags: [ crateID, 'receive-a-command' ],
+      text: ' - Runner receives a command: %{command}'
+    }));
     scriptExecutor.executeCommand(command, outlet);
   });
 
@@ -43,8 +49,8 @@ function Runner(params) {
     return lodash.isFunction(block) && Promise.resolve(block(injektor));
   }
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

@@ -11,6 +11,10 @@ var loader = require('./loader.js');
 var debugx = require('./pinbug.js')('devebot:utils:chores');
 
 let store = {
+  injektorOptions: {
+    namePatternTemplate: '^[a-zA-Z]{1}[a-zA-Z0-9&\\>\\-_%s]*$',
+    separator: '/'
+  },
   injektorContext: { scope: 'devebot' }
 };
 var chores = {};
@@ -155,13 +159,15 @@ chores.getBlockRef = function(filename, blockScope) {
 }
 
 chores.getSeparator = function() {
-  return '/';
+  return store.injektorOptions.separator;
 };
 
 chores.getFullname = function(parts, separator) {
   return lodash.filter(parts, lodash.negate(lodash.isEmpty))
       .join(separator || chores.getSeparator());
 }
+
+chores.injektorOptions = store.injektorOptions;
 
 chores.injektorContext = store.injektorContext;
 
@@ -189,6 +195,10 @@ chores.isVerboseForced = function(moduleId, cfg) {
     store.fvm = fvstr.split(',');
   }
   return (store.fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
+}
+
+chores.isOldFeatures = function() {
+  return process.env.DEVEBOT_FEATURE_MODE !== 'new';
 }
 
 module.exports = chores;

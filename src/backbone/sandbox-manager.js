@@ -15,12 +15,13 @@ var Service = function(params) {
   var self = this;
   params = params || {};
 
-  var loggingFactory = params.loggingFactory.branch(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(crateID);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -42,18 +43,20 @@ var Service = function(params) {
 
   LX.has('conlog') && LX.log('conlog', LT.add({
     sandboxNames: sandboxNames,
-    sandboxCfg: util.inspect(sandboxConfig),
+    sandboxConfig: util.inspect(sandboxConfig),
   }).toMessage({
-    text: ' - load the sandbox[{sandboxNames}] with configuration: {sandboxCfg}'
+    text: ' - load the sandbox${sandboxNames} with configuration: ${sandboxConfig}'
   }));
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
-    sandboxNames: sandboxNames
+  LX.has('silly') && LX.log('silly', LT.add({
+    sandboxNames: sandboxNames,
+    sandboxConfig: sandboxConfig
   }).toMessage({
-    text: ' - create sandbox[{sandboxNames}].injektor object'
+    tags: [ crateID, 'sandbox-info' ],
+    text: ' - create sandbox${sandboxNames}.injektor object'
   }));
 
-  var sandboxInjektor = new Injektor({ separator: chores.getSeparator() });
+  var sandboxInjektor = new Injektor(chores.injektorOptions);
   [ 'appName', 'appInfo',
     'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
     'pluginLoader', 'schemaValidator', 'loggingFactory'
@@ -100,6 +103,13 @@ var Service = function(params) {
   var instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers) {
     var exceptions = [];
     var handlerName = [handlerRecord.moduleId, handlerRecord.name].join(_injektor.separator);
+    LX.has('silly') && LX.log('silly', LT.add({
+      handlerName: handlerName,
+      handlerType: handlerType
+    }).toMessage({
+      tags: [ crateID, 'instantiateObject' ],
+      text: ' - instantiate object: ${handlerName}'
+    }));
     if (injectedHandlers) {
       injectedHandlers[handlerName] = _injektor.lookup(handlerName, exceptions);
     }
@@ -155,8 +165,8 @@ var Service = function(params) {
   };
 
   self.startTriggers = function(triggerNames) {
-    LX.has('conlog') && LX.log('conlog', LT.toMessage({
-      tags: [ 'sandbox-triggers-start' ],
+    LX.has('silly') && LX.log('silly', LT.toMessage({
+      tags: [ crateID, 'trigger', 'start' ],
       text: ' - Start triggers'
     }));
     return self.eachTriggers(function(trigger) {
@@ -165,8 +175,8 @@ var Service = function(params) {
   };
 
   self.stopTriggers = function(triggerNames) {
-    LX.has('conlog') && LX.log('conlog', LT.toMessage({
-      tags: [ 'sandbox-triggers-stop' ],
+    LX.has('silly') && LX.log('silly', LT.toMessage({
+      tags: [ crateID, 'trigger', 'stop' ],
       text: ' - Stop triggers'
     }));
     return self.eachTriggers(function(trigger) {
@@ -179,13 +189,24 @@ var Service = function(params) {
 
     if (lodash.isString(triggerNames)) triggerNames = [triggerNames];
     if (triggerNames && !lodash.isArray(triggerNames)) return;
-    LX.has('conlog') && LX.log('conlog', ' - Loop triggers: %s', JSON.stringify(triggerNames || 'all'));
+    LX.has('silly') && LX.log('silly', LT.add({
+      triggerNames: triggerNames || 'all'
+    }).toMessage({
+      tags: [ crateID, 'trigger', 'loop' ],
+      text: ' - Loop triggers: ${triggerNames}'
+    }));
 
     var triggers = [];
     lodash.forOwn(triggerMap, function(triggerRecord, triggerId) {
       var triggerName = [triggerRecord.moduleId, triggerRecord.name].join(sandboxInjektor.separator);
       if (!triggerNames || triggerNames.indexOf(triggerName) >= 0) {
-        LX.has('conlog') && LX.log('conlog', ' - %s trigger[%s]', actionName, triggerName);
+        LX.has('silly') && LX.log('silly', LT.add({
+          actionName: actionName,
+          triggerName: triggerName
+        }).toMessage({
+          tags: [ crateID, 'trigger', 'action' ],
+          text: ' - ${actionName} trigger[${triggerName}]'
+        }));
         var trigger = sandboxInjektor.lookup(triggerName);
         if (trigger) {
           triggers.push(trigger);
@@ -229,8 +250,8 @@ var Service = function(params) {
     return blocks;
   };
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

@@ -11,12 +11,13 @@ var Service = function(params) {
   var self = this;
   params = params || {};
 
-  var loggingFactory = params.loggingFactory.branch(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(crateID);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -25,11 +26,12 @@ var Service = function(params) {
   self.authenticate = function(tokens) {
     var output = Promise.resolve({ result: true });
 
-    LX.has('conlog') && LX.log('conlog', LT.add({
+    LX.has('silly') && LX.log('silly', LT.add({
       tokens: tokens,
       status: authenCfg.disabled ? 'skipped':'processing'
     }).toMessage({
-      text: ' - authenticate({tokens}): {status}'
+      tags: [ crateID, 'authenticate', 'check' ],
+      text: ' - authenticate(${tokens}): ${status}'
     }));
 
     if (authenCfg.disabled) return output;
@@ -43,7 +45,6 @@ var Service = function(params) {
           return output;
         }
       }
-
       return Promise.resolve({ result: false, code: 401, name: 'Token Not Found'});
     });
   };
@@ -53,35 +54,38 @@ var Service = function(params) {
     return readFile(storefile, 'utf8').then(function(text) {
       var data = JSON.parse(text);
       if (lodash.isEmpty(data.tokens) || !lodash.isArray(data.tokens)) {
-        LX.has('conlog') && LX.log('conlog', LT.add({
+        LX.has('silly') && LX.log('silly', LT.add({
           storefile: storefile
         }).toMessage({
+          tags: [ crateID, 'loadTokenStore', 'invalid' ],
           text: ' - invalid tokenStore ({storefile}), "tokens" must be an array'
         }));
         return {};
       }
-      LX.has('conlog') && LX.log('conlog', LT.add({
+      LX.has('silly') && LX.log('silly', LT.add({
         storefile: storefile,
         tokenTotal: data.tokens.length
       }).toMessage({
+        tags: [ crateID, 'loadTokenStore', 'ok' ],
         text: ' - tokenStore ({storefile}) has {tokenTotal} items'
       }));
       return data;
     }).catch(function(err) {
-      LX.has('conlog') && LX.log('conlog', LT.add({
+      LX.has('silly') && LX.log('silly', LT.add({
         storefile: storefile,
         errorCode: err.code,
         errorName: err.name || 'Error',
         errorMessage: err.message
       }).toMessage({
+        tags: [ crateID, 'loadTokenStore', 'error' ],
         text: ' - tokenStore ({storefile}) loading is failed. {errorName}: {errorMessage}'
       }));
       return {};
     });
   };
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

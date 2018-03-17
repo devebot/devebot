@@ -20,14 +20,15 @@ var Service = function(params) {
   params = params || {};
   var self = this;
 
-  var loggingFactory = params.loggingFactory.branch(chores.getBlockRef(__filename));
+  var crateID = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(crateID);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  LX.has('silly') && LX.log('silly', LT.add({
     sandboxName: params.sandboxName
   }).toMessage({
-    tags: [ 'constructor-begin' ],
+    tags: [ crateID, 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
@@ -52,19 +53,42 @@ var Service = function(params) {
   ]) == true;
 
   var routineMap = {};
-  var routineStore = new Injektor();
+  var routineStore = new Injektor(chores.injektorOptions);
 
   var getRunhooks = function() {
     return (routineMap = routineMap || {});
   };
 
   var getRunhook = function(command) {
-    if (!command || !command.name) return {};
+    if (!command || !command.name) return {
+      code: -1,
+      message: 'command.name is undefined'
+    };
     var fn = routineStore.suggest(command.name);
-    if (fn == null || fn.length == 0 || fn.length >= 2) return {};
-    return routineStore.lookup(command.name, {
-      scope: command.package
-    });
+    if (fn == null || fn.length == 0) return {
+      code: -2,
+      message: 'command.name not found'
+    };
+    if (fn.length >= 2) {
+      try {
+        return routineStore.lookup(command.name, {
+          scope: command.package
+        });
+      } catch (err) {
+        if (err.name === 'DuplicatedRelativeNameError') {
+          return {
+            code: -3,
+            message: 'command.name is duplicated'
+          };
+        } else {
+          return {
+            code: -9,
+            message: 'unknown error'
+          };
+        }
+      }
+    }
+    return routineStore.lookup(fn[0]);
   }
 
   self.getDefinitions = function(defs) {
@@ -77,6 +101,10 @@ var Service = function(params) {
     });
     return defs;
   };
+
+  self.getRunhook = function(command) {
+    return getRunhook(command);
+  }
 
   self.isAvailable = function(command) {
     return lodash.isFunction(getRunhook(command).handler);
@@ -91,18 +119,45 @@ var Service = function(params) {
       commandName: command.name,
       command: command
     }).toMessage({
+      tags: [ crateID, 'execute', 'begin' ],
       text: '{commandName}#{requestId} - validate: {command}'
     }));
+
     var routine = getRunhook(command);
     var validationError = null;
+
+    if (lodash.isEmpty(routine) || routine.code === -1) {
+      validationError = {
+        message: routine.message || 'command.name is undefined'
+      }
+    }
+    if (routine.code === -2) {
+      validationError = {
+        name: command.name,
+        message: routine.message || 'command.name not found'
+      }
+    }
+    if (routine.code === -3) {
+      validationError = {
+        name: command.name,
+        message: routine.message || 'command.name is duplicated'
+      }
+    }
+
+    if (validationError) {
+      context.outlet && context.outlet.render('invalid', validationError);
+      return Promise.reject(validationError);
+    }
+
     var payload = command.data;
     var schema = routine && routine.info && routine.info.schema;
     if (schema && lodash.isObject(schema)) {
-      LX.has('conlog') && LX.log('conlog', reqTr.add({
+      LX.has('silly') && LX.log('silly', reqTr.add({
         commandName: command.name,
         payload: payload,
         schema: schema
       }).toMessage({
+        tags: [ crateID, 'execute', 'validate-by-schema' ],
         text: '{commandName}#{requestId} - validate payload: {payload} by schema: {schema}'
       }));
       var result = params.schemaValidator.validate(payload, schema);
@@ -115,10 +170,11 @@ var Service = function(params) {
     }
     var validate = routine && routine.info && routine.info.validate;
     if (validate && lodash.isFunction(validate)) {
-      LX.has('conlog') && LX.log('conlog', reqTr.add({
+      LX.has('silly') && LX.log('silly', reqTr.add({
         commandName: command.name,
         payload: payload
       }).toMessage({
+        tags: [ crateID, 'execute', 'validate-by-method' ],
         text: '{commandName}#{requestId} - validate payload: {payload} using validate()'
       }));
       if (!validate(payload)) {
@@ -136,6 +192,7 @@ var Service = function(params) {
     LX.has('trace') && LX.log('trace', reqTr.add({
       commandName: command.name
     }).toMessage({
+      tags: [ crateID, 'execute', 'enqueue' ],
       text: '{commandName}#{requestId} - enqueue'
     }));
 
@@ -202,6 +259,7 @@ var Service = function(params) {
       commandName: command.name,
       command: command
     }).toMessage({
+      tags: [ crateID, 'process', 'begin' ],
       text: '{commandName}#{requestId} - process: {command}'
     }));
 
@@ -210,15 +268,17 @@ var Service = function(params) {
     var options = command.options;
     var payload = command.data || command.payload;
     if (lodash.isFunction(handler)) {
+      LX.has('trace') && LX.log('trace', reqTr.add({
+        commandName: command.name,
+        command: command,
+        predefinedContext: predefinedContext
+      }).toMessage({
+        tags: [ crateID, 'process', 'handler-invoked' ],
+        text: '{commandName}#{requestId} - handler is invoked'
+      }));
       if (predefinedContext) {
         return Promise.resolve().then(handler.bind(null, options, payload, context));
       } else {
-        LX.has('trace') && LX.log('trace', reqTr.add({
-          commandName: command.name,
-          command: command
-        }).toMessage({
-          text: '{commandName}#{requestId} - handler is invoked'
-        }));
         return Promise.resolve().then(handler.bind(buildRunhookInstance(command.name), options, payload, context));
       }
     } else {
@@ -243,8 +303,8 @@ var Service = function(params) {
     routineStore.registerObject(value.name, value.object, { scope: value.moduleId });
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

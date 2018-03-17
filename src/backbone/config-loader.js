@@ -16,35 +16,45 @@ var CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox';
 var CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 var CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
-function Loader(appName, appOptions, appRootDir, libRootDirs) {
-  var loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
+function Loader(appName, appOptions, appRef, libRefs) {
+  var crateID = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(crateID);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
+  var CTX = { logger: LX, tracer: LT };
 
   var label = chores.stringLabelCase(appName);
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  LX.has('silly') && LX.log('silly', LT.add({
     appName: appName,
+    appOptions: appOptions,
+    appRef: appRef,
+    libRefs: libRefs,
     label: label
   }).toMessage({
-    tags: [ 'constructor-begin' ],
-    text: ' + Config of application ({appName}) is loaded in name: {label}'
+    tags: [ crateID, 'constructor-begin' ],
+    text: ' + Config of application (${appName}) is loaded in name: ${label}'
   }));
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
-  var loadConfig = function(appName, appOptions, appRootDir, libRootDirs, profileName, sandboxName, customDir, customEnv) {
+  var loadConfig = function(appName, appOptions, appRef, libRefs, profileName, sandboxName, customDir, customEnv) {
     appOptions = appOptions || {};
-    libRootDirs = libRootDirs || [];
+
+    var appRootDir = null;
+    if (appRef && lodash.isString(appRef.path)) {
+      appRootDir = path.dirname(appRef.path);
+    };
 
     var config = {};
 
     var configDir = resolveConfigDir(appName, appRootDir, customDir, customEnv);
 
-    LX.has('conlog') && LX.log('conlog', LT.add({
+    LX.has('silly') && LX.log('silly', LT.add({
       configDir: configDir
     }).toMessage({
-      text: ' - configDir: {configDir}'
+      tags: [ crateID, 'config-dir' ],
+      text: ' - configDir: ${configDir}'
     }));
 
     var configFiles = [];
@@ -72,18 +82,31 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
 
       if (configDir) {
         var defaultFile = path.join(configDir, configType + '.js');
-        LX.has('conlog') && LX.log('conlog', ' + load the default config: %s', defaultFile);
-        config[configType]['default'] = loadConfigFile(defaultFile);
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          defaultFile: defaultFile
+        }).toMessage({
+          text: ' + load the default config: ${defaultFile}'
+        }));
+        config[configType]['default'] = transformConfig(CTX, configType, loadConfigFile(defaultFile), 'application');
       }
 
-      LX.has('conlog') && LX.log('conlog', ' + load the default config from plugins');
-      libRootDirs.forEach(function(libRootDir) {
+      LX.has('conlog') && LX.log('conlog', LT.toMessage({
+        text: ' + load the default config from plugins'
+      }));
+      lodash.forEach(libRefs, function(libRef) {
+        var libRootDir = path.dirname(libRef.path);
+        var libType = libRef.type || 'plugin';
+        var libName = libRef.name;
         var defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
         config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
-          loadConfigFile(defaultFile));
+            transformConfig(CTX, configType, loadConfigFile(defaultFile), libType, libName));
       });
 
-      LX.has('conlog') && LX.log('conlog', ' + load the custom config of %s', configType);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        configType: configType
+      }).toMessage({
+        text: ' + load the custom config of ${configType}'
+      }));
       config[configType]['mixture'] = {};
 
       var mixtureNames = filterConfigBy(configInfos, includedNames, configType);
@@ -92,8 +115,12 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
       if (configDir) {
         config[configType]['mixture'] = lodash.reduce(mixtureNames, function(accum, mixtureItem) {
           var configFile = path.join(configDir, mixtureItem.join('_') + '.js');
-          LX.has('conlog') && LX.log('conlog', ' - load the environment config: %s', configFile);
-          var configObj = lodash.defaultsDeep(loadConfigFile(configFile), accum);
+          LX.has('conlog') && LX.log('conlog', LT.add({
+            configFile: configFile
+          }).toMessage({
+            text: ' - load the environment config: ${configFile}'
+          }));
+          var configObj = lodash.defaultsDeep(transformConfig(CTX, configType, loadConfigFile(configFile), 'application'), accum);
           if (configObj.disabled) return accum;
           config[configType]['names'].push(mixtureItem[1]);
           return configObj;
@@ -104,7 +131,7 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
           util.inspect(config[configType], {depth: 8}));
     });
 
-    errorHandler.barrier({ invoker: chores.getBlockRef(__filename) });
+    errorHandler.barrier({ invoker: crateID });
 
     return config;
   };
@@ -115,10 +142,18 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     try {
       content = loader(configFile, { stopWhenError: true });
       opStatus.hasError = false;
-      LX.has('conlog') && LX.log('conlog', ' - config file %s loading has done.', configFile);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        configFile: configFile
+      }).toMessage({
+        text: ' - config file ${configFile} loading has done.'
+      }));
     } catch(err) {
       if (err.code != 'MODULE_NOT_FOUND') {
-        LX.has('conlog') && LX.log('conlog', ' - config file %s loading is failed.', configFile);
+        LX.has('conlog') && LX.log('conlog', LT.add({
+          configFile: configFile
+        }).toMessage({
+          text: ' - config file ${configFile} loading is failed.'
+        }));
         opStatus.hasError = true;
         opStatus.stack = err.stack;
       }
@@ -137,10 +172,20 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     let value, varLabel;
     for(const varLabel of varLabels) {
       value = process.env[varLabel];
-      LX.has('conlog') && LX.log('conlog', ' - Get value of %s: %s', varLabel, value);
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        label: varLabel,
+        value: value
+      }).toMessage({
+        text: ' - Get value of ${label}: ${value}'
+      }));
       if (value) break;
     }
-    LX.has('conlog') && LX.log('conlog', " - Final value of %s: %s", varLabels[0], value);
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      label: varLabels[0],
+      value: value
+    }).toMessage({
+      text: ' - Final value of ${label}: ${value}'
+    }));
     return value;
   }
 
@@ -198,7 +243,7 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
   appOptions = appOptions || {};
 
   var config = loadConfig
-      .bind(null, appName, appOptions, appRootDir, libRootDirs)
+      .bind(null, appName, appOptions, appRef, libRefs)
       .apply(null, Object.keys(CONFIG_VAR_NAMES).map(function(varName) {
         return readVariable(label, CONFIG_VAR_NAMES[varName]);
       }));
@@ -208,10 +253,55 @@ function Loader(appName, appOptions, appRootDir, libRootDirs) {
     set: function(value) {}
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }
 
 module.exports = Loader;
+
+let transformConfig = function(ctx, configType, configData, moduleType, moduleName) {
+  if (chores.isOldFeatures()) {
+    return configData;
+  }
+  if (configType === CONFIG_SANDBOX_NAME) {
+    return transformSandboxConfig(ctx, configData, moduleType, moduleName);
+  }
+  return configData;
+}
+
+let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName) {
+  let { logger: LX, tracer: LT } = ctx || this;
+  if (lodash.isEmpty(sandboxConfig) || !lodash.isObject(sandboxConfig)) {
+    return sandboxConfig;
+  }
+  if (lodash.isObject(sandboxConfig.bridges)) {
+    let cfgBridges = sandboxConfig.bridges || {};
+    if (!cfgBridges.__status__) {
+      let newBridges = { __status__: true };
+      lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
+        if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
+          if (moduleType === 'application') {
+            newBridges[cfgName] = newBridges[cfgName] || {};
+            lodash.merge(newBridges[cfgName], bridgeCfg);
+          } else
+          if (moduleType === 'plugin') {
+            moduleName = moduleName || '*';
+            let bridgeNames = lodash.keys(bridgeCfg);
+            if (bridgeNames.length === 1) {
+              let bridgeName = bridgeNames[0];
+              newBridges[bridgeName] = newBridges[bridgeName] || {};
+              newBridges[bridgeName][moduleName] = newBridges[bridgeName][moduleName] || {};
+              if (lodash.isObject(bridgeCfg[bridgeName])) {
+                newBridges[bridgeName][moduleName][cfgName] = bridgeCfg[bridgeName];
+              }
+            }
+          }
+        }
+      });
+      sandboxConfig.bridges = newBridges;
+    }
+  }
+  return sandboxConfig;
+}
