@@ -56,7 +56,7 @@ var Service = function(params) {
     text: ' - create sandbox${sandboxNames}.injektor object'
   }));
 
-  var sandboxInjektor = new Injektor({ separator: chores.getSeparator() });
+  var sandboxInjektor = new Injektor(chores.injektorOptions);
   [ 'appName', 'appInfo',
     'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
     'pluginLoader', 'schemaValidator', 'loggingFactory'
@@ -103,6 +103,13 @@ var Service = function(params) {
   var instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers) {
     var exceptions = [];
     var handlerName = [handlerRecord.moduleId, handlerRecord.name].join(_injektor.separator);
+    LX.has('silly') && LX.log('silly', LT.add({
+      handlerName: handlerName,
+      handlerType: handlerType
+    }).toMessage({
+      tags: [ crateID, 'instantiateObject' ],
+      text: ' - instantiate object: ${handlerName}'
+    }));
     if (injectedHandlers) {
       injectedHandlers[handlerName] = _injektor.lookup(handlerName, exceptions);
     }

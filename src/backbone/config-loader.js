@@ -25,21 +25,11 @@ function Loader(appName, appOptions, appRef, libRefs) {
 
   var label = chores.stringLabelCase(appName);
 
-  var appRootDir = null;
-  if (appRef && lodash.isString(appRef.path)) {
-    appRootDir = path.dirname(appRef.path);
-  };
-  var libRootDirs = lodash.map(libRefs, function(libRef) {
-    return path.dirname(libRef.path);
-  });
-
   LX.has('silly') && LX.log('silly', LT.add({
     appName: appName,
     appOptions: appOptions,
     appRef: appRef,
-    appRootDir: appRootDir,
     libRefs: libRefs,
-    libRootDirs: libRootDirs,
     label: label
   }).toMessage({
     tags: [ crateID, 'constructor-begin' ],
@@ -48,9 +38,13 @@ function Loader(appName, appOptions, appRef, libRefs) {
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
-  var loadConfig = function(appName, appOptions, appRootDir, libRootDirs, profileName, sandboxName, customDir, customEnv) {
+  var loadConfig = function(appName, appOptions, appRef, libRefs, profileName, sandboxName, customDir, customEnv) {
     appOptions = appOptions || {};
-    libRootDirs = libRootDirs || [];
+
+    var appRootDir = null;
+    if (appRef && lodash.isString(appRef.path)) {
+      appRootDir = path.dirname(appRef.path);
+    };
 
     var config = {};
 
@@ -99,10 +93,13 @@ function Loader(appName, appOptions, appRef, libRefs) {
       LX.has('conlog') && LX.log('conlog', LT.toMessage({
         text: ' + load the default config from plugins'
       }));
-      libRootDirs.forEach(function(libRootDir) {
+      lodash.forEach(libRefs, function(libRef) {
+        var libRootDir = path.dirname(libRef.path);
+        var libType = libRef.type || 'plugin';
+        var libName = libRef.name;
         var defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
         config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
-            transformConfig(CTX, configType, loadConfigFile(defaultFile), 'plugin'));
+            transformConfig(CTX, configType, loadConfigFile(defaultFile), libType, libName));
       });
 
       LX.has('conlog') && LX.log('conlog', LT.add({
@@ -246,7 +243,7 @@ function Loader(appName, appOptions, appRef, libRefs) {
   appOptions = appOptions || {};
 
   var config = loadConfig
-      .bind(null, appName, appOptions, appRootDir, libRootDirs)
+      .bind(null, appName, appOptions, appRef, libRefs)
       .apply(null, Object.keys(CONFIG_VAR_NAMES).map(function(varName) {
         return readVariable(label, CONFIG_VAR_NAMES[varName]);
       }));
@@ -265,7 +262,10 @@ function Loader(appName, appOptions, appRef, libRefs) {
 module.exports = Loader;
 
 let transformConfig = function(ctx, configType, configData, moduleType, moduleName) {
-  if (false && configType === CONFIG_SANDBOX_NAME) {
+  if (chores.isOldFeatures()) {
+    return configData;
+  }
+  if (configType === CONFIG_SANDBOX_NAME) {
     return transformSandboxConfig(ctx, configData, moduleType, moduleName);
   }
   return configData;
@@ -277,29 +277,31 @@ let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName
     return sandboxConfig;
   }
   if (lodash.isObject(sandboxConfig.bridges)) {
-    let newBridges = {};
     let cfgBridges = sandboxConfig.bridges || {};
-    lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
-      if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
-        if (moduleType === 'application') {
-          newBridges[cfgName] = newBridges[cfgName] || {};
-          lodash.merge(newBridges[cfgName], bridgeCfg);
-        } else
-        if (moduleType === 'plugin') {
-          moduleName = moduleName || '*';
-          let bridgeNames = lodash.keys(bridgeCfg);
-          if (bridgeNames.length === 1) {
-            let bridgeName = bridgeNames[0];
-            newBridges[bridgeName] = newBridges[bridgeName] || {};
-            newBridges[bridgeName][moduleName] = newBridges[bridgeName][moduleName] || {};
-            if (lodash.isObject(bridgeCfg[bridgeName])) {
-              newBridges[bridgeName][moduleName][cfgName] = bridgeCfg[bridgeName];
+    if (!cfgBridges.__status__) {
+      let newBridges = { __status__: true };
+      lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
+        if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
+          if (moduleType === 'application') {
+            newBridges[cfgName] = newBridges[cfgName] || {};
+            lodash.merge(newBridges[cfgName], bridgeCfg);
+          } else
+          if (moduleType === 'plugin') {
+            moduleName = moduleName || '*';
+            let bridgeNames = lodash.keys(bridgeCfg);
+            if (bridgeNames.length === 1) {
+              let bridgeName = bridgeNames[0];
+              newBridges[bridgeName] = newBridges[bridgeName] || {};
+              newBridges[bridgeName][moduleName] = newBridges[bridgeName][moduleName] || {};
+              if (lodash.isObject(bridgeCfg[bridgeName])) {
+                newBridges[bridgeName][moduleName][cfgName] = bridgeCfg[bridgeName];
+              }
             }
           }
         }
-      }
-    });
-    sandboxConfig.bridges = newBridges;
+      });
+      sandboxConfig.bridges = newBridges;
+    }
   }
   return sandboxConfig;
 }

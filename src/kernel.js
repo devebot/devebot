@@ -28,7 +28,7 @@ function Kernel(params) {
   params = params || {};
 
   // create injektor instance
-  var injektor = new Injektor({ separator: chores.getSeparator() });
+  var injektor = new Injektor(chores.injektorOptions);
 
   ['appName', 'appInfo', 'bridgeRefs', 'pluginRefs'].forEach(function(refName) {
     injektor.registerObject(refName, params[refName], chores.injektorContext);

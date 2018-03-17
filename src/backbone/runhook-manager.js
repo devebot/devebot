@@ -53,7 +53,7 @@ var Service = function(params) {
   ]) == true;
 
   var routineMap = {};
-  var routineStore = new Injektor();
+  var routineStore = new Injektor(chores.injektorOptions);
 
   var getRunhooks = function() {
     return (routineMap = routineMap || {});
