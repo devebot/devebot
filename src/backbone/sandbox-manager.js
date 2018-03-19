@@ -142,7 +142,7 @@ var Service = function(params) {
   sandboxInjektor.lookup('runhookManager', chores.injektorContext);
 
   var devebotCfg = lodash.get(params, ['profileConfig', 'devebot'], {});
-  errorHandler.barrier(lodash.assign({ invoker: chores.getBlockRef(__filename) }, devebotCfg));
+  errorHandler.barrier(lodash.assign({ invoker: crateID }, devebotCfg));
 
   self.getSandboxNames = function() {
     return sandboxNames;

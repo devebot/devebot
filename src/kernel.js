@@ -141,7 +141,7 @@ function Kernel(params) {
     text: ' - Validating sandbox configuration using schemas'
   }));
 
-  errorHandler.collect(result).barrier({ invoker: chores.getBlockRef(__filename) });
+  errorHandler.collect(result).barrier({ invoker: crateID });
 
   this.invoke = function(block) {
     return lodash.isFunction(block) && Promise.resolve(block(injektor));
