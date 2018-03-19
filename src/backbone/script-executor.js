@@ -8,13 +8,13 @@ var ScriptExecutor = function(params) {
   var self = this;
   params = params || {};
 
-  var crateID = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(blockRef);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -37,7 +37,7 @@ var ScriptExecutor = function(params) {
       command = resolveCommand(command);
     } catch(error) {
       LX.has('error') && LX.log('error', LT.toMessage({
-        tags: [ crateID, 'executeCommand', 'invalid-command-object' ],
+        tags: [ blockRef, 'executeCommand', 'invalid-command-object' ],
         text: ' - Invalid command object'
       }));
       outlet.render('error');
@@ -50,7 +50,7 @@ var ScriptExecutor = function(params) {
       commandName: command.name,
       command: command
     }).toMessage({
-      tags: [ crateID, 'executeCommand', 'begin' ],
+      tags: [ blockRef, 'executeCommand', 'begin' ],
       text: '{commandName}#{requestId} start, details: {command}'
     }));
 
@@ -74,14 +74,14 @@ var ScriptExecutor = function(params) {
       LX.has('silly') && LX.log('silly', reqTr.add({
         commandName: command.name
       }).toMessage({
-        tags: [ crateID, 'executeCommand', 'failed' ],
+        tags: [ blockRef, 'executeCommand', 'failed' ],
         text: '{commandName}#{requestId} is failed'
       }));
     }).finally(function() {
       LX.has('info') && LX.log('info', reqTr.add({
         commandName: command.name
       }).toMessage({
-        tags: [ crateID, 'executeCommand', 'done' ],
+        tags: [ blockRef, 'executeCommand', 'done' ],
         text: '{commandName}#{requestId} has done'
       }));
       outlet.render('done');
@@ -89,7 +89,7 @@ var ScriptExecutor = function(params) {
   };
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

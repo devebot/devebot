@@ -20,13 +20,13 @@ function Server(params) {
   // init the default parameters
   params = params || {};
 
-  var crateID = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(blockRef);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -72,7 +72,7 @@ function Server(params) {
 
   this.start = function() {
     LX.has('silly') && LX.log('silly', LT.toMessage({
-      tags: [ crateID, 'start()' ],
+      tags: [ blockRef, 'start()' ],
       text: 'start() is invoked'
     }));
     return Promise.resolve().then(function() {
@@ -92,13 +92,13 @@ function Server(params) {
       });
     }).then(function() {
       LX.has('silly') && LX.log('silly', LT.toMessage({
-        tags: [ crateID, 'start()' ],
+        tags: [ blockRef, 'start()' ],
         text: 'webserver has started'
       }));
       return sandboxManager.startTriggers();
     }).then(function(info) {
       LX.has('silly') && LX.log('silly', LT.toMessage({
-        tags: [ crateID, 'start()' ],
+        tags: [ blockRef, 'start()' ],
         text: 'triggers have started'
       }));
       return info;
@@ -108,14 +108,14 @@ function Server(params) {
   var serverCloseEvent;
   this.teardown = function() {
     LX.has('silly') && LX.log('silly', LT.toMessage({
-      tags: [ crateID, 'close()' ],
+      tags: [ blockRef, 'close()' ],
       text: 'close() is invoked'
     }));
     return Promise.resolve().then(function() {
       return sandboxManager.stopTriggers();
     }).then(function() {
       LX.has('silly') && LX.log('silly', LT.toMessage({
-        tags: [ crateID, 'close()', 'triggers-stopped' ],
+        tags: [ blockRef, 'close()', 'triggers-stopped' ],
         text: 'triggers have stopped'
       }));
       if (mode == 0) return Promise.resolve();
@@ -139,7 +139,7 @@ function Server(params) {
       });
     }).then(function() {
       LX.has('silly') && LX.log('silly', LT.toMessage({
-        tags: [ crateID, 'close()', 'webserver-stopped' ],
+        tags: [ blockRef, 'close()', 'webserver-stopped' ],
         text: 'webserver has stopped'
       }));
       chores.isVerboseForced('devebot', devebotCfg) &&
@@ -186,7 +186,7 @@ function Server(params) {
   });
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

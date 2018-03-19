@@ -17,8 +17,8 @@ var CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 var CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
 function Loader(appName, appOptions, appRef, libRefs) {
-  var crateID = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(blockRef);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
   var CTX = { logger: LX, tracer: LT };
@@ -32,7 +32,7 @@ function Loader(appName, appOptions, appRef, libRefs) {
     libRefs: libRefs,
     label: label
   }).toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + Config of application (${appName}) is loaded in name: ${label}'
   }));
 
@@ -53,7 +53,7 @@ function Loader(appName, appOptions, appRef, libRefs) {
     LX.has('silly') && LX.log('silly', LT.add({
       configDir: configDir
     }).toMessage({
-      tags: [ crateID, 'config-dir' ],
+      tags: [ blockRef, 'config-dir' ],
       text: ' - configDir: ${configDir}'
     }));
 
@@ -131,7 +131,7 @@ function Loader(appName, appOptions, appRef, libRefs) {
           util.inspect(config[configType], {depth: 8}));
     });
 
-    errorHandler.barrier({ invoker: crateID });
+    errorHandler.barrier({ invoker: blockRef });
 
     return config;
   };
@@ -254,7 +254,7 @@ function Loader(appName, appOptions, appRef, libRefs) {
   });
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

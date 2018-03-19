@@ -12,13 +12,13 @@ var LoggingWrapper = require('./backbone/logging-wrapper.js');
 function Runner(params) {
   Kernel.call(this, params);
 
-  var crateID = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(blockRef);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -35,7 +35,7 @@ function Runner(params) {
     LX.has('silly') && LX.log('silly', LT.add({
       command: command
     }).toMessage({
-      tags: [ crateID, 'receive-a-command' ],
+      tags: [ blockRef, 'receive-a-command' ],
       text: ' - Runner receives a command: %{command}'
     }));
     scriptExecutor.executeCommand(command, outlet);
@@ -50,7 +50,7 @@ function Runner(params) {
   }
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

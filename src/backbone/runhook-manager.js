@@ -20,15 +20,15 @@ var Service = function(params) {
   params = params || {};
   var self = this;
 
-  var crateID = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(blockRef);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.add({
     sandboxName: params.sandboxName
   }).toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
@@ -119,7 +119,7 @@ var Service = function(params) {
       commandName: command.name,
       command: command
     }).toMessage({
-      tags: [ crateID, 'execute', 'begin' ],
+      tags: [ blockRef, 'execute', 'begin' ],
       text: '{commandName}#{requestId} - validate: {command}'
     }));
 
@@ -157,7 +157,7 @@ var Service = function(params) {
         payload: payload,
         schema: schema
       }).toMessage({
-        tags: [ crateID, 'execute', 'validate-by-schema' ],
+        tags: [ blockRef, 'execute', 'validate-by-schema' ],
         text: '{commandName}#{requestId} - validate payload: {payload} by schema: {schema}'
       }));
       var result = params.schemaValidator.validate(payload, schema);
@@ -174,7 +174,7 @@ var Service = function(params) {
         commandName: command.name,
         payload: payload
       }).toMessage({
-        tags: [ crateID, 'execute', 'validate-by-method' ],
+        tags: [ blockRef, 'execute', 'validate-by-method' ],
         text: '{commandName}#{requestId} - validate payload: {payload} using validate()'
       }));
       if (!validate(payload)) {
@@ -192,7 +192,7 @@ var Service = function(params) {
     LX.has('trace') && LX.log('trace', reqTr.add({
       commandName: command.name
     }).toMessage({
-      tags: [ crateID, 'execute', 'enqueue' ],
+      tags: [ blockRef, 'execute', 'enqueue' ],
       text: '{commandName}#{requestId} - enqueue'
     }));
 
@@ -259,7 +259,7 @@ var Service = function(params) {
       commandName: command.name,
       command: command
     }).toMessage({
-      tags: [ crateID, 'process', 'begin' ],
+      tags: [ blockRef, 'process', 'begin' ],
       text: '{commandName}#{requestId} - process: {command}'
     }));
 
@@ -273,7 +273,7 @@ var Service = function(params) {
         command: command,
         predefinedContext: predefinedContext
       }).toMessage({
-        tags: [ crateID, 'process', 'handler-invoked' ],
+        tags: [ blockRef, 'process', 'handler-invoked' ],
         text: '{commandName}#{requestId} - handler is invoked'
       }));
       if (predefinedContext) {
@@ -304,7 +304,7 @@ var Service = function(params) {
   });
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

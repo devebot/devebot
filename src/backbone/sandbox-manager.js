@@ -15,13 +15,13 @@ var Service = function(params) {
   var self = this;
   params = params || {};
 
-  var crateID = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(blockRef);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -52,7 +52,7 @@ var Service = function(params) {
     sandboxNames: sandboxNames,
     sandboxConfig: sandboxConfig
   }).toMessage({
-    tags: [ crateID, 'sandbox-info' ],
+    tags: [ blockRef, 'sandbox-info' ],
     text: ' - create sandbox${sandboxNames}.injektor object'
   }));
 
@@ -107,7 +107,7 @@ var Service = function(params) {
       handlerName: handlerName,
       handlerType: handlerType
     }).toMessage({
-      tags: [ crateID, 'instantiateObject' ],
+      tags: [ blockRef, 'instantiateObject' ],
       text: ' - instantiate object: ${handlerName}'
     }));
     if (injectedHandlers) {
@@ -142,7 +142,7 @@ var Service = function(params) {
   sandboxInjektor.lookup('runhookManager', chores.injektorContext);
 
   var devebotCfg = lodash.get(params, ['profileConfig', 'devebot'], {});
-  errorHandler.barrier(lodash.assign({ invoker: crateID }, devebotCfg));
+  errorHandler.barrier(lodash.assign({ invoker: blockRef }, devebotCfg));
 
   self.getSandboxNames = function() {
     return sandboxNames;
@@ -166,7 +166,7 @@ var Service = function(params) {
 
   self.startTriggers = function(triggerNames) {
     LX.has('silly') && LX.log('silly', LT.toMessage({
-      tags: [ crateID, 'trigger', 'start' ],
+      tags: [ blockRef, 'trigger', 'start' ],
       text: ' - Start triggers'
     }));
     return self.eachTriggers(function(trigger) {
@@ -176,7 +176,7 @@ var Service = function(params) {
 
   self.stopTriggers = function(triggerNames) {
     LX.has('silly') && LX.log('silly', LT.toMessage({
-      tags: [ crateID, 'trigger', 'stop' ],
+      tags: [ blockRef, 'trigger', 'stop' ],
       text: ' - Stop triggers'
     }));
     return self.eachTriggers(function(trigger) {
@@ -192,7 +192,7 @@ var Service = function(params) {
     LX.has('silly') && LX.log('silly', LT.add({
       triggerNames: triggerNames || 'all'
     }).toMessage({
-      tags: [ crateID, 'trigger', 'loop' ],
+      tags: [ blockRef, 'trigger', 'loop' ],
       text: ' - Loop triggers: ${triggerNames}'
     }));
 
@@ -204,7 +204,7 @@ var Service = function(params) {
           actionName: actionName,
           triggerName: triggerName
         }).toMessage({
-          tags: [ crateID, 'trigger', 'action' ],
+          tags: [ blockRef, 'trigger', 'action' ],
           text: ' - ${actionName} trigger[${triggerName}]'
         }));
         var trigger = sandboxInjektor.lookup(triggerName);
@@ -251,7 +251,7 @@ var Service = function(params) {
   };
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

@@ -14,13 +14,13 @@ chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), [
 ]);
 
 function Kernel(params) {
-  var crateID = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(blockRef);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -52,7 +52,7 @@ function Kernel(params) {
     configMap: params,
     schemaMap: schemaMap
   }).toMessage({
-    tags: [ crateID, 'config-schema-loading' ],
+    tags: [ blockRef, 'config-schema-loading' ],
     text: ' - Sandbox schemas: ${schemaMap}'
   }));
 
@@ -83,7 +83,7 @@ function Kernel(params) {
     configObject: configObject,
     configSchema: configSchema
   }).toMessage({
-    tags: [ crateID, 'config-schema-synchronizing' ],
+    tags: [ blockRef, 'config-schema-synchronizing' ],
     text: ' - Synchronize the structure of configuration data and schemas'
   }));
 
@@ -115,7 +115,7 @@ function Kernel(params) {
         config: crateConfig,
         schema: crateSchema
       }).toMessage({
-        tags: [ crateID, 'sandbox-config-validation-skipped' ],
+        tags: [ blockRef, 'sandbox-config-validation-skipped' ],
         text: ' - Validate sandboxConfig[${name}] is skipped'
       }));
     }
@@ -136,11 +136,11 @@ function Kernel(params) {
   LX.has('silly') && LX.log('silly', LT.add({
     validatingResult: result
   }).toMessage({
-    tags: [ crateID, 'config-schema-validating' ],
+    tags: [ blockRef, 'config-schema-validating' ],
     text: ' - Validating sandbox configuration using schemas'
   }));
 
-  errorHandler.collect(result).barrier({ invoker: crateID });
+  errorHandler.collect(result).barrier({ invoker: blockRef });
 
   this.invoke = function(block) {
     return lodash.isFunction(block) && Promise.resolve(block(injektor));
@@ -149,7 +149,7 @@ function Kernel(params) {
   this._injektor = injektor;
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

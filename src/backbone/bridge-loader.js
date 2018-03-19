@@ -9,13 +9,13 @@ var errorHandler = require('./error-handler').instance;
 function BridgeLoader(params) {
   params = params || {};
 
-  var crateID = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(blockRef);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -402,7 +402,7 @@ function BridgeLoader(params) {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }

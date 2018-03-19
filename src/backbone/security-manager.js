@@ -11,13 +11,13 @@ var Service = function(params) {
   var self = this;
   params = params || {};
 
-  var crateID = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingFactory = params.loggingFactory.branch(blockRef);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -30,7 +30,7 @@ var Service = function(params) {
       tokens: tokens,
       status: authenCfg.disabled ? 'skipped':'processing'
     }).toMessage({
-      tags: [ crateID, 'authenticate', 'check' ],
+      tags: [ blockRef, 'authenticate', 'check' ],
       text: ' - authenticate(${tokens}): ${status}'
     }));
 
@@ -57,7 +57,7 @@ var Service = function(params) {
         LX.has('silly') && LX.log('silly', LT.add({
           storefile: storefile
         }).toMessage({
-          tags: [ crateID, 'loadTokenStore', 'invalid' ],
+          tags: [ blockRef, 'loadTokenStore', 'invalid' ],
           text: ' - invalid tokenStore ({storefile}), "tokens" must be an array'
         }));
         return {};
@@ -66,7 +66,7 @@ var Service = function(params) {
         storefile: storefile,
         tokenTotal: data.tokens.length
       }).toMessage({
-        tags: [ crateID, 'loadTokenStore', 'ok' ],
+        tags: [ blockRef, 'loadTokenStore', 'ok' ],
         text: ' - tokenStore ({storefile}) has {tokenTotal} items'
       }));
       return data;
@@ -77,7 +77,7 @@ var Service = function(params) {
         errorName: err.name || 'Error',
         errorMessage: err.message
       }).toMessage({
-        tags: [ crateID, 'loadTokenStore', 'error' ],
+        tags: [ blockRef, 'loadTokenStore', 'error' ],
         text: ' - tokenStore ({storefile}) loading is failed. {errorName}: {errorMessage}'
       }));
       return {};
@@ -85,7 +85,7 @@ var Service = function(params) {
   };
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

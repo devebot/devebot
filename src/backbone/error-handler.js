@@ -8,13 +8,13 @@ function ErrorHandler(params) {
   var self = this;
   params = params || {};
 
-  var crateID = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(crateID);
+  var blockRef = chores.getBlockRef(__filename);
+  var loggingWrapper = new LoggingWrapper(blockRef);
   var LX = loggingWrapper.getLogger();
   var LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
@@ -47,7 +47,7 @@ function ErrorHandler(params) {
       totalOfErrors: summary.numberOfErrors,
       errors: summary.failedServices
     }).toMessage({
-      tags: [ crateID, 'examine' ],
+      tags: [ blockRef, 'examine' ],
       text: ' - Total of errors: ${totalOfErrors}'
     }));
     return summary;
@@ -111,7 +111,7 @@ function ErrorHandler(params) {
         silent: silent,
         exitOnError: (options.exitOnError !== false)
       }).toMessage({
-        tags: [ crateID, 'barrier' ],
+        tags: [ blockRef, 'barrier' ],
         text: ' - Program will be exited? (${exitOnError})'
       }));
       if (options.exitOnError !== false) {
@@ -129,7 +129,7 @@ function ErrorHandler(params) {
     LX.has('silly') && LX.log('silly', LT.add({
       exitCode: code
     }).toMessage({
-      tags: [ crateID, 'exit' ],
+      tags: [ blockRef, 'exit' ],
       text: 'process.exit(${exitCode}) is invoked'
     }));
     if (!chores.skipProcessExit()) {
@@ -143,7 +143,7 @@ function ErrorHandler(params) {
   }
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 }
