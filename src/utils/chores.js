@@ -150,6 +150,21 @@ chores.homedir = (typeof os.homedir === 'function') ? os.homedir : function() {
   return home || null;
 };
 
+var SPECIAL_PLUGINS = ['application', 'devebot'];
+
+chores.isSpecialPlugin = function(pluginCode) {
+  return (SPECIAL_PLUGINS.indexOf(pluginCode) >= 0);
+}
+
+chores.getPluginRefBy = function(selectedField, pluginDescriptor) {
+  pluginDescriptor = pluginDescriptor || {};
+  var pluginRef = pluginDescriptor[selectedField];
+  if (pluginDescriptor.type === 'application') {
+    pluginRef = pluginDescriptor.type;
+  }
+  return pluginRef;
+}
+
 chores.getBlockRef = function(filename, blockScope) {
   if (filename == null) return null;
   var blockName = chores.stringCamelCase(path.basename(filename, '.js'));

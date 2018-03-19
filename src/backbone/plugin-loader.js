@@ -22,6 +22,7 @@ function PluginLoader(params) {
   }));
 
   var pluginRootDirs = lodash.map(params.pluginRefs, function(pluginRef) {
+    pluginRef.code = pluginRef.code || chores.stringCamelCase(pluginRef.name);
     pluginRef.pathDir = path.dirname(pluginRef.path);
     return pluginRef;
   });
@@ -68,16 +69,8 @@ function PluginLoader(params) {
     return hasSeparatedDir(scriptType) ? '.*\.js' : constx[scriptType].ROOT_KEY + '_.*\.js';
   }
 
-  var specialPlugins = ['application', 'devebot'];
-
-  var getPluginName = function(pluginRootDir) {
-    pluginRootDir.code = pluginRootDir.code || chores.stringCamelCase(pluginRootDir.name);
-    var pluginName = pluginRootDir.code;
-    if (specialPlugins.indexOf(pluginRootDir.type) >= 0) {
-      pluginName = pluginRootDir.type;
-    }
-    return pluginName;
-  }
+  var getPluginRefByName = chores.getPluginRefBy.bind(chores, 'name');
+  var getPluginRefByCode = chores.getPluginRefBy.bind(chores, 'code');
 
   var loadAllScripts = function(scriptMap, scriptType, scriptContext, pluginRootDirs) {
     var self = this;
@@ -145,9 +138,10 @@ function PluginLoader(params) {
           opStatus.hasError = false;
           var scriptName = scriptFile.replace('.js', '').toLowerCase();
           var uniqueName = [pluginRootDir.name, scriptName].join(chores.getSeparator());
+          var pluginName = getPluginRefByName(pluginRootDir);
           var entry = {};
           entry[uniqueName] = {
-            moduleId: pluginRootDir.name,
+            moduleId: pluginName,
             name: scriptName,
             object: scriptObject
           };
@@ -264,15 +258,14 @@ function PluginLoader(params) {
           text: ' - schema validation pass'
         }));
         opStatus.hasError = false;
-        var pluginName = getPluginName(pluginRootDir);
         var typeName = schemaObject.type || schemaFile.replace('.js', '').toLowerCase();
         var subtypeName = schemaObject.subtype || 'default';
         var uniqueName = [pluginRootDir.name, typeName].join(chores.getSeparator());
         var entry = {};
         entry[uniqueName] = entry[uniqueName] || {};
         entry[uniqueName][subtypeName] = {
-          moduleId: pluginRootDir.name,
-          pluginName: pluginName,
+          moduleId: getPluginRefByName(pluginRootDir),
+          pluginCode: getPluginRefByCode(pluginRootDir),
           type: typeName,
           subtype: subtypeName,
           schema: schemaObject.schema
@@ -384,7 +377,8 @@ function PluginLoader(params) {
       return result;
     }
 
-    var pluginName = getPluginName(pluginRootDir);
+    var pluginName = getPluginRefByName(pluginRootDir);
+    var pluginCode = getPluginRefByCode(pluginRootDir);
     var uniqueName = [pluginRootDir.name, wrapperName].join(chores.getSeparator());
 
     function wrapperConstructor(kwargs) {
@@ -395,19 +389,19 @@ function PluginLoader(params) {
         isWrapped = true;
         return kwargs = lodash.clone(kwargs);
       }
-      var newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', pluginName], {});
+      var newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', pluginCode], {});
       LX.has('conlog') && LX.log('conlog', LT.add({
-        pluginName: pluginName,
+        pluginCode: pluginCode,
         newFeatures: newFeatures
       }).toMessage({
-        text: ' - newFeatures[${pluginName}]: ${newFeatures}'
+        text: ' - newFeatures[${pluginCode}]: ${newFeatures}'
       }));
       if (newFeatures.sandboxConfig) {
         kwargs = getWrappedParams();
-        if (specialPlugins.indexOf(pluginRootDir.type) >= 0) {
-          kwargs.sandboxConfig = lodash.get(kwargs, ['sandboxConfig', pluginName], {});
+        if (chores.isSpecialPlugin(pluginRootDir.type)) {
+          kwargs.sandboxConfig = lodash.get(kwargs, ['sandboxConfig', pluginCode], {});
         } else {
-          kwargs.sandboxConfig = lodash.get(kwargs, ['sandboxConfig', 'plugins', pluginName], {});
+          kwargs.sandboxConfig = lodash.get(kwargs, ['sandboxConfig', 'plugins', pluginCode], {});
         }
       }
       // wrap getLogger() and add getTracer()
@@ -464,14 +458,14 @@ function PluginLoader(params) {
     }));
 
     result[uniqueName] = {
-      moduleId: pluginRootDir.name,
+      moduleId: pluginName,
       name: wrapperName,
       construktor: wrapperConstructor
     };
 
     LX.has('conlog') && LX.log('conlog', LT.add({
       uniqueName: uniqueName,
-      moduleId: pluginRootDir.name,
+      moduleId: pluginName,
       name: wrapperName
     }).toMessage({
       text: ' - build gadget wrapper (${name}) has done.'

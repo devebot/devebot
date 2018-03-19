@@ -56,18 +56,17 @@ function Kernel(params) {
     text: ' - Sandbox schemas: ${schemaMap}'
   }));
 
-  var SPECIAL_PLUGINS = ['application', 'devebot'];
   var SELECTED_FIELDS = [ 'moduleId', 'schema', 'extension' ];
   var extractConfigSchema = function(schemaMap) {
     var configSchema = { profile: {}, sandbox: {} };
     lodash.forOwn(schemaMap, function(ref, key) {
       var def = ref && ref.default || {};
-      if (def.pluginName && ['profile', 'sandbox'].indexOf(def.type) >= 0) {
-        if (SPECIAL_PLUGINS.indexOf(def.pluginName) >= 0) {
-          configSchema[def.type][def.pluginName] = lodash.pick(def, SELECTED_FIELDS);
+      if (def.pluginCode && ['profile', 'sandbox'].indexOf(def.type) >= 0) {
+        if (chores.isSpecialPlugin(def.pluginCode)) {
+          configSchema[def.type][def.pluginCode] = lodash.pick(def, SELECTED_FIELDS);
         } else {
           configSchema[def.type]['plugins'] = configSchema[def.type]['plugins'] || {};
-          configSchema[def.type]['plugins'][def.pluginName] = lodash.pick(def, SELECTED_FIELDS);
+          configSchema[def.type]['plugins'][def.pluginCode] = lodash.pick(def, SELECTED_FIELDS);
         }
       }
     });
@@ -98,7 +97,7 @@ function Kernel(params) {
     var output = {};
     output.stage = 'config/schema';
     output.name = crateSchema.moduleId;
-    output.type = SPECIAL_PLUGINS.indexOf(crateName) >= 0 ? crateName : 'plugin';
+    output.type = chores.isSpecialPlugin(crateName) ? crateName : 'plugin';
     output.hasError = result.ok !== true;
     if (!result.ok && result.errors) {
       output.stack = JSON.stringify(result.errors, null, 2);
