@@ -73,13 +73,13 @@ var Service = function(params) {
 
   lodash.forOwn(serviceMap, function(serviceRecord, serviceName) {
     sandboxInjektor.defineService(serviceRecord.name, serviceRecord.construktor, {
-      scope: serviceRecord.moduleId
+      scope: serviceRecord.crateScope
     });
   });
 
   lodash.forOwn(triggerMap, function(triggerRecord, triggerName) {
     sandboxInjektor.defineService(triggerRecord.name, triggerRecord.construktor, {
-      scope: triggerRecord.moduleId
+      scope: triggerRecord.crateScope
     });
   });
 
@@ -87,7 +87,7 @@ var Service = function(params) {
 
   lodash.forOwn(dialectMap, function(dialectRecord, dialectName) {
     sandboxInjektor.defineService(dialectRecord.name, dialectRecord.construktor, {
-      scope: dialectRecord.moduleId
+      scope: dialectRecord.crateScope
     });
   });
 
@@ -102,7 +102,7 @@ var Service = function(params) {
 
   var instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers) {
     var exceptions = [];
-    var handlerName = [handlerRecord.moduleId, handlerRecord.name].join(_injektor.separator);
+    var handlerName = [handlerRecord.crateScope, handlerRecord.name].join(_injektor.separator);
     LX.has('silly') && LX.log('silly', LT.add({
       handlerName: handlerName,
       handlerType: handlerType
@@ -198,7 +198,7 @@ var Service = function(params) {
 
     var triggers = [];
     lodash.forOwn(triggerMap, function(triggerRecord, triggerId) {
-      var triggerName = [triggerRecord.moduleId, triggerRecord.name].join(sandboxInjektor.separator);
+      var triggerName = [triggerRecord.crateScope, triggerRecord.name].join(sandboxInjektor.separator);
       if (!triggerNames || triggerNames.indexOf(triggerName) >= 0) {
         LX.has('silly') && LX.log('silly', LT.add({
           actionName: actionName,
@@ -300,10 +300,6 @@ Service.argumentSchema = {
 };
 
 module.exports = Service;
-
-var getUniqueName = function(record, injektor) {
-  return [record.moduleId, record.name].join(injektor.separator);
-}
 
 var wrapScriptConstructor = function(ScriptConstructor, wrapperNames) {
   function wrapperConstructor(params) {

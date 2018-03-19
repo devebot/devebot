@@ -141,7 +141,7 @@ function PluginLoader(params) {
           var pluginName = getPluginRefByName(pluginRootDir);
           var entry = {};
           entry[uniqueName] = {
-            moduleId: pluginName,
+            crateScope: pluginName,
             name: scriptName,
             object: scriptObject
           };
@@ -264,7 +264,7 @@ function PluginLoader(params) {
         var entry = {};
         entry[uniqueName] = entry[uniqueName] || {};
         entry[uniqueName][subtypeName] = {
-          moduleId: getPluginRefByName(pluginRootDir),
+          crateScope: getPluginRefByName(pluginRootDir),
           pluginCode: getPluginRefByCode(pluginRootDir),
           type: typeName,
           subtype: subtypeName,
@@ -458,14 +458,14 @@ function PluginLoader(params) {
     }));
 
     result[uniqueName] = {
-      moduleId: pluginName,
+      crateScope: pluginName,
       name: wrapperName,
       construktor: wrapperConstructor
     };
 
     LX.has('conlog') && LX.log('conlog', LT.add({
       uniqueName: uniqueName,
-      moduleId: pluginName,
+      crateScope: pluginName,
       name: wrapperName
     }).toMessage({
       text: ' - build gadget wrapper (${name}) has done.'

@@ -89,7 +89,7 @@ function BridgeLoader(params) {
       }));
       if (lodash.isFunction(bridgeConstructor)) {
         result[bridgeCode] = {
-          moduleId: bridgeName,
+          name: bridgeName,
           construktor: bridgeConstructor
         };
         opStatus.hasError = false;
@@ -163,11 +163,11 @@ function BridgeLoader(params) {
       }));
     }
 
-    var moduleId = [pluginName, bridgeRecord.moduleId].join('>');
+    var crateScope = [pluginName, bridgeRecord.name].join('>');
     if (chores.isOldFeatures()) {
-      moduleId = bridgeRecord.moduleId;
+      crateScope = bridgeRecord.name;
     }
-    var uniqueName = [moduleId, dialectName].join(chores.getSeparator());
+    var uniqueName = [crateScope, dialectName].join(chores.getSeparator());
 
     var bridgeConstructor = bridgeRecord.construktor;
     if (!lodash.isFunction(bridgeConstructor)) {
@@ -289,7 +289,7 @@ function BridgeLoader(params) {
     };
 
     result[uniqueName] = {
-      moduleId: moduleId,
+      crateScope: crateScope,
       name: dialectName,
       construktor: dialectConstructor
     };

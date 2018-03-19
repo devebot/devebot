@@ -56,7 +56,7 @@ function Kernel(params) {
     text: ' - Sandbox schemas: ${schemaMap}'
   }));
 
-  var SELECTED_FIELDS = [ 'moduleId', 'schema', 'extension' ];
+  var SELECTED_FIELDS = [ 'crateScope', 'schema', 'extension' ];
   var extractConfigSchema = function(schemaMap) {
     var configSchema = { profile: {}, sandbox: {} };
     lodash.forOwn(schemaMap, function(ref, key) {
@@ -96,7 +96,7 @@ function Kernel(params) {
   var customizeResult = function(result, crateConfig, crateSchema, crateName) {
     var output = {};
     output.stage = 'config/schema';
-    output.name = crateSchema.moduleId;
+    output.name = crateSchema.crateScope;
     output.type = chores.isSpecialPlugin(crateName) ? crateName : 'plugin';
     output.hasError = result.ok !== true;
     if (!result.ok && result.errors) {

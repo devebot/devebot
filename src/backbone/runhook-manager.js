@@ -95,7 +95,7 @@ var Service = function(params) {
     defs = defs || [];
     lodash.forOwn(getRunhooks(), function(value, key) {
       defs.push(lodash.assign({
-        package: value.moduleId,
+        package: value.crateScope,
         name: value.name
       }, value.object && value.object.info));
     });
@@ -300,7 +300,7 @@ var Service = function(params) {
   params.pluginLoader.loadRoutines(routineMap, predefinedContext ? runhookInstance : {});
 
   lodash.forOwn(getRunhooks(), function(value, key) {
-    routineStore.registerObject(value.name, value.object, { scope: value.moduleId });
+    routineStore.registerObject(value.name, value.object, { scope: value.crateScope });
   });
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
