@@ -276,10 +276,10 @@ let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName
   if (lodash.isEmpty(sandboxConfig) || !lodash.isObject(sandboxConfig)) {
     return sandboxConfig;
   }
-  if (lodash.isObject(sandboxConfig.bridges)) {
+  if (lodash.isObject(sandboxConfig.bridges) && !sandboxConfig.bridges.__status__) {
     let cfgBridges = sandboxConfig.bridges || {};
-    if (!cfgBridges.__status__) {
-      let newBridges = { __status__: true };
+    let newBridges = { __status__: true };
+    var traverseBackward = function(cfgBridges, newBridges) {
       lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
         if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
           if (moduleType === 'application') {
@@ -300,8 +300,9 @@ let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName
           }
         }
       });
-      sandboxConfig.bridges = newBridges;
     }
+    traverseBackward(cfgBridges, newBridges);
+    sandboxConfig.bridges = newBridges;
   }
   return sandboxConfig;
 }

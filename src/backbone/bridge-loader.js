@@ -155,9 +155,15 @@ function BridgeLoader(params) {
         text: ' - bridgeCode is invalid (not a string)'
       }));
       return result;
+    } else {
+      LX.has('conlog') && LX.log('conlog', LT.add({
+        dialectOptions: dialectOpts
+      }).toMessage({
+        text: ' - buildBridgeDialect() with parameters: ${dialectOptions}'
+      }));
     }
 
-    var moduleId = [pluginName, bridgeRecord.moduleId].join('>');;
+    var moduleId = [pluginName, bridgeRecord.moduleId].join('>');
     if (chores.isOldFeatures()) {
       moduleId = bridgeRecord.moduleId;
     }

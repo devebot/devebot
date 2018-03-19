@@ -198,7 +198,7 @@ chores.isVerboseForced = function(moduleId, cfg) {
 }
 
 chores.isOldFeatures = function() {
-  return process.env.DEVEBOT_FEATURE_MODE !== 'new';
+  return process.env.DEVEBOT_FEATURE_MODE === 'old';
 }
 
 module.exports = chores;

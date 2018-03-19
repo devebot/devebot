@@ -12,11 +12,11 @@
     "lib/"
   ],
   "scripts": {
-    "build": "babel src -d lib",
+    "build": "babel ./src -d ./lib",
     "prepublish": "NODE_ENV=production npm run build",
     "pretest": "NODE_ENV=test npm run build",
-    "test": "mocha --recursive test/**/*-test.js",
-    "verify": "npm run prepublish && mocha --recursive test/**/*-test.js"
+    "test": "mocha --recursive ./test/**/*-test.js",
+    "verify": "npm run prepublish && mocha --recursive ./test/**/*-test.js"
   },
   "repository": {
     "type": "git",
@@ -38,7 +38,7 @@
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
     "bluebird": "^3.5.1",
-    "injektor": "^0.1.15",
+    "injektor": "^0.1.16",
     "lodash": "^4.17.4",
     "logolite": "^0.1.6",
     "logzilla": "^0.1.17",
