@@ -163,11 +163,23 @@ function BridgeLoader(params) {
       }));
     }
 
-    var crateScope = [pluginName, bridgeRecord.name].join('>');
+    dialectName = dialectName || bridgeCode + 'Wrapper';
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      dialectName: dialectName
+    }).toMessage({
+      text: ' - building bridgeDialect (${dialectName}) is started'
+    }));
+
+    var crateScope = pluginName;
+    var crateName = [bridgeRecord.name, dialectName].join('#');
+    var sectorRef = [crateScope, crateName].join(chores.getSeparator());
+    var uniqueName = [pluginName, bridgeRecord.name, dialectName].join(chores.getSeparator());
     if (chores.isOldFeatures()) {
       crateScope = bridgeRecord.name;
+      crateName = dialectName;
+      sectorRef = [crateScope, crateName].join(chores.getSeparator());
+      uniqueName = [bridgeRecord.name, dialectName].join(chores.getSeparator());
     }
-    var uniqueName = [crateScope, dialectName].join(chores.getSeparator());
 
     var bridgeConstructor = bridgeRecord.construktor;
     if (!lodash.isFunction(bridgeConstructor)) {
@@ -176,14 +188,6 @@ function BridgeLoader(params) {
       }));
       return result;
     }
-
-    dialectName = dialectName || bridgeCode + 'Wrapper';
-
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      dialectName: dialectName
-    }).toMessage({
-      text: ' - building bridgeDialect (${dialectName}) is started'
-    }));
 
     var configPath;
     if (chores.isOldFeatures()) {
@@ -217,18 +221,18 @@ function BridgeLoader(params) {
       }
 
       if (newFeatures.logoliteEnabled) {
-        var loggingFactory = kwargs.loggingFactory.branch(uniqueName);
+        var loggingFactory = kwargs.loggingFactory.branch(sectorRef);
         this.logger = loggingFactory.getLogger();
         this.tracer = loggingFactory.getTracer();
       } else {
-        this.logger = kwargs.loggingFactory.getLogger({ sector: uniqueName });
+        this.logger = kwargs.loggingFactory.getLogger({ sector: sectorRef });
       }
 
       this.logger.has('silly') && this.logger.log('silly', this.tracer.add({
         dialectName: dialectName,
         newFeatures: newFeatures
       }).toMessage({
-        tags: [ uniqueName, 'apply-features' ],
+        tags: [ sectorRef, 'apply-features' ],
         text: ' - newFeatures[${dialectName}]: ${newFeatures}'
       }));
 
@@ -236,7 +240,7 @@ function BridgeLoader(params) {
       try {
         if (newFeatures.logoliteEnabled) {
           this.logger.has('silly') && this.logger.log('silly', this.tracer.toMessage({
-            tags: [ uniqueName, 'constructor-begin' ],
+            tags: [ sectorRef, 'constructor-begin' ],
             text: ' + constructor start ...'
           }));
         }
@@ -247,7 +251,7 @@ function BridgeLoader(params) {
 
         if (newFeatures.logoliteEnabled) {
           this.logger.has('silly') && this.logger.log('silly', this.tracer.toMessage({
-            tags: [ uniqueName, 'constructor-end' ],
+            tags: [ sectorRef, 'constructor-end' ],
             text: ' - constructor has finished'
           }));
         }
@@ -255,7 +259,7 @@ function BridgeLoader(params) {
         this.logger.has('silly') && this.logger.log('silly', this.tracer.add({
           bridgeCode: bridgeCode
         }).toMessage({
-          tags: [ uniqueName, 'constructor-failed' ],
+          tags: [ sectorRef, 'constructor-failed' ],
           text: ' - bridgeConstructor (${bridgeCode}) call has failed'
         }));
         opStatus.hasError = true;
@@ -290,7 +294,7 @@ function BridgeLoader(params) {
 
     result[uniqueName] = {
       crateScope: crateScope,
-      name: dialectName,
+      name: crateName,
       construktor: dialectConstructor
     };
 

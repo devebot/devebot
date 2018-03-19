@@ -12,7 +12,7 @@ var debugx = require('./pinbug.js')('devebot:utils:chores');
 
 let store = {
   injektorOptions: {
-    namePatternTemplate: '^[a-zA-Z]{1}[a-zA-Z0-9&\\>\\-_%s]*$',
+    namePatternTemplate: '^[a-zA-Z]{1}[a-zA-Z0-9&#\\-_%s]*$',
     separator: '/'
   },
   injektorContext: { scope: 'devebot' }
