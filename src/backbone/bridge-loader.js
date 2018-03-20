@@ -14,6 +14,8 @@ function BridgeLoader(params) {
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
 
+  var store = {};
+
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
@@ -31,6 +33,18 @@ function BridgeLoader(params) {
     lodash.defaultsDeep(dialectMap, buildBridgeDialects.call(loaderCtx, params.bridgeRefs, dialectOptions, optType));
     return dialectMap;
   };
+
+  this.loadMetadata = function(metadataMap, dialectOptions) {
+    metadataMap = metadataMap || {};
+    var bridgeDescriptors = loadBridgeConstructors(params.bridgeRefs);
+    lodash.defaultsDeep(metadataMap, lodash.mapValues(bridgeDescriptors, function(entrypoint) {
+      return {
+        name: entrypoint.name,
+        metadata: lodash.get(entrypoint, "construktor.devebotMetadata", null)
+      }
+    }));
+    return metadataMap;
+  }
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
@@ -297,10 +311,6 @@ function BridgeLoader(params) {
       name: crateName,
       construktor: dialectConstructor
     };
-
-    if (pluginName) {
-      result[uniqueName].pluginName = pluginName;
-    }
 
     LX.has('conlog') && LX.log('conlog', LT.add({
       dialectName: dialectName
