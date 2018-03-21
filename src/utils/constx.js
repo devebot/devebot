@@ -77,9 +77,9 @@ var constx = {
       }
     }
   },
-  SCHEMA: {
-    ROOT_KEY: 'schema',
-    SCRIPT_DIR: '/lib/schemas',
+  METAINF: {
+    ROOT_KEY: 'metainf',
+    SCRIPT_DIR: '/lib/metadata',
     SCHEMA_OBJECT: {
       "type": "object",
       "properties": {

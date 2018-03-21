@@ -37,8 +37,8 @@ function PluginLoader(params) {
     schemaValidator: params.schemaValidator
   };
 
-  this.loadSchemas = function(schemaMap) {
-    return loadAllSchemas.call(loaderClass, schemaMap, pluginRootDirs);
+  this.loadMetadata = function(metadataMap) {
+    return loadAllMetainfs.call(loaderClass, metadataMap, pluginRootDirs);
   }
 
   this.loadRoutines = function(routineMap, routineContext) {
@@ -57,7 +57,7 @@ function PluginLoader(params) {
 
   var hasSeparatedDir = function(scriptType) {
     return lodash.filter(constx, function(obj, key) {
-      // return ['ROUTINE', 'SCHEMA', 'SERVICE', 'TRIGGER'].indexOf(key) >= 0;
+      // return ['METAINF', 'ROUTINE', 'SERVICE', 'TRIGGER'].indexOf(key) >= 0;
       return obj.ROOT_KEY && obj.SCRIPT_DIR;
     }).filter(function(info) {
       return info.ROOT_KEY !== constx[scriptType].ROOT_KEY &&
@@ -205,41 +205,41 @@ function PluginLoader(params) {
     }, { valid: true, errors: [] });
   };
 
-  var loadAllSchemas = function(schemaMap, pluginRootDirs) {
+  var loadAllMetainfs = function(metainfMap, pluginRootDirs) {
     var self = this;
-    var schemaType = 'SCHEMA';
-    schemaMap = schemaMap || {};
-    var schemaSubDir = constx[schemaType].SCRIPT_DIR;
+    var metainfType = 'METAINF';
+    metainfMap = metainfMap || {};
+    var metainfSubDir = constx[metainfType].SCRIPT_DIR;
     pluginRootDirs.forEach(function(pluginRootDir) {
-      loadSchemaEntries.call(self, schemaMap, schemaSubDir, pluginRootDir);
+      loadMetainfEntries.call(self, metainfMap, metainfSubDir, pluginRootDir);
     });
-    return schemaMap;
+    return metainfMap;
   }
 
-  var loadSchemaEntries = function(schemaMap, schemaSubDir, pluginRootDir) {
+  var loadMetainfEntries = function(metainfMap, metainfSubDir, pluginRootDir) {
     var self = this;
-    var schemaType = 'SCHEMA';
-    var schemaFolder = pluginRootDir.pathDir + schemaSubDir;
+    var metainfType = 'METAINF';
+    var metainfFolder = pluginRootDir.pathDir + metainfSubDir;
     LX.has('conlog') && LX.log('conlog', LT.add({
-      schemaKey: constx[schemaType].ROOT_KEY,
-      schemaFolder: schemaFolder
+      metainfKey: constx[metainfType].ROOT_KEY,
+      metainfFolder: metainfFolder
     }).toMessage({
-      text: ' - load ${schemaKey}s from folder: ${schemaFolder}'
+      text: ' - load ${metainfKey}s from folder: ${metainfFolder}'
     }));
-    var schemaFiles = chores.filterFiles(schemaFolder, getFilterPattern(schemaType));
+    var schemaFiles = chores.filterFiles(metainfFolder, getFilterPattern(metainfType));
     schemaFiles.forEach(function(schemaFile) {
-      loadSchemaEntry.call(self, schemaMap, schemaSubDir, schemaFile, pluginRootDir);
+      loadMetainfEntry.call(self, metainfMap, metainfSubDir, schemaFile, pluginRootDir);
     });
   }
 
-  var loadSchemaEntry = function(schemaMap, schemaSubDir, schemaFile, pluginRootDir) {
+  var loadMetainfEntry = function(metainfMap, metainfSubDir, schemaFile, pluginRootDir) {
     var self = this;
-    var schemaType = 'SCHEMA';
-    var opStatus = lodash.assign({ type: 'SCHEMA', file: schemaFile, subDir: schemaSubDir }, pluginRootDir);
-    var filepath = path.join(pluginRootDir.pathDir, schemaSubDir, schemaFile);
+    var metainfType = 'METAINF';
+    var opStatus = lodash.assign({ type: 'METAINF', file: schemaFile, subDir: metainfSubDir }, pluginRootDir);
+    var filepath = path.join(pluginRootDir.pathDir, metainfSubDir, schemaFile);
     try {
-      var schemaObject = loader(filepath, { stopWhenError: true });
-      var output = validateSchema.call(self, schemaObject, schemaType);
+      var metainfObject = loader(filepath, { stopWhenError: true });
+      var output = validateMetainf.call(self, metainfObject, metainfType);
       if (!output.valid) {
         LX.has('conlog') && LX.log('conlog', LT.add({
           validationResult: output
@@ -247,7 +247,7 @@ function PluginLoader(params) {
           text: ' - validating schema fail: ${validationResult}'
         }));
         opStatus.hasError = true;
-      } else if (schemaObject.enabled === false) {
+      } else if (metainfObject.enabled === false) {
         LX.has('conlog') && LX.log('conlog', LT.toMessage({
           text: ' - schema is disabled'
         }));
@@ -258,8 +258,8 @@ function PluginLoader(params) {
           text: ' - schema validation pass'
         }));
         opStatus.hasError = false;
-        var typeName = schemaObject.type || schemaFile.replace('.js', '').toLowerCase();
-        var subtypeName = schemaObject.subtype || 'default';
+        var typeName = metainfObject.type || schemaFile.replace('.js', '').toLowerCase();
+        var subtypeName = metainfObject.subtype || 'default';
         var uniqueName = [pluginRootDir.name, typeName].join(chores.getSeparator());
         var entry = {};
         entry[uniqueName] = entry[uniqueName] || {};
@@ -268,9 +268,9 @@ function PluginLoader(params) {
           pluginCode: getPluginRefByCode(pluginRootDir),
           type: typeName,
           subtype: subtypeName,
-          schema: schemaObject.schema
+          schema: metainfObject.schema
         };
-        lodash.defaultsDeep(schemaMap, entry);
+        lodash.defaultsDeep(metainfMap, entry);
       }
     } catch(err) {
       LX.has('conlog') && LX.log('conlog', LT.add({
@@ -285,12 +285,12 @@ function PluginLoader(params) {
     errorHandler.collect(opStatus);
   }
 
-  var validateSchema = function(schemaObject) {
+  var validateMetainf = function(metainfObject) {
     var self = this;
-    var schemaType = 'SCHEMA';
-    schemaObject = schemaObject || {};
+    var metainfType = 'METAINF';
+    metainfObject = metainfObject || {};
     var results = [];
-    results.push(self.schemaValidator.validate(schemaObject, constx[schemaType].SCHEMA_OBJECT));
+    results.push(self.schemaValidator.validate(metainfObject, constx[metainfType].SCHEMA_OBJECT));
     return results.reduce(function(output, result) {
       output.valid = output.valid && (result.valid != false);
       output.errors = output.errors.concat(result.errors);

@@ -28,7 +28,9 @@ function ErrorHandler(params) {
     if (info instanceof Array) {
       opStates.push.apply(opStates, info);
     } else {
-      opStates.push(info);
+      if (info && typeof info === 'object') {
+        opStates.push(info);
+      }
     }
     return this;
   }
@@ -59,14 +61,17 @@ function ErrorHandler(params) {
     var summary = this.examine(options);
     if (summary.numberOfErrors > 0) {
       if (!silent) {
-        console.log('[x] Failed to load %s script file(s):', summary.numberOfErrors);
+        console.error('[x] Failed to load %s script file(s):', summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
           if (fsv.stage == 'config/schema') {
             switch(fsv.type) {
               case 'application':
               case 'plugin':
               case 'devebot':
-              console.log('--> [%s:%s] sandbox config is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              console.error('--> [%s:%s] plugin configure is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              break;
+              case 'bridge':
+              console.error('--> [%s:%s] bridge configure is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
               break;
             }
             return;
@@ -76,33 +81,33 @@ function ErrorHandler(params) {
               case 'ROUTINE':
               case 'SERVICE':
               case 'TRIGGER':
-              console.log(' -  [%s:%s] new() is failed:\n   %s', fsv.type, fsv.name, fsv.stack);
+              console.error(' -  [%s:%s] new() is failed:\n   %s', fsv.type, fsv.name, fsv.stack);
               break;
               case 'DIALECT':
-              console.log(' -  [%s:%s/%s] new() is failed:\n   %s', fsv.type, fsv.code, fsv.name, fsv.stack);
+              console.error(' -  [%s:%s/%s] new() is failed:\n   %s', fsv.type, fsv.code, fsv.name, fsv.stack);
               break;
               default:
-              console.log(' -  %s', JSON.stringify(fsv));
+              console.error(' -  %s', JSON.stringify(fsv));
             }
             return;
           }
           switch(fsv.type) {
             case 'CONFIG':
-            console.log(' -  [%s] in (%s):\n   %s', fsv.type, fsv.file, fsv.stack);
+            console.error(' -  [%s] in (%s):\n   %s', fsv.type, fsv.file, fsv.stack);
             break;
             case 'ROUTINE':
             case 'SERVICE':
             case 'TRIGGER':
-            console.log(' -  [%s:%s] - %s in (%s%s):\n   %s', fsv.type, fsv.name, fsv.file, fsv.pathDir, fsv.subDir, fsv.stack);
+            console.error(' -  [%s:%s] - %s in (%s%s):\n   %s', fsv.type, fsv.name, fsv.file, fsv.pathDir, fsv.subDir, fsv.stack);
             break;
             case 'DIALECT':
-            console.log(' -  [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.code, fsv.name, fsv.path, fsv.stack);
+            console.error(' -  [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.code, fsv.name, fsv.path, fsv.stack);
             break;
             case 'application':
-            console.log(' -  [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.name, fsv.code, fsv.path, fsv.stack);
+            console.error(' -  [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.name, fsv.code, fsv.path, fsv.stack);
             break;
             default:
-            console.log(' -  %s', JSON.stringify(fsv));
+            console.error(' -  %s', JSON.stringify(fsv));
           }
         });
       }
@@ -116,8 +121,8 @@ function ErrorHandler(params) {
       }));
       if (options.exitOnError !== false) {
         if (!silent) {
-          console.log('==@ The program will exit now.');
-          console.log('... Please fix the issues and then retry again.');
+          console.warn('==@ The program will exit now.');
+          console.warn('... Please fix the issues and then retry again.');
         }
         this.exit(1);
       }
