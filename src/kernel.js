@@ -159,6 +159,20 @@ let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
     return output;
   }
 
+  if (chores.isOldFeatures()) {
+    for(let dialectName in bridgeConfig) {
+      let dialectMap = bridgeConfig[dialectName] || {};
+      for(let bridgeCode in dialectMap) {
+        let dialectSchema = lodash.get(bridgeSchema, [bridgeCode, 'metadata', 'schema'], null);
+        if (lodash.isNull(dialectSchema)) continue;
+        let dialectConfig = dialectMap[bridgeCode] || {};
+        let r = schemaValidator.validate(dialectConfig, dialectSchema);
+        result.push(customizeResult(r, bridgeCode, '*', dialectName));
+      }
+    }
+    return result;
+  }
+
   for(let bridgeCode in bridgeConfig) {
     let bridgeMap = bridgeConfig[bridgeCode] || {};
     let dialectSchema = lodash.get(bridgeSchema, [bridgeCode, 'metadata', 'schema'], null);
