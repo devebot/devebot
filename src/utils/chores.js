@@ -1,5 +1,6 @@
 'use strict';
 
+var assert = require('assert');
 var lodash = require('lodash');
 var fs = require('fs');
 var os = require('os');
@@ -163,6 +164,36 @@ chores.getPluginRefBy = function(selectedField, pluginDescriptor) {
     pluginRef = pluginDescriptor.type;
   }
   return pluginRef;
+}
+
+chores.extractCodeByPattern = function(ctx, patterns, name) {
+  assert.ok(patterns instanceof Array);
+  for(let k in patterns) {
+    assert.ok(patterns[k] instanceof RegExp);
+  }
+  let {LX, LT} = ctx;
+  let info = {};
+  for(info.i=0; info.i<patterns.length; info.i++) {
+    if (name.match(patterns[info.i])) break;
+  }
+  if (info.i >= patterns.length) {
+    LX.has('conlog') && LX.log('conlog', LT.add({
+      name: name
+    }).toMessage({
+      text: ' - The name "${name}" is not matched the patterns'
+    }));
+    return { i: -1, code: name };
+  }
+  info.code = name.replace(patterns[info.i], '\$1')
+    .replace(/-([a-z])/g, function (m, w) { return w.toUpperCase(); })
+    .replace(/-([0-9])/g, function (m, w) { return '_' + w; });
+  LX.has('conlog') && LX.log('conlog', LT.add({
+    name: name,
+    code: info.code
+  }).toMessage({
+    text: ' - extracted code of "${name}" is "${code}"'
+  }));
+  return info;
 }
 
 chores.getBlockRef = function(filename, blockScope) {

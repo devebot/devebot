@@ -15,14 +15,33 @@ function PluginLoader(params) {
   var loggingFactory = params.loggingFactory.branch(blockRef);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
+  var CTX = {LX, LT};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [blockRef, 'constructor-begin'],
     text: ' + constructor start ...'
   }));
 
+  const PLUGIN_NAME_PATTERNS = [
+    /^devebot-dp-([a-z][a-zA-Z0-9_\-]*)$/g,
+    /^([a-z][a-zA-Z0-9_\-]*)$/g
+  ];
+
+  let extractPluginCode = function(CTX, pluginRef) {
+    let info = chores.extractCodeByPattern(CTX, PLUGIN_NAME_PATTERNS, pluginRef.name);
+    if (info.i < 0) {
+      errorHandler.collect(lodash.assign({
+        stage: 'checkname',
+        type: 'PLUGIN',
+        hasError: true,
+        stack: PLUGIN_NAME_PATTERNS.toString()
+      }, pluginRef));
+    }
+    return info.code;
+  }
+
   var pluginRootDirs = lodash.map(params.pluginRefs, function(pluginRef) {
-    pluginRef.code = pluginRef.code || chores.stringCamelCase(pluginRef.name);
+    pluginRef.code = pluginRef.code || extractPluginCode(CTX, pluginRef);
     pluginRef.pathDir = path.dirname(pluginRef.path);
     return pluginRef;
   });

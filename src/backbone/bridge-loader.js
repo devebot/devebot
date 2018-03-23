@@ -13,6 +13,7 @@ function BridgeLoader(params) {
   var loggingFactory = params.loggingFactory.branch(blockRef);
   var LX = loggingFactory.getLogger();
   var LT = loggingFactory.getTracer();
+  var CTX = {LX, LT};
 
   var store = {};
 
@@ -49,29 +50,22 @@ function BridgeLoader(params) {
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
-  var bridgeNamePatterns = [
+  const BRIDGE_NAME_PATTERNS = [
     /^devebot-co-([a-z][a-z0-9\-]*)$/g,
     /^([a-z][a-z0-9\-]*)$/g
   ];
 
-  var extractBridgeCode = function(bridgeName) {
-    var info = {};
-    for(info.i=0; info.i<bridgeNamePatterns.length; info.i++) {
-      if (bridgeName.match(bridgeNamePatterns[info.i])) break;
+  let extractBridgeCode = function(CTX, bridgeRef) {
+    let info = chores.extractCodeByPattern(CTX, BRIDGE_NAME_PATTERNS, bridgeRef.name);
+    if (info.i < 0) {
+      errorHandler.collect(lodash.assign({
+        stage: 'checkname',
+        type: 'BRIDGE',
+        hasError: true,
+        stack: BRIDGE_NAME_PATTERNS.toString()
+      }, bridgeRef));
     }
-    if (info.i >= bridgeNamePatterns.length) {
-      LX.has('conlog') && LX.log('conlog', LT.add({
-        bridgeName: bridgeName
-      }).toMessage({
-        text: ' - bridge with name "${bridgeName}" is invalid'
-      }));
-      return info;
-    }
-    info.code = bridgeName.replace(bridgeNamePatterns[info.i], '\$1')
-      .replace(/-([a-z])/g, function (m, w) { return w.toUpperCase(); })
-      .replace(/-([0-9])/g, function (m, w) { return '_' + w; });
-    LX.has('conlog') && LX.log('conlog', ' - extracted code "%s"', JSON.stringify(info));
-    return info;
+    return info.code;
   }
 
   var loadBridgeContructor = function(bridgeRef) {
@@ -90,7 +84,7 @@ function BridgeLoader(params) {
 
     var result = {};
 
-    var bridgeCode = extractBridgeCode(bridgeName).code;
+    var bridgeCode = extractBridgeCode(CTX, bridgeRef);
     if (typeof(bridgeCode) !== 'string') return result;
 
     var opStatus = lodash.assign({ type: 'DIALECT', code: bridgeCode }, bridgeRef);
