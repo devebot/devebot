@@ -112,6 +112,8 @@ var Service = function(params) {
     }));
     if (injectedHandlers) {
       injectedHandlers[handlerName] = _injektor.lookup(handlerName, exceptions);
+    } else {
+      _injektor.lookup(handlerName, exceptions);
     }
     lodash.forEach(exceptions, function(exception) {
       var opStatus = {
