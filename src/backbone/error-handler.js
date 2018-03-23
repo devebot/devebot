@@ -61,7 +61,7 @@ function ErrorHandler(params) {
     var summary = this.examine(options);
     if (summary.numberOfErrors > 0) {
       if (!silent) {
-        console.error('[x] Failed to load %s script file(s):', summary.numberOfErrors);
+        console.error('[x] There are %s error(s) occurred during load:', summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
           if (fsv.stage == 'config/schema') {
             switch(fsv.type) {
@@ -81,33 +81,33 @@ function ErrorHandler(params) {
               case 'ROUTINE':
               case 'SERVICE':
               case 'TRIGGER':
-              console.error(' -  [%s:%s] new() is failed:\n   %s', fsv.type, fsv.name, fsv.stack);
+              console.error('--> [%s:%s] new() is failed:\n   %s', fsv.type, fsv.name, fsv.stack);
               break;
               case 'DIALECT':
-              console.error(' -  [%s:%s/%s] new() is failed:\n   %s', fsv.type, fsv.code, fsv.name, fsv.stack);
+              console.error('--> [%s:%s/%s] new() is failed:\n   %s', fsv.type, fsv.code, fsv.name, fsv.stack);
               break;
               default:
-              console.error(' -  %s', JSON.stringify(fsv));
+              console.error('--> %s', JSON.stringify(fsv));
             }
             return;
           }
           switch(fsv.type) {
             case 'CONFIG':
-            console.error(' -  [%s] in (%s):\n   %s', fsv.type, fsv.file, fsv.stack);
+            console.error('--> [%s] in (%s):\n   %s', fsv.type, fsv.file, fsv.stack);
             break;
             case 'ROUTINE':
             case 'SERVICE':
             case 'TRIGGER':
-            console.error(' -  [%s:%s] - %s in (%s%s):\n   %s', fsv.type, fsv.name, fsv.file, fsv.pathDir, fsv.subDir, fsv.stack);
+            console.error('--> [%s:%s] - %s in (%s%s):\n   %s', fsv.type, fsv.name, fsv.file, fsv.pathDir, fsv.subDir, fsv.stack);
             break;
             case 'DIALECT':
-            console.error(' -  [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.code, fsv.name, fsv.path, fsv.stack);
+            console.error('--> [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.code, fsv.name, fsv.path, fsv.stack);
             break;
             case 'application':
-            console.error(' -  [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.name, fsv.code, fsv.path, fsv.stack);
+            console.error('--> [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.name, fsv.code, fsv.path, fsv.stack);
             break;
             default:
-            console.error(' -  %s', JSON.stringify(fsv));
+            console.error('--> %s', JSON.stringify(fsv));
           }
         });
       }
