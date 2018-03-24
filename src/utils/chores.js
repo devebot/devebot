@@ -243,6 +243,18 @@ chores.isVerboseForced = function(moduleId, cfg) {
   return (store.fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
 }
 
+chores.printError = function(err) {
+  [
+    '',
+    '========== FATAL ERROR ==========',
+    err,
+    '---------------------------------',
+    ''
+  ].forEach(function(item) {
+    debugx.enabled && debugx(item);
+  });
+}
+
 chores.isOldFeatures = function() {
   return process.env.DEVEBOT_FEATURE_MODE === 'old';
 }

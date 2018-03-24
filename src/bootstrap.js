@@ -4,14 +4,16 @@ var path = require('path');
 var lodash = require('lodash');
 
 var appinfoLoader = require('./backbone/appinfo-loader.js');
+var errorHandler = require('./backbone/error-handler.js').instance;
 var ConfigLoader = require('./backbone/config-loader.js');
 var LoggingWrapper = require('./backbone/logging-wrapper.js');
 var chores = require('./utils/chores.js');
 var Runner = require('./runner.js');
 var Server = require('./server.js');
+var blockRef = chores.getBlockRef(__filename);
 
 function runLoggingWrapper() {
-  let loggingWrapper = new LoggingWrapper(chores.getBlockRef(__filename));
+  let loggingWrapper = new LoggingWrapper(blockRef);
   return {
     logger: loggingWrapper.getLogger(),
     tracer: loggingWrapper.getTracer()
@@ -157,16 +159,18 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   bridgeDiffs.forEach(function(bridgeInfo) {
     context.bridgeRefs[bridgeInfo.name] = {
       name: bridgeInfo.name,
-      path: require.resolve(bridgeInfo.path)
+      path: touchPackage(bridgeInfo, 'bridge', require.resolve)
     }
   });
 
   pluginDiffs.forEach(function(pluginInfo) {
     context.pluginRefs[pluginInfo.name] = {
       name: pluginInfo.name,
-      path: require.resolve(pluginInfo.path)
+      path: touchPackage(pluginInfo, 'plugin', require.resolve)
     }
   });
+
+  errorHandler.barrier({ invoker: blockRef});
 
   var pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
     return require(pluginInfo.path);
@@ -190,5 +194,20 @@ appLoader.require = function(packageName) {
   if (packageName == 'pinbug') return require('./utils/pinbug.js');
   return null;
 };
+
+var touchPackage = function(pkgInfo, pkgType, action) {
+  try {
+    return action(pkgInfo.path);
+  } catch (err) {
+    errorHandler.collect({
+      stage: 'bootstrap',
+      type: pkgType,
+      name: pkgInfo.name,
+      hasError: true,
+      stack: err.stack
+    });
+  }
+  return null;
+}
 
 module.exports = global.devebot = global.Devebot = appLoader;

@@ -59,8 +59,8 @@ function BridgeLoader(params) {
     let info = chores.extractCodeByPattern(CTX, BRIDGE_NAME_PATTERNS, bridgeRef.name);
     if (info.i < 0) {
       errorHandler.collect(lodash.assign({
-        stage: 'checkname',
-        type: 'BRIDGE',
+        stage: 'naming',
+        type: 'bridge',
         hasError: true,
         stack: BRIDGE_NAME_PATTERNS.toString()
       }, bridgeRef));

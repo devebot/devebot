@@ -31,8 +31,8 @@ function PluginLoader(params) {
     let info = chores.extractCodeByPattern(CTX, PLUGIN_NAME_PATTERNS, pluginRef.name);
     if (info.i < 0) {
       errorHandler.collect(lodash.assign({
-        stage: 'checkname',
-        type: 'PLUGIN',
+        stage: 'naming',
+        type: 'plugin',
         hasError: true,
         stack: PLUGIN_NAME_PATTERNS.toString()
       }, pluginRef));
@@ -297,7 +297,7 @@ function PluginLoader(params) {
       }).toMessage({
         text: ' - schema file ${filepath} loading has failed'
       }));
-      LX.has('conlog') && console.log(err);
+      LX.has('conlog') && chores.printError(err);
       opStatus.hasError = true;
       opStatus.stack = err.stack;
     }
@@ -379,7 +379,7 @@ function PluginLoader(params) {
       }).toMessage({
         text: ' - gadget file ${filepath} loading has failed'
       }));
-      LX.has('conlog') && console.log(err);
+      LX.has('conlog') && chores.printError(err);
       opStatus.hasError = true;
       opStatus.stack = err.stack;
     }

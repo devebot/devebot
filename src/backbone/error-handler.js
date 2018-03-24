@@ -63,33 +63,54 @@ function ErrorHandler(params) {
       if (!silent) {
         console.error('[x] There are %s error(s) occurred during load:', summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
-          if (fsv.stage == 'config/schema') {
+          if (fsv.stage === 'bootstrap') {
+            switch(fsv.type) {
+              case 'application':
+              case 'plugin':
+              case 'devebot':
+              console.error('--> [%s:%s] loading plugin is failed, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              return;
+              case 'bridge':
+              console.error('--> [%s:%s] loading bridge is failed, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              return;
+            }
+          }
+          if (fsv.stage === 'naming') {
+            switch(fsv.type) {
+              case 'plugin':
+              console.error('--> [%s:%s] resolving plugin-code is failed, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              return;
+              case 'bridge':
+              console.error('--> [%s:%s] resolving bridge-code is failed, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              return;
+            }
+          }
+          if (fsv.stage === 'config/schema') {
             switch(fsv.type) {
               case 'application':
               case 'plugin':
               case 'devebot':
               console.error('--> [%s:%s] plugin configure is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
-              break;
+              return;
               case 'bridge':
               console.error('--> [%s:%s] bridge configure is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
-              break;
+              return;
             }
-            return;
           }
-          if (fsv.stage == 'instantiating') {
+          if (fsv.stage === 'instantiating') {
             switch(fsv.type) {
               case 'ROUTINE':
               case 'SERVICE':
               case 'TRIGGER':
               console.error('--> [%s:%s] new() is failed:\n   %s', fsv.type, fsv.name, fsv.stack);
-              break;
+              return;
               case 'DIALECT':
               console.error('--> [%s:%s/%s] new() is failed:\n   %s', fsv.type, fsv.code, fsv.name, fsv.stack);
-              break;
+              return;
               default:
               console.error('--> %s', JSON.stringify(fsv));
+              return;
             }
-            return;
           }
           switch(fsv.type) {
             case 'CONFIG':
