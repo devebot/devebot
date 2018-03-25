@@ -20,6 +20,23 @@ let store = {
 };
 var chores = {};
 
+var CustomError = function(message, payload) {
+  Error.call(this, message);
+  Error.captureStackTrace(this, this.constructor);
+  this.message = message;
+  this.payload = payload;
+}
+util.inherits(CustomError, Error);
+
+chores.buildError = function(errorName) {
+  var ErrorConstructor = function() {
+    CustomError.apply(this, arguments);
+    this.name = errorName;
+  }
+  util.inherits(ErrorConstructor, CustomError);
+  return ErrorConstructor;
+}
+
 chores.getUUID = function() {
   return uuidv4();
 }
