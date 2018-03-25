@@ -185,13 +185,12 @@ appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
 
 var builtinPackages = ['bluebird', 'lodash', 'injektor', 'logolite', 'schemato'];
+var internalModules = ['chores', 'loader', 'pinbug'];
 
 appLoader.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
+  if (internalModules.indexOf(packageName) >= 0) return require('./utils/' + packageName);
   if (packageName == 'debug') return require('./utils/pinbug.js');
-  if (packageName == 'chores') return require('./utils/chores.js');
-  if (packageName == 'loader') return require('./utils/loader.js');
-  if (packageName == 'pinbug') return require('./utils/pinbug.js');
   return null;
 };
 

@@ -326,7 +326,6 @@ function PluginLoader(params) {
     var gadgetSubDir = constx[gadgetType].SCRIPT_DIR;
 
     pluginRootDirs.forEach(function(pluginRootDir) {
-      pluginRootDir.code = chores.stringCamelCase(pluginRootDir.name);
       loadGadgetEntries.call(self, gadgetMap, gadgetType, gadgetSubDir, pluginRootDir);
     });
 
