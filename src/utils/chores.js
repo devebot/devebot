@@ -272,10 +272,6 @@ chores.printError = function(err) {
   });
 }
 
-chores.isOldFeatures = function() {
-  return process.env.DEVEBOT_FEATURE_MODE === 'old';
-}
-
 var stringToArray = function(labels) {
   labels = labels || '';
   return labels.split(',').map(function(item) {

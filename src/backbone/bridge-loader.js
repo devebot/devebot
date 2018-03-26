@@ -183,7 +183,7 @@ function BridgeLoader(params) {
     var crateName = [bridgeCode, dialectName].join('#');
     var sectorRef = [crateScope, crateName].join(chores.getSeparator());
     var uniqueName = [pluginName, bridgeRecord.name, dialectName].join(chores.getSeparator());
-    if (chores.isOldFeatures()) {
+    if (!chores.isFeatureSupported('bridge-full-ref')) {
       crateScope = bridgeRecord.name;
       crateName = dialectName;
       sectorRef = [crateScope, crateName].join(chores.getSeparator());
@@ -199,7 +199,7 @@ function BridgeLoader(params) {
     }
 
     var configPath;
-    if (chores.isOldFeatures()) {
+    if (!chores.isFeatureSupported('bridge-full-ref')) {
       switch(optType) {
         case 0:
           configPath = ['sandboxConfig', 'bridges', dialectName, bridgeCode];
@@ -344,7 +344,7 @@ function BridgeLoader(params) {
     }
 
     var bridgeDialects = {};
-    if (chores.isOldFeatures()) {
+    if (!chores.isFeatureSupported('bridge-full-ref')) {
       switch(optType) {
         case 0:
           lodash.forOwn(dialectOptions, function(dialectConfig, dialectName) {

@@ -159,7 +159,7 @@ let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
     return output;
   }
 
-  if (chores.isOldFeatures()) {
+  if (!chores.isFeatureSupported('bridge-full-ref')) {
     for(let dialectName in bridgeConfig) {
       let dialectMap = bridgeConfig[dialectName] || {};
       for(let bridgeCode in dialectMap) {

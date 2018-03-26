@@ -193,7 +193,7 @@ var constx = {
       }
     }
   },
-  FEATURE_ENABLED: []
+  FEATURE_ENABLED: [ 'bridge-full-ref' ]
 };
 
 module.exports = constx;

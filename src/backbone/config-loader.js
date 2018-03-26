@@ -262,7 +262,7 @@ function Loader(appName, appOptions, appRef, libRefs) {
 module.exports = Loader;
 
 let transformConfig = function(ctx, configType, configData, moduleType, moduleName) {
-  if (chores.isOldFeatures()) {
+  if (!chores.isFeatureSupported('bridge-full-ref')) {
     return configData;
   }
   if (configType === CONFIG_SANDBOX_NAME) {
