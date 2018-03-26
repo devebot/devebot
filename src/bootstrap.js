@@ -158,6 +158,11 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
 
   var bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
+    if (chores.isFeatureSupported('presets')) {
+      var item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
+      item.path = touchPackage(item, 'bridge', require.resolve);
+      return item;
+    }
     return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
   });
   var pluginInfos = lodash.map(pluginNames, function(pluginName) {
@@ -170,6 +175,9 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   });
 
   var bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
+    if (chores.isFeatureSupported('presets')) {
+      return (bridgeInfo.path == bridgeKey);
+    }
     return (bridgeInfo.name == bridgeKey);
   });
   var pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
@@ -180,6 +188,13 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   });
 
   bridgeDiffs.forEach(function(bridgeInfo) {
+    if (chores.isFeatureSupported('presets')) {
+      context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], {
+        name: bridgeInfo.name,
+        path: bridgeInfo.path
+      });
+      return;
+    }
     context.bridgeRefs[bridgeInfo.name] = {
       name: bridgeInfo.name,
       path: touchPackage(bridgeInfo, 'bridge', require.resolve)
