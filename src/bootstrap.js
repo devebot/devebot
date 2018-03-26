@@ -101,31 +101,36 @@ function appLoader(params) {
 
 var ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs'];
 
-function registerLayerware(layerRootPath, pluginNames, bridgeNames) {
-  if ((arguments.length < 3) && lodash.isArray(layerRootPath)) {
+function registerLayerware(presets, pluginNames, bridgeNames) {
+  if ((arguments.length < 3) && lodash.isArray(presets)) {
     bridgeNames = pluginNames;
-    pluginNames = layerRootPath;
-    layerRootPath = null;
+    pluginNames = presets;
+    presets = null;
   }
 
-  var initialize = function(layerRootPath, pluginNames, bridgeNames, context) {
+  if (lodash.isString(presets)) {
+    presets = { layerRootPath: presets };
+  }
+
+  var initialize = function(presets, pluginNames, bridgeNames, context) {
+    presets = presets || {};
     context = context || {};
-    if (typeof(layerRootPath) == 'string' && layerRootPath.length > 0) {
+    if (typeof(presets.layerRootPath) === 'string' && presets.layerRootPath.length > 0) {
       context.libRootPaths = context.libRootPaths || [];
-      context.libRootPaths.push(layerRootPath);
+      context.libRootPaths.push(presets.layerRootPath);
     }
     return expandExtensions(context, pluginNames, bridgeNames);
   };
 
-  return initialize.bind(undefined, layerRootPath, pluginNames, bridgeNames);
+  return initialize.bind(undefined, presets, pluginNames, bridgeNames);
 }
 
 function launchApplication(context, pluginNames, bridgeNames) {
   if (lodash.isString(context)) {
     context = { appRootPath: context };
   }
-  return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS),
-      pluginNames, bridgeNames)));
+  return appLoader(lodash.assign(context, transformContext(expandExtensions(
+      lodash.omit(context, ATTRS), pluginNames, bridgeNames))));
 }
 
 var expandExtensions = function (context, pluginNames, bridgeNames) {
@@ -180,6 +185,15 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
     return pluginInitializer(params);
   }, context);
 };
+
+var transformContext = function(context) {
+  context = context || {};
+  context.pluginRefs = context.pluginRefs || {};
+  context.pluginRefs = lodash.mapKeys(context.pluginRefs, function(value, key) {
+    return value.name;
+  });
+  return context;
+}
 
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
