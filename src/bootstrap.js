@@ -119,6 +119,11 @@ function registerLayerware(presets, pluginNames, bridgeNames) {
       context.libRootPaths = context.libRootPaths || [];
       context.libRootPaths.push(presets.layerRootPath);
     }
+    if (chores.isFeatureSupported('presets')) {
+      if (context.layerRootPath) {
+        lodash.set(context, ['pluginRefs', context.layerRootPath, 'presets'], presets);
+      }
+    }
     return expandExtensions(context, pluginNames, bridgeNames);
   };
 
@@ -151,6 +156,11 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
     return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
   });
   var pluginInfos = lodash.map(pluginNames, function(pluginName) {
+    if (chores.isFeatureSupported('presets')) {
+      var item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
+      item.path = touchPackage(item, 'plugin', require.resolve);
+      return item;
+    }
     return lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
   });
 
@@ -158,6 +168,9 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
     return (bridgeInfo.name == bridgeKey);
   });
   var pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
+    if (chores.isFeatureSupported('presets')) {
+      return (pluginInfo.path == pluginKey);
+    }
     return (pluginInfo.name == pluginKey);
   });
 
@@ -169,6 +182,13 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   });
 
   pluginDiffs.forEach(function(pluginInfo) {
+    if (chores.isFeatureSupported('presets')) {
+      context.pluginRefs[pluginInfo.path] = lodash.assign(context.pluginRefs[pluginInfo.path], {
+        name: pluginInfo.name,
+        path: pluginInfo.path
+      });
+      return;
+    }
     context.pluginRefs[pluginInfo.name] = {
       name: pluginInfo.name,
       path: touchPackage(pluginInfo, 'plugin', require.resolve)
@@ -178,10 +198,20 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   errorHandler.barrier({ invoker: blockRef});
 
   var pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
+    if (chores.isFeatureSupported('presets')) {
+      return {
+        path: require.resolve(pluginInfo.path),
+        initializer: require(pluginInfo.path)
+      }
+    }
     return require(pluginInfo.path);
   });
 
   return pluginInitializers.reduce(function(params, pluginInitializer) {
+    if (chores.isFeatureSupported('presets')) {
+      params.layerRootPath = pluginInitializer.path;
+      return pluginInitializer.initializer(params);
+    }
     return pluginInitializer(params);
   }, context);
 };

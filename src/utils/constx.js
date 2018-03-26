@@ -192,7 +192,8 @@ var constx = {
         }
       }
     }
-  }
+  },
+  FEATURE_ENABLED: []
 };
 
 module.exports = constx;

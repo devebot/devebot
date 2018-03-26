@@ -276,4 +276,28 @@ chores.isOldFeatures = function() {
   return process.env.DEVEBOT_FEATURE_MODE === 'old';
 }
 
+var stringToArray = function(labels) {
+  labels = labels || '';
+  return labels.split(',').map(function(item) {
+    return item.trim();
+  });
+}
+
+chores.isFeatureSupported = function(label) {
+  if (process.env.NODE_ENV === 'test') {
+    store.featureDisabled = null;
+    store.featureEnabled = null;
+  }
+  if (!store.featureDisabled) {
+    store.featureDisabled = stringToArray(process.env.DEVEBOT_FEATURE_DISABLED);
+  }
+  if (!store.featureEnabled) {
+    store.featureEnabled = stringToArray(process.env.DEVEBOT_FEATURE_ENABLED ||
+      process.env.DEVEBOT_FEATURE_LABELS);
+  }
+  if (store.featureDisabled.indexOf(label) >= 0) return false;
+  if (constx.FEATURE_ENABLED.indexOf(label) >= 0) return true;
+  return (store.featureEnabled.indexOf(label) >= 0);
+}
+
 module.exports = chores;
