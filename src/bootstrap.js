@@ -25,15 +25,17 @@ function appLoader(params) {
 
   let { logger: LX, tracer: LT } = runLoggingWrapper();
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-begin', 'appLoader' ],
+  LX.has('silly') && LX.log('silly', LT.add({
+    context: lodash.cloneDeep(params)
+  }).toMessage({
+    tags: [ blockRef, 'constructor-begin', 'appLoader' ],
     text: ' + application loading start ...'
   }));
 
   LX.has('conlog') && LX.log('conlog', LT.add({
-    appParams: params
+    context: params
   }).toMessage({
-    text: ' * application parameters: ${appParams}'
+    text: ' * application parameters: ${context}'
   }));
 
   var appRootPath = params.appRootPath;
@@ -60,6 +62,9 @@ function appLoader(params) {
     name: appName,
     path: path.join(appRootPath, 'index.js')
   };
+  if (lodash.isObject(params.presets)) {
+    appRef.presets = lodash.cloneDeep(params.presets);
+  }
 
   var devebotRef = {
     type: 'framework',
@@ -91,8 +96,8 @@ function appLoader(params) {
     set: function(value) {}
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
-    tags: [ 'constructor-end', 'appLoader' ],
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ blockRef, 'constructor-end', 'appLoader' ],
     text: ' - Application loading has done'
   }));
 
@@ -120,8 +125,8 @@ function registerLayerware(presets, pluginNames, bridgeNames) {
       context.libRootPaths.push(presets.layerRootPath);
     }
     if (chores.isFeatureSupported('presets')) {
-      if (context.layerRootPath) {
-        lodash.set(context, ['pluginRefs', context.layerRootPath, 'presets'], presets);
+      if (context.libRootPath) {
+        lodash.set(context, ['pluginRefs', context.libRootPath, 'presets'], presets);
       }
     }
     return expandExtensions(context, pluginNames, bridgeNames);
@@ -134,8 +139,8 @@ function launchApplication(context, pluginNames, bridgeNames) {
   if (lodash.isString(context)) {
     context = { appRootPath: context };
   }
-  return appLoader(lodash.assign(context, transformContext(expandExtensions(
-      lodash.omit(context, ATTRS), pluginNames, bridgeNames))));
+  return appLoader(lodash.assign(context, expandExtensions(
+      lodash.omit(context, ATTRS), pluginNames, bridgeNames)));
 }
 
 var expandExtensions = function (context, pluginNames, bridgeNames) {
@@ -209,21 +214,12 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 
   return pluginInitializers.reduce(function(params, pluginInitializer) {
     if (chores.isFeatureSupported('presets')) {
-      params.layerRootPath = pluginInitializer.path;
+      params.libRootPath = pluginInitializer.path;
       return pluginInitializer.initializer(params);
     }
     return pluginInitializer(params);
   }, context);
 };
-
-var transformContext = function(context) {
-  context = context || {};
-  context.pluginRefs = context.pluginRefs || {};
-  context.pluginRefs = lodash.mapKeys(context.pluginRefs, function(value, key) {
-    return value.name;
-  });
-  return context;
-}
 
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
