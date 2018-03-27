@@ -42,6 +42,32 @@ var constx = {
       NAME_FIELD: 'blockName'
     }
   },
+  METAINF: {
+    ROOT_KEY: 'metainf',
+    SCRIPT_DIR: '/lib/metadata',
+    SCHEMA_OBJECT: {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "subtype": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "object",
+          "oneOf": [
+            {
+              "$ref": "http://json-schema.org/draft-04/schema#"
+            }
+          ]
+        }
+      }
+    }
+  },
   ROUTINE: {
     ROOT_KEY: 'routine',
     SCRIPT_DIR: '/lib/routines',
@@ -73,32 +99,6 @@ var constx = {
         "mode": {
           "type": "string",
           "enum": ["direct", "remote", "worker"]
-        }
-      }
-    }
-  },
-  METAINF: {
-    ROOT_KEY: 'metainf',
-    SCRIPT_DIR: '/lib/metadata',
-    SCHEMA_OBJECT: {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "type": {
-          "type": "string"
-        },
-        "subtype": {
-          "type": "string"
-        },
-        "schema": {
-          "type": "object",
-          "oneOf": [
-            {
-              "$ref": "http://json-schema.org/draft-04/schema#"
-            }
-          ]
         }
       }
     }
@@ -193,7 +193,7 @@ var constx = {
       }
     }
   },
-  FEATURE_ENABLED: [ 'bridge-full-ref' ]
+  FEATURE_ENABLED: [ 'bridge-full-ref', 'presets' ]
 };
 
 module.exports = constx;

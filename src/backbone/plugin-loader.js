@@ -97,18 +97,18 @@ function PluginLoader(params) {
 
     if (scriptType !== 'ROUTINE') return scriptMap;
 
-    var scriptSubDir = constx[scriptType].SCRIPT_DIR;
-
     pluginRootDirs.forEach(function(pluginRootDir) {
-      loadScriptEntries.call(self, scriptMap, scriptType, scriptSubDir, scriptContext, pluginRootDir);
+      loadScriptEntries.call(self, scriptMap, scriptType, scriptContext, pluginRootDir);
     });
 
     return scriptMap;
   };
 
-  var loadScriptEntries = function(scriptMap, scriptType, scriptSubDir, scriptContext, pluginRootDir) {
+  var loadScriptEntries = function(scriptMap, scriptType, scriptContext, pluginRootDir) {
     var self = this;
 
+    var compDir = lodash.get(pluginRootDir, ['presets', 'componentDir'], {});
+    var scriptSubDir = compDir[scriptType] || constx[scriptType].SCRIPT_DIR;
     var scriptFolder = pluginRootDir.pathDir + scriptSubDir;
     LX.has('conlog') && LX.log('conlog', LT.add({
       scriptKey: constx[scriptType].ROOT_KEY,
@@ -226,18 +226,18 @@ function PluginLoader(params) {
 
   var loadAllMetainfs = function(metainfMap, pluginRootDirs) {
     var self = this;
-    var metainfType = 'METAINF';
     metainfMap = metainfMap || {};
-    var metainfSubDir = constx[metainfType].SCRIPT_DIR;
     pluginRootDirs.forEach(function(pluginRootDir) {
-      loadMetainfEntries.call(self, metainfMap, metainfSubDir, pluginRootDir);
+      loadMetainfEntries.call(self, metainfMap, pluginRootDir);
     });
     return metainfMap;
   }
 
-  var loadMetainfEntries = function(metainfMap, metainfSubDir, pluginRootDir) {
+  var loadMetainfEntries = function(metainfMap, pluginRootDir) {
     var self = this;
     var metainfType = 'METAINF';
+    var compDir = lodash.get(pluginRootDir, ['presets', 'componentDir'], {});
+    var metainfSubDir = compDir[metainfType] || constx[metainfType].SCRIPT_DIR;
     var metainfFolder = pluginRootDir.pathDir + metainfSubDir;
     LX.has('conlog') && LX.log('conlog', LT.add({
       metainfKey: constx[metainfType].ROOT_KEY,
@@ -323,18 +323,18 @@ function PluginLoader(params) {
 
     if (['SERVICE', 'TRIGGER'].indexOf(gadgetType) < 0) return gadgetMap;
 
-    var gadgetSubDir = constx[gadgetType].SCRIPT_DIR;
-
     pluginRootDirs.forEach(function(pluginRootDir) {
-      loadGadgetEntries.call(self, gadgetMap, gadgetType, gadgetSubDir, pluginRootDir);
+      loadGadgetEntries.call(self, gadgetMap, gadgetType, pluginRootDir);
     });
 
     return gadgetMap;
   };
 
-  var loadGadgetEntries = function(gadgetMap, gadgetType, gadgetSubDir, pluginRootDir) {
+  var loadGadgetEntries = function(gadgetMap, gadgetType, pluginRootDir) {
     var self = this;
 
+    var compDir = lodash.get(pluginRootDir, ['presets', 'componentDir'], {});
+    var gadgetSubDir = compDir[gadgetType] || constx[gadgetType].SCRIPT_DIR;
     var gadgetFolder = pluginRootDir.pathDir + gadgetSubDir;
     LX.has('conlog') && LX.log('conlog', LT.add({
       gadgetKey: constx[gadgetType].ROOT_KEY,
