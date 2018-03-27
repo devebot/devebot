@@ -107,8 +107,7 @@ function PluginLoader(params) {
   var loadScriptEntries = function(scriptMap, scriptType, scriptContext, pluginRootDir) {
     var self = this;
 
-    var compDir = lodash.get(pluginRootDir, ['presets', 'componentDir'], {});
-    var scriptSubDir = compDir[scriptType] || constx[scriptType].SCRIPT_DIR;
+    var scriptSubDir = chores.getComponentDir(pluginRootDir, scriptType);
     var scriptFolder = pluginRootDir.pathDir + scriptSubDir;
     LX.has('conlog') && LX.log('conlog', LT.add({
       scriptKey: constx[scriptType].ROOT_KEY,
@@ -236,8 +235,7 @@ function PluginLoader(params) {
   var loadMetainfEntries = function(metainfMap, pluginRootDir) {
     var self = this;
     var metainfType = 'METAINF';
-    var compDir = lodash.get(pluginRootDir, ['presets', 'componentDir'], {});
-    var metainfSubDir = compDir[metainfType] || constx[metainfType].SCRIPT_DIR;
+    var metainfSubDir = chores.getComponentDir(pluginRootDir, metainfType);
     var metainfFolder = pluginRootDir.pathDir + metainfSubDir;
     LX.has('conlog') && LX.log('conlog', LT.add({
       metainfKey: constx[metainfType].ROOT_KEY,
@@ -333,8 +331,7 @@ function PluginLoader(params) {
   var loadGadgetEntries = function(gadgetMap, gadgetType, pluginRootDir) {
     var self = this;
 
-    var compDir = lodash.get(pluginRootDir, ['presets', 'componentDir'], {});
-    var gadgetSubDir = compDir[gadgetType] || constx[gadgetType].SCRIPT_DIR;
+    var gadgetSubDir = chores.getComponentDir(pluginRootDir, gadgetType);
     var gadgetFolder = pluginRootDir.pathDir + gadgetSubDir;
     LX.has('conlog') && LX.log('conlog', LT.add({
       gadgetKey: constx[gadgetType].ROOT_KEY,

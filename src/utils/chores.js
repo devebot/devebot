@@ -213,6 +213,14 @@ chores.extractCodeByPattern = function(ctx, patterns, name) {
   return info;
 }
 
+chores.getComponentDir = function(pluginRef, componentType) {
+  var compDir = lodash.get(pluginRef, ['presets', 'componentDir'], {});
+  if (componentType) {
+    return compDir[componentType] || constx[componentType].SCRIPT_DIR;
+  }
+  return compDir;
+}
+
 chores.getBlockRef = function(filename, blockScope) {
   if (filename == null) return null;
   var blockName = chores.stringCamelCase(path.basename(filename, '.js'));
