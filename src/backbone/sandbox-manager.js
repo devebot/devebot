@@ -110,10 +110,26 @@ var Service = function(params) {
       tags: [ blockRef, 'instantiateObject' ],
       text: ' - instantiate object: ${handlerName}'
     }));
-    if (injectedHandlers) {
-      injectedHandlers[handlerName] = _injektor.lookup(handlerName, exceptions);
-    } else {
-      _injektor.lookup(handlerName, exceptions);
+    var handler = _injektor.lookup(handlerName, exceptions);
+    if (handler && injectedHandlers) {
+      injectedHandlers[handlerName] = handler;
+    }
+    if (handler && handlerType === 'TRIGGER') {
+      var methods = {
+        start: (handler.start || handler.open),
+        stop: (handler.stop || handler.close)
+      }
+      lodash.forOwn(methods, function(method, methodName) {
+        if (!lodash.isFunction(method)) {
+          errorHandler.collect({
+            stage: 'instantiating',
+            type: handlerType,
+            name: handlerName,
+            hasError: true,
+            stack: util.format('Trigger[%s].%s() not found', handlerName, methodName)
+          });
+        }
+      });
     }
     lodash.forEach(exceptions, function(exception) {
       var opStatus = {
