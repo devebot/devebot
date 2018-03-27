@@ -2,8 +2,8 @@
 
 var lodash = require('lodash');
 var LogTracer = require('logolite').LogTracer;
-var loader = require('../utils/loader.js');
-var chores = require('../utils/chores.js');
+var loader = require('../utils/loader');
+var chores = require('../utils/chores');
 var errorHandler = require('./error-handler').instance;
 
 function BridgeLoader(params) {

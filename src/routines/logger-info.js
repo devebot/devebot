@@ -1,7 +1,7 @@
 'use strict';
 
 var Promise = require('bluebird');
-var chores = require('../utils/chores.js');
+var chores = require('../utils/chores');
 
 var commandConfig;
 

@@ -4,9 +4,9 @@ var lodash = require('lodash');
 var util = require('util');
 var path = require('path');
 
-var chores = require('../utils/chores.js');
-var constx = require('../utils/constx.js');
-var loader = require('../utils/loader.js');
+var chores = require('../utils/chores');
+var constx = require('../utils/constx');
+var loader = require('../utils/loader');
 var errorHandler = require('./error-handler').instance;
 var LoggingWrapper = require('./logging-wrapper');
 

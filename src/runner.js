@@ -5,9 +5,9 @@ var lodash = require('lodash');
 var events = require('events');
 var util = require('util');
 
-var Kernel = require('./kernel.js');
-var chores = require('./utils/chores.js');
-var LoggingWrapper = require('./backbone/logging-wrapper.js');
+var Kernel = require('./kernel');
+var chores = require('./utils/chores');
+var LoggingWrapper = require('./backbone/logging-wrapper');
 
 function Runner(params) {
   Kernel.call(this, params);

@@ -2,7 +2,7 @@
 
 var Promise = require('bluebird');
 var lodash = require('lodash');
-var chores = require('../utils/chores.js');
+var chores = require('../utils/chores');
 
 var commandConfig;
 

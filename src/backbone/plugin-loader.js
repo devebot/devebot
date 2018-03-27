@@ -3,9 +3,9 @@
 var lodash = require('lodash');
 var path = require('path');
 var LogTracer = require('logolite').LogTracer;
-var chores = require('../utils/chores.js');
-var constx = require('../utils/constx.js');
-var loader = require('../utils/loader.js');
+var chores = require('../utils/chores');
+var constx = require('../utils/constx');
+var loader = require('../utils/loader');
 var errorHandler = require('./error-handler').instance;
 
 function PluginLoader(params) {

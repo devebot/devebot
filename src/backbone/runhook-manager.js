@@ -6,8 +6,8 @@ var path = require('path');
 var Promise = require('bluebird');
 var Injektor = require('injektor');
 var lodash = require('lodash');
-var chores = require('../utils/chores.js');
-var constx = require('../utils/constx.js');
+var chores = require('../utils/chores');
+var constx = require('../utils/constx');
 
 /**
  * The constructor for RunhookManager class.

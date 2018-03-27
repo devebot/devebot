@@ -1,6 +1,6 @@
 'use strict';
 
-var debugx = require('./pinbug.js')('devebot:utils:loader');
+var debugx = require('./pinbug')('devebot:utils:loader');
 
 var MAPPINGS = {
   'MODULE_NOT_FOUND': 'Module not found'

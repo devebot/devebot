@@ -9,10 +9,10 @@ var https = require('https');
 var fs = require('fs');
 var WebSocketServer = require('ws').Server;
 
-var Kernel = require('./kernel.js');
-var chores = require('./utils/chores.js');
-var LoggingWrapper = require('./backbone/logging-wrapper.js');
-var RepeatedTimer = require('./backbone/repeated-timer.js');
+var Kernel = require('./kernel');
+var chores = require('./utils/chores');
+var LoggingWrapper = require('./backbone/logging-wrapper');
+var RepeatedTimer = require('./backbone/repeated-timer');
 
 function Server(params) {
   Kernel.call(this, params);

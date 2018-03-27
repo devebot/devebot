@@ -3,7 +3,7 @@
 var lodash = require('lodash');
 var events = require('events');
 var util = require('util');
-var chores = require('../utils/chores.js');
+var chores = require('../utils/chores');
 
 var RepeatedTimer = function(kwargs) {
   events.EventEmitter.call(this);

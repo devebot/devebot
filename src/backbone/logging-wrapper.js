@@ -3,8 +3,8 @@
 var lodash = require('lodash');
 var LogAdapter = require('logolite').LogAdapter;
 var LogTracer = require('logolite').LogTracer;
-var chores = require('../utils/chores.js');
-var constx = require('../utils/constx.js');
+var chores = require('../utils/chores');
+var constx = require('../utils/constx');
 
 var Service = function(sectorName) {
   sectorName = sectorName || chores.getBlockRef(__filename);

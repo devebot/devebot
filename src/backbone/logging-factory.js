@@ -5,8 +5,8 @@ var LogFactory = require('logzilla');
 var LogAdapter = require('logolite').LogAdapter;
 var LogConfig = require('logolite').LogConfig;
 var LogTracer = require('logolite').LogTracer;
-var chores = require('../utils/chores.js');
-var constx = require('../utils/constx.js');
+var chores = require('../utils/chores');
+var constx = require('../utils/constx');
 
 var DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
 

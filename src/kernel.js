@@ -3,9 +3,9 @@
 var Injektor = require('injektor');
 var lodash = require('lodash');
 var path = require('path');
-var chores = require('./utils/chores.js');
-var LoggingWrapper = require('./backbone/logging-wrapper.js');
-var errorHandler = require('./backbone/error-handler.js').instance;
+var chores = require('./utils/chores');
+var LoggingWrapper = require('./backbone/logging-wrapper');
+var errorHandler = require('./backbone/error-handler').instance;
 var blockRef = chores.getBlockRef(__filename);
 
 var CONSTRUCTORS = {};

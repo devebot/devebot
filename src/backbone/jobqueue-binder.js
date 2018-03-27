@@ -2,8 +2,8 @@
 
 var Promise = require('bluebird');
 var lodash = require('lodash');
-var chores = require('../utils/chores.js');
-var constx = require('../utils/constx.js');
+var chores = require('../utils/chores');
+var constx = require('../utils/constx');
 
 var Service = function(params) {
   var self = this;

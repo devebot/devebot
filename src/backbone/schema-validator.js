@@ -1,7 +1,7 @@
 'use strict';
 
 var lodash = require('lodash');
-var chores = require('../utils/chores.js');
+var chores = require('../utils/chores');
 
 var Validator = require('schemato').Validator;
 var validator = new Validator({ schemaVersion: 4 });

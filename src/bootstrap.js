@@ -3,13 +3,13 @@
 var path = require('path');
 var lodash = require('lodash');
 
-var appinfoLoader = require('./backbone/appinfo-loader.js');
-var errorHandler = require('./backbone/error-handler.js').instance;
-var ConfigLoader = require('./backbone/config-loader.js');
-var LoggingWrapper = require('./backbone/logging-wrapper.js');
-var chores = require('./utils/chores.js');
-var Runner = require('./runner.js');
-var Server = require('./server.js');
+var appinfoLoader = require('./backbone/appinfo-loader');
+var errorHandler = require('./backbone/error-handler').instance;
+var ConfigLoader = require('./backbone/config-loader');
+var LoggingWrapper = require('./backbone/logging-wrapper');
+var chores = require('./utils/chores');
+var Runner = require('./runner');
+var Server = require('./server');
 var blockRef = chores.getBlockRef(__filename);
 
 function runLoggingWrapper() {
@@ -245,7 +245,7 @@ var internalModules = ['chores', 'loader', 'pinbug'];
 appLoader.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
   if (internalModules.indexOf(packageName) >= 0) return require('./utils/' + packageName);
-  if (packageName == 'debug') return require('./utils/pinbug.js');
+  if (packageName == 'debug') return require('./utils/pinbug');
   return null;
 };
 

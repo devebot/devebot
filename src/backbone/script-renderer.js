@@ -4,8 +4,8 @@ var assert = require('assert');
 var Promise = require('bluebird');
 var lodash = require('lodash');
 var util = require('util');
-var chores = require('../utils/chores.js');
-var constx = require('../utils/constx.js');
+var chores = require('../utils/chores');
+var constx = require('../utils/constx');
 
 function ScriptRenderer(params) {
   var self = this;

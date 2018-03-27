@@ -7,9 +7,9 @@ var os = require('os');
 var path = require('path');
 var util = require('util');
 var uuidv4 = require('logolite/uuidv4');
-var constx = require('./constx.js');
-var loader = require('./loader.js');
-var debugx = require('./pinbug.js')('devebot:utils:chores');
+var constx = require('./constx');
+var loader = require('./loader');
+var debugx = require('./pinbug')('devebot:utils:chores');
 
 let store = {
   injektorOptions: {

@@ -1,6 +1,6 @@
 'use strict';
 
-var debugx = require('./pinbug.js')('devebot:utils:pmtool');
+var debugx = require('./pinbug')('devebot:utils:pmtool');
 
 var PmTool = function() {
   var pm_id = parseInt(process.env.pm_id);

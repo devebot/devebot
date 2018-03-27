@@ -4,9 +4,9 @@ var util = require('util');
 var lodash = require('lodash');
 var Promise = require('bluebird');
 var Injektor = require('injektor');
-var chores = require('../utils/chores.js');
-var constx = require('../utils/constx.js');
-var RunhookManager = require('./runhook-manager.js');
+var chores = require('../utils/chores');
+var constx = require('../utils/constx');
+var RunhookManager = require('./runhook-manager');
 var errorHandler = require('./error-handler').instance;
 
 var defaultServiceNames = [ 'jobqueue-binder' ];
