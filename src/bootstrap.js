@@ -126,7 +126,12 @@ function registerLayerware(presets, pluginNames, bridgeNames) {
     }
     if (chores.isFeatureSupported('presets')) {
       if (context.libRootPath) {
-        lodash.set(context, ['pluginRefs', context.libRootPath, 'presets'], presets);
+        var _presets = lodash.get(context, ['pluginRefs', context.libRootPath, 'presets'], null);
+        if (_presets) {
+          lodash.defaultsDeep(_presets, presets);
+        } else {
+          lodash.set(context, ['pluginRefs', context.libRootPath, 'presets'], presets);
+        }
       }
     }
     return expandExtensions(context, pluginNames, bridgeNames);
@@ -189,10 +194,8 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 
   bridgeDiffs.forEach(function(bridgeInfo) {
     if (chores.isFeatureSupported('presets')) {
-      context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], {
-        name: bridgeInfo.name,
-        path: bridgeInfo.path
-      });
+      var inc = lodash.pick(bridgeInfo, ['name', 'path']);
+      context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], inc);
       return;
     }
     context.bridgeRefs[bridgeInfo.name] = {
@@ -203,10 +206,8 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 
   pluginDiffs.forEach(function(pluginInfo) {
     if (chores.isFeatureSupported('presets')) {
-      context.pluginRefs[pluginInfo.path] = lodash.assign(context.pluginRefs[pluginInfo.path], {
-        name: pluginInfo.name,
-        path: pluginInfo.path
-      });
+      var inc = lodash.pick(pluginInfo, ['name', 'path', 'presets']);
+      context.pluginRefs[pluginInfo.path] = lodash.assign(context.pluginRefs[pluginInfo.path], inc);
       return;
     }
     context.pluginRefs[pluginInfo.name] = {
@@ -215,7 +216,7 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
     }
   });
 
-  errorHandler.barrier({ invoker: blockRef});
+  errorHandler.barrier({ invoker: blockRef });
 
   var pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
     if (chores.isFeatureSupported('presets')) {
