@@ -395,6 +395,7 @@ function PluginLoader(params) {
     var pluginName = getPluginRefByName(pluginRootDir);
     var pluginCode = getPluginRefByCode(pluginRootDir);
     var uniqueName = [pluginRootDir.name, wrapperName].join(chores.getSeparator());
+    var referenceAlias = lodash.get(pluginRootDir, ['presets', 'referenceAlias'], {});
 
     function wrapperConstructor(kwargs) {
       kwargs = kwargs || {};
@@ -411,6 +412,7 @@ function PluginLoader(params) {
       }).toMessage({
         text: ' - newFeatures[${pluginCode}]: ${newFeatures}'
       }));
+      // resolve plugin configuration path
       if (newFeatures.sandboxConfig) {
         kwargs = getWrappedParams();
         if (chores.isSpecialPlugin(pluginRootDir.type)) {
@@ -423,6 +425,24 @@ function PluginLoader(params) {
       if (newFeatures.logoliteEnabled) {
         kwargs = getWrappedParams();
         kwargs.loggingFactory = kwargs.loggingFactory.branch(uniqueName);
+      }
+      // transform parameters by referenceAlias
+      if (!lodash.isEmpty(referenceAlias)) {
+        lodash.forOwn(referenceAlias, function(oldKey, newKey) {
+          if (kwargs[oldKey]) {
+            kwargs[newKey] = kwargs[oldKey];
+          }
+        });
+        if (false) {
+          // remove the old references
+          var newKeys = lodash.keys(referenceAlias);
+          var oldKeys = lodash.values(referenceAlias);
+          lodash.forEach(oldKeys, function(oldKey) {
+            if (newKeys.indexOf(oldKey) < 0) {
+              delete kwargs[oldKey];
+            }
+          });
+        }
       }
       gadgetConstructor.call(this, kwargs);
     }
@@ -455,9 +475,22 @@ function PluginLoader(params) {
 
     if (gadgetConstructor.argumentSchema) {
       wrapperConstructor.argumentSchema = lodash.merge(wrappedArgumentSchema, gadgetConstructor.argumentSchema);
+      if (!lodash.isEmpty(referenceAlias)) {
+        var properties = lodash.mapKeys(gadgetConstructor.argumentSchema.properties, function(val, key) {
+          return referenceAlias[key] || key;
+        });
+        wrapperConstructor.argumentSchema = lodash.merge(wrappedArgumentSchema, {
+          properties: properties
+        });
+      }
     } else {
       var referenceList = gadgetConstructor.referenceList || [];
       if (!lodash.isEmpty(referenceList)) {
+        if (!lodash.isEmpty(referenceAlias)) {
+          referenceList = lodash.map(referenceList, function(key) {
+            return referenceAlias[key] || key;
+          });
+        }
         wrapperConstructor.argumentProperties = wrappedArgumentFields.concat(referenceList);
       }
       lodash.forEach(referenceList, function(refName) {
