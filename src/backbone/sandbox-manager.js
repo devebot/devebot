@@ -57,10 +57,11 @@ var Service = function(params) {
   }));
 
   var sandboxInjektor = new Injektor(chores.injektorOptions);
-  [ 'appName', 'appInfo',
+  var COPIED_DEPENDENCIES = [ 'appName', 'appInfo',
     'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
     'pluginLoader', 'schemaValidator', 'loggingFactory'
-  ].forEach(function(refName) {
+  ];
+  COPIED_DEPENDENCIES.forEach(function(refName) {
     sandboxInjektor.registerObject(refName, params[refName], chores.injektorContext);
   });
   sandboxInjektor
@@ -90,6 +91,24 @@ var Service = function(params) {
       scope: dialectRecord.crateScope
     });
   });
+
+  var EXCLUDED_INTERNAL_SERVICES = lodash.concat([
+    'devebot/runhookManager',
+    'devebot/sandboxSelector',
+    'devebot/sandboxName',
+    'devebot/profileName',
+    'devebot/injectedHandlers',
+    'devebot/bridgeDialectNames',
+    'devebot/pluginServiceNames',
+    'devebot/pluginTriggerNames'
+  ], lodash.map(COPIED_DEPENDENCIES, function(dep) {
+    return 'devebot' + sandboxInjektor.separator + dep;
+  }));
+
+  sandboxInjektor.registerObject('sandboxRegistry', new SandboxRegistry({
+    injektor: sandboxInjektor,
+    excludedInternalServices: EXCLUDED_INTERNAL_SERVICES
+  }), chores.injektorContext);
 
   sandboxInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
 
@@ -359,5 +378,38 @@ var pickSandboxServiceHelp = function(serviceName, blocks) {
         blocks.push(serviceInfo);
       });
     }
+  }
+};
+
+var SandboxRegistry = function(params) {
+  params = params || {};
+  this.defineService = function(name, construktor, context) {
+    context = context || {};
+    var info = params.injektor.parseName(name, context);
+    if (info.scope === 'devebot') {
+      var RestrictedError = chores.buildError('RestrictedDevebotError');
+      throw new RestrictedError('dependency scope [devebot] is restricted');
+    }
+    var exceptions = [];
+    var fullname = params.injektor.resolveName(serviceName, {
+      scope: context.scope,
+      exceptions: exceptions
+    });
+    if (fullname != null) {
+      var DuplicatedError = chores.buildError('DuplicatedDevebotError');
+      throw new DuplicatedError('dependency item is duplicated');
+    }
+    params.injektor.defineService(name, construktor, context);
+  };
+  this.lookupService = function(serviceName, context) {
+    context = context || {};
+    var exceptions = [];
+    var fullname = params.injektor.resolveName(serviceName, {
+      scope: context.scope,
+      exceptions: exceptions
+    });
+    if (fullname == null) return null;
+    if (params.excludedInternalServices.indexOf(fullname) >= 0) return null;
+    return params.injektor.lookup(serviceName, context);
   }
 };

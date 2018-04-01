@@ -64,7 +64,7 @@ var Service = function(params) {
       code: -1,
       message: 'command.name is undefined'
     };
-    var fn = routineStore.suggest(command.name);
+    var fn = routineStore.suggestName(command.name);
     if (fn == null || fn.length == 0) return {
       code: -2,
       message: 'command.name not found'

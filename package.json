@@ -38,9 +38,9 @@
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
     "bluebird": "^3.5.1",
-    "injektor": "^0.1.16",
+    "injektor": "^0.1.17",
     "lodash": "^4.17.4",
-    "logolite": "^0.1.6",
+    "logolite": "^0.1.7",
     "logzilla": "^0.1.17",
     "schemato": "^0.1.2",
     "ws": "^3.3.2"
