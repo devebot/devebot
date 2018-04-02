@@ -452,26 +452,18 @@ function PluginLoader(params) {
     var wrappedArgumentSchema = {
       "$id": wrapperName,
       "type": "object",
-      "properties": {
-        "sandboxName": {
-          "type": "string"
-        },
-        "sandboxConfig": {
-          "type": "object"
-        },
-        "profileName": {
-          "type": "string"
-        },
-        "profileConfig": {
-          "type": "object"
-        },
-        "loggingFactory": {
-          "type": "object"
-        }
-      }
+      "properties": {}
     }
 
     var wrappedArgumentFields = ["sandboxName", "sandboxConfig", "profileName", "profileConfig", "loggingFactory"];
+
+    lodash.forEach(wrappedArgumentFields, function(fieldName) {
+      if (['sandboxName', 'profileName'].indexOf(fieldName) >= 0) {
+        wrappedArgumentSchema.properties[fieldName] = { "type": "string" }
+      } else {
+        wrappedArgumentSchema.properties[fieldName] = { "type": "object" }
+      }
+    });
 
     if (gadgetConstructor.argumentSchema) {
       wrapperConstructor.argumentSchema = lodash.merge(wrappedArgumentSchema, gadgetConstructor.argumentSchema);
