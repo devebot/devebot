@@ -59,15 +59,10 @@ var Service = function(params) {
   var sandboxInjektor = new Injektor(chores.injektorOptions);
   var COPIED_DEPENDENCIES = [ 'appName', 'appInfo',
     'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
-    'pluginLoader', 'schemaValidator', 'loggingFactory'
+    'schemaValidator', 'loggingFactory'
   ];
   COPIED_DEPENDENCIES.forEach(function(refName) {
     sandboxInjektor.registerObject(refName, params[refName], chores.injektorContext);
-  });
-  var REGISTRY_EXCLUDED_SERVICES = lodash.map([ 'pluginLoader' ], getComponentLabel);
-
-  lodash.forOwn(managerMap, function(managerConstructor, managerName) {
-    sandboxInjektor.defineService(managerName, managerConstructor, chores.injektorContext);
   });
 
   lodash.forOwn(serviceMap, function(serviceRecord, serviceName) {
@@ -90,23 +85,21 @@ var Service = function(params) {
     });
   });
 
+  var REGISTRY_EXCLUDED_SERVICES = [ getComponentLabel('sandboxRegistry') ];
   sandboxInjektor.registerObject('sandboxRegistry', new SandboxRegistry({
     injektor: sandboxInjektor,
     excludedServices: REGISTRY_EXCLUDED_SERVICES
   }), chores.injektorContext);
-  REGISTRY_EXCLUDED_SERVICES.push(getComponentLabel('sandboxRegistry'));
-
-  sandboxInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
-  REGISTRY_EXCLUDED_SERVICES.push(getComponentLabel('runhookManager'));
 
   var injectedHandlers = {};
+  var sandboxName = params['sandboxNames'].join(',');
+  var profileName = params['profileNames'].join(',');
   var miscObjects = {
-    injectedHandlers: injectedHandlers,
     bridgeDialectNames: lodash.keys(dialectMap),
     pluginServiceNames: lodash.keys(serviceMap),
     pluginTriggerNames:lodash.keys(triggerMap),
-    sandboxName: params['sandboxNames'].join(','),
-    profileName: params['profileNames'].join(',')
+    sandboxName: sandboxName,
+    profileName: profileName
   }
   lodash.forOwn(miscObjects, function(obj, name) {
     sandboxInjektor.registerObject(name, obj, chores.injektorContext);
@@ -174,8 +167,25 @@ var Service = function(params) {
     instantiateObject(sandboxInjektor, triggerRecord, 'TRIGGER');
   });
 
-  sandboxInjektor.lookup('injectedHandlers', chores.injektorContext);
-  sandboxInjektor.lookup('runhookManager', chores.injektorContext);
+  var runhookInjektor = new Injektor(chores.injektorOptions);
+  var RUNHOOK_DEPENDENCIES = [ 'appName', 'appInfo',
+    'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
+    'pluginLoader', 'schemaValidator', 'loggingFactory'
+  ];
+  RUNHOOK_DEPENDENCIES.forEach(function(refName) {
+    runhookInjektor.registerObject(refName, params[refName], chores.injektorContext);
+  });
+  runhookInjektor.registerObject('sandboxName', sandboxName, chores.injektorContext);
+  runhookInjektor.registerObject('profileName', profileName, chores.injektorContext);
+  runhookInjektor.registerObject('injectedHandlers', injectedHandlers, chores.injektorContext);
+
+  lodash.forOwn(managerMap, function(managerConstructor, managerName) {
+    runhookInjektor.defineService(managerName, managerConstructor, chores.injektorContext);
+  });
+  runhookInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
+
+  runhookInjektor.lookup('injectedHandlers', chores.injektorContext);
+  runhookInjektor.lookup('runhookManager', chores.injektorContext);
 
   var devebotCfg = lodash.get(params, ['profileConfig', 'devebot'], {});
   errorHandler.barrier(lodash.assign({ invoker: blockRef }, devebotCfg));
@@ -184,7 +194,11 @@ var Service = function(params) {
     return sandboxNames;
   };
 
+  var RUNHOOK_EXPORTED_SERVICES = [ 'runhookManager', getComponentLabel('runhookManager') ];
   self.getSandboxService = function(serviceName, context) {
+    if (RUNHOOK_EXPORTED_SERVICES.indexOf(serviceName) >= 0) {
+      return runhookInjektor.lookup(serviceName, context);
+    }
     return sandboxInjektor.lookup(serviceName, context);
   };
 
