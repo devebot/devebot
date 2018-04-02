@@ -190,15 +190,15 @@ var Service = function(params) {
   var devebotCfg = lodash.get(params, ['profileConfig', 'devebot'], {});
   errorHandler.barrier(lodash.assign({ invoker: blockRef }, devebotCfg));
 
+  self.getRunhookManager = function() {
+    return runhookInjektor.lookup('runhookManager', chores.injektorContext);
+  }
+
   self.getSandboxNames = function() {
     return sandboxNames;
   };
 
-  var RUNHOOK_EXPORTED_SERVICES = [ 'runhookManager', getComponentLabel('runhookManager') ];
   self.getSandboxService = function(serviceName, context) {
-    if (RUNHOOK_EXPORTED_SERVICES.indexOf(serviceName) >= 0) {
-      return runhookInjektor.lookup(serviceName, context);
-    }
     return sandboxInjektor.lookup(serviceName, context);
   };
 

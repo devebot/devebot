@@ -19,7 +19,7 @@ var ScriptExecutor = function(params) {
   }));
 
   var sandboxManager = params.sandboxManager;
-  var runhookManager = sandboxManager.getSandboxService('runhookManager', chores.injektorContext);
+  var runhookManager = sandboxManager.getRunhookManager();
 
   var resolveCommand = function(command) {
     command = command || {};
