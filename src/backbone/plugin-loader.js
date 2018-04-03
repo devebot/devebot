@@ -405,6 +405,10 @@ function PluginLoader(params) {
         isWrapped = true;
         return kwargs = lodash.clone(kwargs);
       }
+      // crateScope & componentId
+      kwargs.packageName = pluginRootDir.name;
+      kwargs.componentId = wrapperName;
+      // resolve newFeatures
       var newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', pluginCode], {});
       LX.has('conlog') && LX.log('conlog', LT.add({
         pluginCode: pluginCode,

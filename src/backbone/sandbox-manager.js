@@ -168,10 +168,7 @@ var Service = function(params) {
   });
 
   var runhookInjektor = new Injektor(chores.injektorOptions);
-  var RUNHOOK_DEPENDENCIES = [ 'appName', 'appInfo',
-    'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
-    'pluginLoader', 'schemaValidator', 'loggingFactory'
-  ];
+  var RUNHOOK_DEPENDENCIES = [ 'pluginLoader' ].concat(COPIED_DEPENDENCIES);
   RUNHOOK_DEPENDENCIES.forEach(function(refName) {
     runhookInjektor.registerObject(refName, params[refName], chores.injektorContext);
   });
@@ -184,7 +181,6 @@ var Service = function(params) {
   });
   runhookInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
 
-  runhookInjektor.lookup('injectedHandlers', chores.injektorContext);
   runhookInjektor.lookup('runhookManager', chores.injektorContext);
 
   var devebotCfg = lodash.get(params, ['profileConfig', 'devebot'], {});
