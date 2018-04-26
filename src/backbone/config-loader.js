@@ -1,29 +1,29 @@
 'use strict';
 
-var lodash = require('lodash');
-var util = require('util');
-var path = require('path');
+const lodash = require('lodash');
+const util = require('util');
+const path = require('path');
 
-var chores = require('../utils/chores');
-var constx = require('../utils/constx');
-var loader = require('../utils/loader');
-var errorHandler = require('./error-handler').instance;
-var LoggingWrapper = require('./logging-wrapper');
+const chores = require('../utils/chores');
+const constx = require('../utils/constx');
+const loader = require('../utils/loader');
+const errorHandler = require('./error-handler').instance;
+const LoggingWrapper = require('./logging-wrapper');
 
-var CONFIG_SUBDIR = '/config';
-var CONFIG_PROFILE_NAME = process.env.DEVEBOT_CONFIG_PROFILE_NAME || 'profile';
-var CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox';
-var CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
-var CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
+const CONFIG_SUBDIR = '/config';
+const CONFIG_PROFILE_NAME = process.env.DEVEBOT_CONFIG_PROFILE_NAME || 'profile';
+const CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox';
+const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
+const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
 function Loader(appName, appOptions, appRef, libRefs) {
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(blockRef);
-  var LX = loggingWrapper.getLogger();
-  var LT = loggingWrapper.getTracer();
-  var CTX = { blockRef, LX, LT };
+  let blockRef = chores.getBlockRef(__filename);
+  let loggingWrapper = new LoggingWrapper(blockRef);
+  let LX = loggingWrapper.getLogger();
+  let LT = loggingWrapper.getTracer();
+  let CTX = { blockRef, LX, LT };
 
-  var label = chores.stringLabelCase(appName);
+  let label = chores.stringLabelCase(appName);
 
   LX.has('silly') && LX.log('silly', LT.add({
     appName: appName,
@@ -38,7 +38,7 @@ function Loader(appName, appOptions, appRef, libRefs) {
 
   appOptions = appOptions || {};
 
-  var config = loadConfig
+  let config = loadConfig
       .bind(null, CTX, appName, appOptions, appRef, libRefs)
       .apply(null, Object.keys(CONFIG_VAR_NAMES).map(function(varName) {
         return readVariable(CTX, label, CONFIG_VAR_NAMES[varName]);
@@ -87,17 +87,17 @@ let readVariable = function(ctx, appLabel, varName) {
   return value;
 }
 
-var loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName, sandboxName, customDir, customEnv) {
+let loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName, sandboxName, customDir, customEnv) {
   let { blockRef, LX, LT } = ctx || this;
   appOptions = appOptions || {};
 
-  var appRootDir = null;
+  let appRootDir = null;
   if (appRef && lodash.isString(appRef.path)) {
     appRootDir = path.dirname(appRef.path);
   };
 
-  var config = {};
-  var configDir = resolveConfigDir(ctx, appName, appRootDir, customDir, customEnv);
+  let config = {};
+  let configDir = resolveConfigDir(ctx, appName, appRootDir, customDir, customEnv);
 
   LX.has('silly') && LX.log('silly', LT.add({
     configDir: configDir
@@ -106,23 +106,23 @@ var loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName
     text: ' - configDir: ${configDir}'
   }));
 
-  var configFiles = [];
+  let configFiles = [];
   if (configDir) {
     configFiles = chores.filterFiles(configDir, '.*\.js');
   }
-  var configInfos = lodash.map(configFiles, function(file) {
+  let configInfos = lodash.map(configFiles, function(file) {
     return file.replace('.js', '').split(/[_]/);
   });
 
-  var includedNames = {};
+  let includedNames = {};
   includedNames[CONFIG_PROFILE_NAME] = standardizeNames(ctx, profileName);
   includedNames[CONFIG_SANDBOX_NAME] = standardizeNames(ctx, sandboxName);
 
-  var appProfiles = standardizeNames(ctx, appOptions.privateProfile || appOptions.privateProfiles);
+  let appProfiles = standardizeNames(ctx, appOptions.privateProfile || appOptions.privateProfiles);
   includedNames[CONFIG_PROFILE_NAME] = lodash.concat(
     lodash.difference(includedNames[CONFIG_PROFILE_NAME], appProfiles), appProfiles);
 
-  var appSandboxes = standardizeNames(ctx, appOptions.privateSandbox || appOptions.privateSandboxes);
+  let appSandboxes = standardizeNames(ctx, appOptions.privateSandbox || appOptions.privateSandboxes);
   includedNames[CONFIG_SANDBOX_NAME] = lodash.concat(
     lodash.difference(includedNames[CONFIG_SANDBOX_NAME], appSandboxes), appSandboxes);
 
@@ -130,7 +130,7 @@ var loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName
     config[configType] = config[configType] || {};
 
     if (configDir) {
-      var defaultFile = path.join(configDir, configType + '.js');
+      let defaultFile = path.join(configDir, configType + '.js');
       LX.has('conlog') && LX.log('conlog', LT.add({
         defaultFile: defaultFile
       }).toMessage({
@@ -143,10 +143,10 @@ var loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName
       text: ' + load the default config from plugins'
     }));
     lodash.forEach(libRefs, function(libRef) {
-      var libRootDir = path.dirname(libRef.path);
-      var libType = libRef.type || 'plugin';
-      var libName = libRef.name;
-      var defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
+      let libRootDir = path.dirname(libRef.path);
+      let libType = libRef.type || 'plugin';
+      let libName = libRef.name;
+      let defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
       config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
           transformConfig(ctx, configType, loadConfigFile(ctx, defaultFile), libType, libName));
     });
@@ -158,18 +158,18 @@ var loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName
     }));
     config[configType]['mixture'] = {};
 
-    var mixtureNames = filterConfigBy(ctx, configInfos, includedNames, configType);
+    let mixtureNames = filterConfigBy(ctx, configInfos, includedNames, configType);
 
     config[configType]['names'] = ['default'];
     if (configDir) {
       config[configType]['mixture'] = lodash.reduce(mixtureNames, function(accum, mixtureItem) {
-        var configFile = path.join(configDir, mixtureItem.join('_') + '.js');
+        let configFile = path.join(configDir, mixtureItem.join('_') + '.js');
         LX.has('conlog') && LX.log('conlog', LT.add({
           configFile: configFile
         }).toMessage({
           text: ' - load the environment config: ${configFile}'
         }));
-        var configObj = lodash.defaultsDeep(transformConfig(ctx, configType, loadConfigFile(ctx, configFile), 'application'), accum);
+        let configObj = lodash.defaultsDeep(transformConfig(ctx, configType, loadConfigFile(ctx, configFile), 'application'), accum);
         if (configObj.disabled) return accum;
         config[configType]['names'].push(mixtureItem[1]);
         return configObj;
@@ -280,7 +280,7 @@ let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName
   if (lodash.isObject(sandboxConfig.bridges) && !sandboxConfig.bridges.__status__) {
     let cfgBridges = sandboxConfig.bridges || {};
     let newBridges = { __status__: true };
-    var traverseBackward = function(cfgBridges, newBridges) {
+    let traverseBackward = function(cfgBridges, newBridges) {
       lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
         if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
           if (moduleType === 'application') {
