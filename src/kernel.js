@@ -1,23 +1,23 @@
 'use strict';
 
-var Injektor = require('injektor');
-var lodash = require('lodash');
-var path = require('path');
-var chores = require('./utils/chores');
-var LoggingWrapper = require('./backbone/logging-wrapper');
-var errorHandler = require('./backbone/error-handler').instance;
-var blockRef = chores.getBlockRef(__filename);
+const Injektor = require('injektor');
+const lodash = require('lodash');
+const path = require('path');
+const chores = require('./utils/chores');
+const LoggingWrapper = require('./backbone/logging-wrapper');
+const errorHandler = require('./backbone/error-handler').instance;
+const blockRef = chores.getBlockRef(__filename);
 
-var CONSTRUCTORS = {};
+let CONSTRUCTORS = {};
 chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), [
   'sandbox-manager', 'schema-validator', 'script-executor', 'script-renderer',
   'security-manager', 'bridge-loader', 'plugin-loader', 'logging-factory'
 ]);
 
 function Kernel(params) {
-  var loggingWrapper = new LoggingWrapper(blockRef);
-  var LX = loggingWrapper.getLogger();
-  var LT = loggingWrapper.getTracer();
+  let loggingWrapper = new LoggingWrapper(blockRef);
+  let LX = loggingWrapper.getLogger();
+  let LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -28,7 +28,7 @@ function Kernel(params) {
   params = params || {};
 
   // create injektor instance
-  var injektor = new Injektor(chores.injektorOptions);
+  let injektor = new Injektor(chores.injektorOptions);
 
   ['appName', 'appInfo', 'bridgeRefs', 'pluginRefs'].forEach(function(refName) {
     injektor.registerObject(refName, params[refName], chores.injektorContext);
@@ -44,11 +44,11 @@ function Kernel(params) {
     injektor.defineService(serviceName, constructor, chores.injektorContext);
   });
 
-  var schemaValidator = injektor.lookup('schemaValidator', chores.injektorContext);
-  var result = [];
+  let schemaValidator = injektor.lookup('schemaValidator', chores.injektorContext);
+  let result = [];
 
   // validate bridge's configures
-  var bridgeLoader = injektor.lookup('bridgeLoader', chores.injektorContext);
+  let bridgeLoader = injektor.lookup('bridgeLoader', chores.injektorContext);
   let bridgeMetadata = {};
   bridgeLoader.loadMetadata(bridgeMetadata);
 
@@ -59,13 +59,13 @@ function Kernel(params) {
     text: " - bridge's metadata: ${metadata}"
   }));
 
-  var bridgeConfig = lodash.get(params, ['sandbox', 'mixture', 'bridges'], {});
+  let bridgeConfig = lodash.get(params, ['sandbox', 'mixture', 'bridges'], {});
 
   validateBridgeConfig({LX, LT, schemaValidator}, bridgeConfig, bridgeMetadata, result);
 
   // validate plugin's configures
-  var pluginLoader = injektor.lookup('pluginLoader', chores.injektorContext);
-  var pluginMetadata = {};
+  let pluginLoader = injektor.lookup('pluginLoader', chores.injektorContext);
+  let pluginMetadata = {};
   pluginLoader.loadMetadata(pluginMetadata);
 
   LX.has('silly') && LX.log('silly', LT.add({
@@ -75,11 +75,11 @@ function Kernel(params) {
     text: " - plugin's metadata: ${metadata}"
   }));
 
-  var SELECTED_FIELDS = [ 'crateScope', 'schema', 'extension' ];
-  var extractPluginSchema = function(pluginMetadata) {
-    var configSchema = { profile: {}, sandbox: {} };
+  let SELECTED_FIELDS = [ 'crateScope', 'schema', 'extension' ];
+  let extractPluginSchema = function(pluginMetadata) {
+    let configSchema = { profile: {}, sandbox: {} };
     lodash.forOwn(pluginMetadata, function(ref, key) {
-      var def = ref && ref.default || {};
+      let def = ref && ref.default || {};
       if (def.pluginCode && ['profile', 'sandbox'].indexOf(def.type) >= 0) {
         if (chores.isSpecialPlugin(def.pluginCode)) {
           configSchema[def.type][def.pluginCode] = lodash.pick(def, SELECTED_FIELDS);
@@ -91,9 +91,9 @@ function Kernel(params) {
     });
     return configSchema;
   }
-  var pluginSchema = extractPluginSchema(pluginMetadata);
+  let pluginSchema = extractPluginSchema(pluginMetadata);
 
-  var pluginConfig = {
+  let pluginConfig = {
     profile: lodash.get(params, ['profile', 'mixture'], {}),
     sandbox: lodash.pick(lodash.get(params, ['sandbox', 'mixture'], {}), ['application', 'plugins'])
   }
