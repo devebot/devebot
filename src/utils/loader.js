@@ -1,15 +1,15 @@
 'use strict';
 
-var debugx = require('./pinbug')('devebot:utils:loader');
+const debugx = require('./pinbug')('devebot:utils:loader');
 
-var MAPPINGS = {
+const MAPPINGS = {
   'MODULE_NOT_FOUND': 'Module not found'
 }
 
-var loader = function(name, opts) {
+let loader = function(name, opts) {
   opts = opts || {};
   try {
-    var modref = require(name);
+    let modref = require(name);
     debugx.enabled && debugx(' - file %s is loading ... ok', name);
     return modref;
   } catch(err) {

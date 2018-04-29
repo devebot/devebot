@@ -1,6 +1,6 @@
 'use strict';
 
-var constx = {
+let constx = {
   MIME_JSON: 'application/json',
   APPINFO: {
     FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license']

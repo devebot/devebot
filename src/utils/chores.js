@@ -1,15 +1,15 @@
 'use strict';
 
-var assert = require('assert');
-var lodash = require('lodash');
-var fs = require('fs');
-var os = require('os');
-var path = require('path');
-var util = require('util');
-var uuidv4 = require('logolite/uuidv4');
-var constx = require('./constx');
-var loader = require('./loader');
-var debugx = require('./pinbug')('devebot:utils:chores');
+const assert = require('assert');
+const lodash = require('lodash');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const util = require('util');
+const uuidv4 = require('logolite/uuidv4');
+const constx = require('./constx');
+const loader = require('./loader');
+const debugx = require('./pinbug')('devebot:utils:chores');
 
 let store = {
   injektorOptions: {
@@ -18,9 +18,9 @@ let store = {
   },
   injektorContext: { scope: 'devebot' }
 };
-var chores = {};
+let chores = {};
 
-var CustomError = function(message, payload) {
+let CustomError = function(message, payload) {
   Error.call(this, message);
   Error.captureStackTrace(this, this.constructor);
   this.message = message;
@@ -29,7 +29,7 @@ var CustomError = function(message, payload) {
 util.inherits(CustomError, Error);
 
 chores.buildError = function(errorName) {
-  var ErrorConstructor = function() {
+  let ErrorConstructor = function() {
     CustomError.apply(this, arguments);
     this.name = errorName;
   }
@@ -52,7 +52,7 @@ chores.loadPackageInfo = function(pkgRootPath) {
 
 chores.pickProperty = function(propName, containers, propDefault) {
   if (!lodash.isString(propName) || !lodash.isArray(containers)) return null;
-  for(var i=0; i<containers.length; i++) {
+  for(let i=0; i<containers.length; i++) {
     if (lodash.isObject(containers[i]) && containers[i][propName]) {
       return containers[i][propName];
     }
@@ -66,16 +66,16 @@ chores.listFiles = function(dir, filenames) {
 
 chores.filterFiles = function(dir, filter, filenames) {
   filenames = filenames || [];
-  var regex = (filter) ? new RegExp(filter) : null;
-  var files;
+  let regex = (filter) ? new RegExp(filter) : null;
+  let files;
   try {
     files = fs.readdirSync(dir);
   } catch (err) {
     files = [];
   }
-  for (var i in files) {
+  for (let i in files) {
     if ((regex) ? regex.test(files[i]) : true) {
-      var name = dir + '/' + files[i];
+      let name = dir + '/' + files[i];
       if (fs.statSync(name).isFile()) {
         filenames.push(files[i]);
       }
@@ -85,17 +85,17 @@ chores.filterFiles = function(dir, filter, filenames) {
 };
 
 chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
-  var self = this;
+  let self = this;
   
   debugx.enabled && debugx(' - load services by names: %s', JSON.stringify(serviceNames));
   
   serviceNames = (lodash.isArray(serviceNames)) ? serviceNames : [serviceNames];
   
   serviceNames.forEach(function(serviceName) {
-    var filepath = path.join(serviceFolder, serviceName + '.js');
-    var serviceConstructor = loader(filepath);
+    let filepath = path.join(serviceFolder, serviceName + '.js');
+    let serviceConstructor = loader(filepath);
     if (lodash.isFunction(serviceConstructor)) {
-      var serviceEntry = {};
+      let serviceEntry = {};
       serviceEntry[chores.stringCamelCase(serviceName)] = serviceConstructor;
       lodash.defaults(serviceMap, serviceEntry);
     }
@@ -130,7 +130,7 @@ chores.stringCamelCase = function camelCase(str) {
 }
 
 chores.assertDir = function(appName) {
-  var configDir = path.join(this.homedir(), '.' + appName);
+  let configDir = path.join(this.homedir(), '.' + appName);
   debugx.enabled && debugx('config in homeDir: %s', configDir);
   try {
     fs.readdirSync(configDir);
@@ -149,9 +149,9 @@ chores.assertDir = function(appName) {
 }
 
 chores.homedir = (typeof os.homedir === 'function') ? os.homedir : function() {
-  var env = process.env;
-  var home = env.HOME;
-  var user = env.LOGNAME || env.USER || env.LNAME || env.USERNAME;
+  let env = process.env;
+  let home = env.HOME;
+  let user = env.LOGNAME || env.USER || env.LNAME || env.USERNAME;
 
   if (process.platform === 'win32') {
     return env.USERPROFILE || env.HOMEDRIVE + env.HOMEPATH || home || null;
@@ -168,7 +168,7 @@ chores.homedir = (typeof os.homedir === 'function') ? os.homedir : function() {
   return home || null;
 };
 
-var SPECIAL_PLUGINS = ['application', 'devebot'];
+const SPECIAL_PLUGINS = ['application', 'devebot'];
 
 chores.isSpecialPlugin = function(pluginCode) {
   return (SPECIAL_PLUGINS.indexOf(pluginCode) >= 0);
@@ -176,7 +176,7 @@ chores.isSpecialPlugin = function(pluginCode) {
 
 chores.getPluginRefBy = function(selectedField, pluginDescriptor) {
   pluginDescriptor = pluginDescriptor || {};
-  var pluginRef = pluginDescriptor[selectedField];
+  let pluginRef = pluginDescriptor[selectedField];
   if (pluginDescriptor.type === 'application') {
     pluginRef = pluginDescriptor.type;
   }
@@ -214,7 +214,7 @@ chores.extractCodeByPattern = function(ctx, patterns, name) {
 }
 
 chores.getComponentDir = function(pluginRef, componentType) {
-  var compDir = lodash.get(pluginRef, ['presets', 'componentDir'], {});
+  let compDir = lodash.get(pluginRef, ['presets', 'componentDir'], {});
   if (componentType) {
     return compDir[componentType] || constx[componentType].SCRIPT_DIR;
   }
@@ -223,7 +223,7 @@ chores.getComponentDir = function(pluginRef, componentType) {
 
 chores.getBlockRef = function(filename, blockScope) {
   if (filename == null) return null;
-  var blockName = chores.stringCamelCase(path.basename(filename, '.js'));
+  let blockName = chores.stringCamelCase(path.basename(filename, '.js'));
   blockScope = blockScope || 'devebot';
   if (!chores.isArray(blockScope)) blockScope = [blockScope];
   return blockScope.concat(blockName).join(chores.getSeparator());
@@ -280,7 +280,7 @@ chores.printError = function(err) {
   });
 }
 
-var stringToArray = function(labels) {
+let stringToArray = function(labels) {
   labels = labels || '';
   return labels.split(',').map(function(item) {
     return item.trim();
@@ -302,6 +302,28 @@ chores.isFeatureSupported = function(label) {
   if (store.featureDisabled.indexOf(label) >= 0) return false;
   if (constx.FEATURE_ENABLED.indexOf(label) >= 0) return true;
   return (store.featureEnabled.indexOf(label) >= 0);
+}
+
+chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxRegistry) {
+  let ref = {};
+  let commander = sandboxRegistry.lookupService(proxyName);
+  if (commander && lodash.isFunction(commander.lookupService)) {
+    ref.isDirected = false;
+    ref.isRemote = true;
+    ref.service = commander.lookupService(serviceName);
+    if (ref.service) {
+      ref.method = ref.service[methodName];
+    }
+  }
+  if (!ref.method) {
+    ref.isDirected = true;
+    ref.isRemote = false;
+    ref.service = sandboxRegistry.lookupService(serviceName);
+    if (ref.service) {
+      ref.method = ref.service[methodName];
+    }
+  }
+  return ref;
 }
 
 module.exports = chores;
