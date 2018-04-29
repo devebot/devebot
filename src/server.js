@@ -1,18 +1,19 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var events = require('events');
-var util = require('util');
-var http = require('http');
-var https = require('https');
-var fs = require('fs');
-var WebSocketServer = require('ws').Server;
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const events = require('events');
+const util = require('util');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const WebSocketServer = require('ws').Server;
 
-var Kernel = require('./kernel');
-var chores = require('./utils/chores');
-var LoggingWrapper = require('./backbone/logging-wrapper');
-var RepeatedTimer = require('./backbone/repeated-timer');
+const Kernel = require('./kernel');
+const chores = require('./utils/chores');
+const LoggingWrapper = require('./backbone/logging-wrapper');
+const RepeatedTimer = require('./backbone/repeated-timer');
+const blockRef = chores.getBlockRef(__filename);
 
 function Server(params) {
   Kernel.call(this, params);
@@ -20,10 +21,9 @@ function Server(params) {
   // init the default parameters
   params = params || {};
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(blockRef);
-  var LX = loggingWrapper.getLogger();
-  var LT = loggingWrapper.getTracer();
+  let loggingWrapper = new LoggingWrapper(blockRef);
+  let LX = loggingWrapper.getLogger();
+  let LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -31,36 +31,37 @@ function Server(params) {
   }));
 
   // lookup service instances
-  var injektor = this._injektor;
+  let injektor = this._injektor;
   delete this._injektor;
-  var loggingFactory = injektor.lookup('loggingFactory', chores.injektorContext);
-  var sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
-  var scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
-  var scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
-  var securityManager = injektor.lookup('securityManager', chores.injektorContext);
+
+  let loggingFactory = injektor.lookup('loggingFactory', chores.injektorContext);
+  let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
+  let scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
+  let scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
+  let securityManager = injektor.lookup('securityManager', chores.injektorContext);
 
   // application root url
-  var appName = params.appName || 'devebot';
-  var appRootUrl = '/' + chores.stringKebabCase(appName);
+  let appName = params.appName || 'devebot';
+  let appRootUrl = '/' + chores.stringKebabCase(appName);
 
   // devebot configures
-  var devebotCfg = lodash.get(params, ['profile', 'mixture', 'devebot'], {});
+  let devebotCfg = lodash.get(params, ['profile', 'mixture', 'devebot'], {});
 
-  var tunnelCfg = lodash.get(devebotCfg, ['tunnel'], {});
-  var sslEnabled = tunnelCfg.enabled && tunnelCfg.key_file && tunnelCfg.crt_file;
+  let tunnelCfg = lodash.get(devebotCfg, ['tunnel'], {});
+  let sslEnabled = tunnelCfg.enabled && tunnelCfg.key_file && tunnelCfg.crt_file;
 
-  var processRequest = function(req, res) {
+  let processRequest = function(req, res) {
     res.writeHead(200);
     res.end("Devebot WebSockets!\n");
   };
 
   // creates a HttpServer instance
-  var server = sslEnabled ? https.createServer({
+  let server = sslEnabled ? https.createServer({
     key: fs.readFileSync(tunnelCfg.key_file),
     cert: fs.readFileSync(tunnelCfg.crt_file)
   }, processRequest) : http.createServer(processRequest);
 
-  var rhythm = new RepeatedTimer({
+  let rhythm = new RepeatedTimer({
     loggingFactory: loggingFactory,
     period: 60 * 1000,
     target: function() {
@@ -68,7 +69,7 @@ function Server(params) {
     }
   });
 
-  var mode = ['silent', 'heartbeat', 'command'].indexOf(devebotCfg.mode);
+  let mode = ['silent', 'heartbeat', 'command'].indexOf(devebotCfg.mode);
 
   this.start = function() {
     LX.has('silly') && LX.log('silly', LT.toMessage({
@@ -79,11 +80,11 @@ function Server(params) {
       if (mode == 0) return Promise.resolve();
       if (mode == 1) return rhythm.start();
       return new Promise(function(onResolved, onRejected) {
-        var serverHost = lodash.get(devebotCfg, ['host'], '0.0.0.0');
-        var serverPort = lodash.get(devebotCfg, ['port'], 17779);
-        var serverInstance = server.listen(serverPort, serverHost, function () {
-          var host = serverInstance.address().address;
-          var port = serverInstance.address().port;
+        let serverHost = lodash.get(devebotCfg, ['host'], '0.0.0.0');
+        let serverPort = lodash.get(devebotCfg, ['port'], 17779);
+        let serverInstance = server.listen(serverPort, serverHost, function () {
+          let host = serverInstance.address().address;
+          let port = serverInstance.address().port;
           chores.isVerboseForced('devebot', devebotCfg) &&
               console.log(appName + ' is listening on %s://%s:%s%s', 
                   sslEnabled?'wss':'ws', host, port, appRootUrl);
@@ -107,7 +108,7 @@ function Server(params) {
 
   this.open = this.start; // alias
 
-  var serverCloseEvent;
+  let serverCloseEvent;
   this.stop = function() {
     LX.has('silly') && LX.log('silly', LT.toMessage({
       tags: [ blockRef, 'close()' ],
@@ -123,7 +124,7 @@ function Server(params) {
       if (mode == 0) return Promise.resolve();
       if (mode == 1) return rhythm.stop();
       return new Promise(function(onResolved, onRejected) {
-        var timeoutHandler = setTimeout(function() {
+        let timeoutHandler = setTimeout(function() {
           LX.has('conlog') && LX.log('conlog', 'Timeout closing Server');
           onRejected();
         }, 60000);
@@ -152,7 +153,7 @@ function Server(params) {
 
   this.close = this.stop; // alias
 
-  var wss = new WebSocketServer({
+  let wss = new WebSocketServer({
     server: server,
     path: appRootUrl + '/execute',
     verifyClient: function(info, callback) {
@@ -165,7 +166,7 @@ function Server(params) {
   });
 
   wss.on('connection', function connection(ws) {
-    var outlet = scriptRenderer.createOutlet({ ws: ws });
+    let outlet = scriptRenderer.createOutlet({ ws: ws });
 
     ws.on('open', function handler() {
       LX.has('conlog') && LX.log('conlog', ' - Websocket@server is opened');

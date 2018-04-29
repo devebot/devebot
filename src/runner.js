@@ -1,35 +1,36 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var events = require('events');
-var util = require('util');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const events = require('events');
+const util = require('util');
 
-var Kernel = require('./kernel');
-var chores = require('./utils/chores');
-var LoggingWrapper = require('./backbone/logging-wrapper');
+const Kernel = require('./kernel');
+const chores = require('./utils/chores');
+const LoggingWrapper = require('./backbone/logging-wrapper');
+const blockRef = chores.getBlockRef(__filename);
 
 function Runner(params) {
   Kernel.call(this, params);
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(blockRef);
-  var LX = loggingWrapper.getLogger();
-  var LT = loggingWrapper.getTracer();
+  let loggingWrapper = new LoggingWrapper(blockRef);
+  let LX = loggingWrapper.getLogger();
+  let LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  var injektor = this._injektor;
+  let injektor = this._injektor;
   delete this._injektor;
-  var scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
-  var scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
 
-  var ws = new WsServerMock();
+  let scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
+  let scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
 
-  var outlet = scriptRenderer.createOutlet({ ws: ws });
+  let ws = new WsServerMock();
+
+  let outlet = scriptRenderer.createOutlet({ ws: ws });
 
   ws.on('message', function(command) {
     LX.has('silly') && LX.log('silly', LT.add({
