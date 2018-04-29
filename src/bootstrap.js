@@ -1,16 +1,16 @@
 'use strict';
 
-var path = require('path');
-var lodash = require('lodash');
+const path = require('path');
+const lodash = require('lodash');
 
-var appinfoLoader = require('./backbone/appinfo-loader');
-var errorHandler = require('./backbone/error-handler').instance;
-var ConfigLoader = require('./backbone/config-loader');
-var LoggingWrapper = require('./backbone/logging-wrapper');
-var chores = require('./utils/chores');
-var Runner = require('./runner');
-var Server = require('./server');
-var blockRef = chores.getBlockRef(__filename);
+const appinfoLoader = require('./backbone/appinfo-loader');
+const errorHandler = require('./backbone/error-handler').instance;
+const ConfigLoader = require('./backbone/config-loader');
+const LoggingWrapper = require('./backbone/logging-wrapper');
+const chores = require('./utils/chores');
+const Runner = require('./runner');
+const Server = require('./server');
+const blockRef = chores.getBlockRef(__filename);
 
 function runLoggingWrapper() {
   let loggingWrapper = new LoggingWrapper(blockRef);
@@ -38,15 +38,15 @@ function appLoader(params) {
     text: ' * application parameters: ${context}'
   }));
 
-  var appRootPath = params.appRootPath;
-  var libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
+  let appRootPath = params.appRootPath;
+  let libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
     return path.dirname(pluginRef.path);
   });
-  var topRootPath = path.join(__dirname, '/..');
+  let topRootPath = path.join(__dirname, '/..');
 
-  var appInfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
-  var appName = params.appName || appInfo.name || 'devebot-application';
-  var appOptions = {
+  let appInfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
+  let appName = params.appName || appInfo.name || 'devebot-application';
+  let appOptions = {
     privateProfile: params.privateProfile || params.privateProfiles,
     privateSandbox: params.privateSandbox || params.privateSandboxes
   };
@@ -57,7 +57,7 @@ function appLoader(params) {
     text: ' - application name (appName): ${appName}'
   }));
 
-  var appRef = lodash.isEmpty(appRootPath) ? null : {
+  let appRef = lodash.isEmpty(appRootPath) ? null : {
     type: 'application',
     name: appName,
     path: path.join(appRootPath, 'index.js')
@@ -66,31 +66,31 @@ function appLoader(params) {
     appRef.presets = lodash.cloneDeep(params.presets);
   }
 
-  var devebotRef = {
+  let devebotRef = {
     type: 'framework',
     name: 'devebot',
     path: path.join(topRootPath, 'index.js')
   };
 
-  var libRefs = [].concat(lodash.values(params.pluginRefs), devebotRef);
+  let libRefs = [].concat(lodash.values(params.pluginRefs), devebotRef);
 
-  var configLoader = new ConfigLoader(appName, appOptions, appRef, libRefs);
-  var config = configLoader.config;
+  let configLoader = new ConfigLoader(appName, appOptions, appRef, libRefs);
+  let config = configLoader.config;
 
   config.appName = appName;
   config.appInfo = appInfo;
   config.bridgeRefs = lodash.values(params.bridgeRefs);
   config.pluginRefs = [].concat(appRef || [], lodash.values(params.pluginRefs), devebotRef);
 
-  var app = { config: config };
+  let app = { config: config };
 
-  var _runner;
+  let _runner;
   Object.defineProperty(app, 'runner', {
     get: function() { return _runner = _runner || new Runner(config) },
     set: function(value) {}
   });
 
-  var _server;
+  let _server;
   Object.defineProperty(app, 'server', {
     get: function() { return _server = _server || new Server(config) },
     set: function(value) {}
@@ -104,7 +104,7 @@ function appLoader(params) {
   return app;
 }
 
-var ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs'];
+const ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs'];
 
 function registerLayerware(presets, pluginNames, bridgeNames) {
   if ((arguments.length < 3) && lodash.isArray(presets)) {
@@ -117,7 +117,7 @@ function registerLayerware(presets, pluginNames, bridgeNames) {
     presets = { layerRootPath: presets };
   }
 
-  var initialize = function(presets, pluginNames, bridgeNames, context) {
+  let initialize = function(presets, pluginNames, bridgeNames, context) {
     presets = presets || {};
     context = context || {};
     if (typeof(presets.layerRootPath) === 'string' && presets.layerRootPath.length > 0) {
@@ -126,7 +126,7 @@ function registerLayerware(presets, pluginNames, bridgeNames) {
     }
     if (chores.isFeatureSupported('presets')) {
       if (context.libRootPath) {
-        var _presets = lodash.get(context, ['pluginRefs', context.libRootPath, 'presets'], null);
+        let _presets = lodash.get(context, ['pluginRefs', context.libRootPath, 'presets'], null);
         if (_presets) {
           lodash.defaultsDeep(_presets, presets);
         } else {
@@ -148,7 +148,7 @@ function launchApplication(context, pluginNames, bridgeNames) {
       lodash.omit(context, ATTRS), pluginNames, bridgeNames)));
 }
 
-var expandExtensions = function (context, pluginNames, bridgeNames) {
+let expandExtensions = function (context, pluginNames, bridgeNames) {
   context = context || {};
   context = lodash.pick(context, ATTRS);
 
@@ -162,30 +162,30 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
   bridgeNames = lodash.isArray(bridgeNames) ? bridgeNames : [bridgeNames];
   pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
 
-  var bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
+  let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
     if (chores.isFeatureSupported('presets')) {
-      var item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
+      let item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
       item.path = touchPackage(item, 'bridge', require.resolve);
       return item;
     }
     return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
   });
-  var pluginInfos = lodash.map(pluginNames, function(pluginName) {
+  let pluginInfos = lodash.map(pluginNames, function(pluginName) {
     if (chores.isFeatureSupported('presets')) {
-      var item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
+      let item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
       item.path = touchPackage(item, 'plugin', require.resolve);
       return item;
     }
     return lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
   });
 
-  var bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
+  let bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
     if (chores.isFeatureSupported('presets')) {
       return (bridgeInfo.path == bridgeKey);
     }
     return (bridgeInfo.name == bridgeKey);
   });
-  var pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
+  let pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
     if (chores.isFeatureSupported('presets')) {
       return (pluginInfo.path == pluginKey);
     }
@@ -194,7 +194,7 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 
   bridgeDiffs.forEach(function(bridgeInfo) {
     if (chores.isFeatureSupported('presets')) {
-      var inc = lodash.pick(bridgeInfo, ['name', 'path']);
+      let inc = lodash.pick(bridgeInfo, ['name', 'path']);
       context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], inc);
       return;
     }
@@ -206,7 +206,7 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 
   pluginDiffs.forEach(function(pluginInfo) {
     if (chores.isFeatureSupported('presets')) {
-      var inc = lodash.pick(pluginInfo, ['name', 'path', 'presets']);
+      let inc = lodash.pick(pluginInfo, ['name', 'path', 'presets']);
       context.pluginRefs[pluginInfo.path] = lodash.assign(context.pluginRefs[pluginInfo.path], inc);
       return;
     }
@@ -218,7 +218,7 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 
   errorHandler.barrier({ invoker: blockRef });
 
-  var pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
+  let pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
     if (chores.isFeatureSupported('presets')) {
       return {
         path: require.resolve(pluginInfo.path),
@@ -240,8 +240,8 @@ var expandExtensions = function (context, pluginNames, bridgeNames) {
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
 
-var builtinPackages = ['bluebird', 'lodash', 'injektor', 'logolite', 'schemato'];
-var internalModules = ['chores', 'loader', 'pinbug'];
+const builtinPackages = ['bluebird', 'lodash', 'injektor', 'logolite', 'schemato'];
+const internalModules = ['chores', 'loader', 'pinbug'];
 
 appLoader.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
@@ -250,7 +250,7 @@ appLoader.require = function(packageName) {
   return null;
 };
 
-var touchPackage = function(pkgInfo, pkgType, action) {
+let touchPackage = function(pkgInfo, pkgType, action) {
   try {
     return action(pkgInfo.path);
   } catch (err) {
