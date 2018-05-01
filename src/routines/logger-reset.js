@@ -1,21 +1,21 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var chores = require('../utils/chores');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
 
-var commandConfig;
+let commandConfig;
 
-var commandObject = {
+let commandObject = {
   info: {
     alias: 'log-reset',
     description: 'Resets logging level to the default levels',
     options: []
   },
   handler: function(options, payload, ctx) {
-    var loggingFactory = chores.pickProperty('loggingFactory', [ctx, this, commandConfig], {});
-    var originLogger = loggingFactory.getLogger({ type: 'origin' });
-    var promixe = Promise.resolve().then(function() {
+    let loggingFactory = chores.pickProperty('loggingFactory', [ctx, this, commandConfig], {});
+    let originLogger = loggingFactory.getLogger({ type: 'origin' });
+    let promixe = Promise.resolve().then(function() {
       originLogger.resetDefaultLevels();
       return {status: 'ok'};
     });

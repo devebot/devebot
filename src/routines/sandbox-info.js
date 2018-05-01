@@ -1,19 +1,19 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var chores = require('../utils/chores');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
 
-var commandConfig;
+let commandConfig;
 
-var commandObject = {
+let commandObject = {
   info: {
     alias: 'sb-info',
     description: 'Display the sandbox information (how many sandboxes, current sandbox name)',
     options: []
   },
   handler: function(options, payload, ctx) {
-    var sandboxManager = chores.pickProperty('sandboxManager', [ctx, this, commandConfig], {});
+    let sandboxManager = chores.pickProperty('sandboxManager', [ctx, this, commandConfig], {});
     return Promise.resolve(sandboxManager.getServiceHelp());
   }
 };

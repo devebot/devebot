@@ -1,12 +1,12 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var chores = require('../utils/chores');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
 
-var commandConfig;
+let commandConfig;
 
-var commandObject = {
+let commandObject = {
   info: {
     alias: 'log-set',
     description: 'Enable/disable transports and change its logging levels',
@@ -34,19 +34,19 @@ var commandObject = {
   handler: function(options, payload, ctx) {
     options = options || {};
     
-    var loggingFactory = chores.pickProperty('loggingFactory', [ctx, this, commandConfig], {});
-    var originLogger = loggingFactory.getLogger({ type: 'origin' });
+    let loggingFactory = chores.pickProperty('loggingFactory', [ctx, this, commandConfig], {});
+    let originLogger = loggingFactory.getLogger({ type: 'origin' });
 
-    var transports = options['transports'];
-    var transportList = (lodash.isEmpty(transports) ? null : transports.split(','));
+    let transports = options['transports'];
+    let transportList = (lodash.isEmpty(transports) ? null : transports.split(','));
     
     if (options['enabled']) {
-      var enabled = (options['enabled'] == false || options['enabled'] == 'false') ? false : true;
+      let enabled = (options['enabled'] == false || options['enabled'] == 'false') ? false : true;
       originLogger.activate(transportList, enabled);
     }
     
     if (options['level']) {
-      var level = options['level'];
+      let level = options['level'];
       originLogger.setLevel(level, transportList);
     }
     

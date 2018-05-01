@@ -1,12 +1,12 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var os = require('os');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const os = require('os');
 
-var commandConfig;
+let commandConfig;
 
-var commandObject = {
+let commandObject = {
   info: {
     alias: 'sys-info',
     description: 'Display the system information (configuration, logger, sandbox)',

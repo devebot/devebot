@@ -1,18 +1,18 @@
 'use strict';
 
-var Promise = require('bluebird');
-var chores = require('../utils/chores');
+const Promise = require('bluebird');
+const chores = require('../utils/chores');
 
-var commandConfig;
+let commandConfig;
 
-var commandObject = {
+let commandObject = {
   info: {
     alias: 'log-info',
     description: 'Display the logger information',
     options: []
   },
   handler: function(options, payload, ctx) {
-    var loggingFactory = chores.pickProperty('loggingFactory', [ctx, this, commandConfig], {});
+    let loggingFactory = chores.pickProperty('loggingFactory', [ctx, this, commandConfig], {});
     return Promise.resolve(loggingFactory.getServiceHelp());
   }
 };

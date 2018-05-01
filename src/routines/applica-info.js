@@ -1,20 +1,20 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var chores = require('../utils/chores');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
 
-var commandConfig;
+let commandConfig;
 
-var commandObject = {
+let commandObject = {
   info: {
     alias: 'app-info',
     description: 'Display application information',
     options: []
   },
   handler: function(options, payload, ctx) {
-    var LX = this.loggingFactory.getLogger();
-    var LT = this.loggingFactory.getTracer();
+    let LX = this.loggingFactory.getLogger();
+    let LT = this.loggingFactory.getTracer();
 
     LX.has('conlog') && LX.log('conlog', 'app-info is invoked with: %s', JSON.stringify(options));
     return Promise.resolve([{
