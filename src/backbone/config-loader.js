@@ -9,6 +9,7 @@ const constx = require('../utils/constx');
 const loader = require('../utils/loader');
 const errorHandler = require('./error-handler').instance;
 const LoggingWrapper = require('./logging-wrapper');
+const blockRef = chores.getBlockRef(__filename);
 
 const CONFIG_SUBDIR = '/config';
 const CONFIG_PROFILE_NAME = process.env.DEVEBOT_CONFIG_PROFILE_NAME || 'profile';
@@ -17,11 +18,10 @@ const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
 function Loader(appName, appOptions, appRef, libRefs) {
-  let blockRef = chores.getBlockRef(__filename);
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
-  let CTX = { blockRef, LX, LT };
+  let CTX = { LX, LT };
 
   let label = chores.stringLabelCase(appName);
 
@@ -88,7 +88,7 @@ let readVariable = function(ctx, appLabel, varName) {
 }
 
 let loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName, sandboxName, customDir, customEnv) {
-  let { blockRef, LX, LT } = ctx || this;
+  let { LX, LT } = ctx || this;
   appOptions = appOptions || {};
 
   let appRootDir = null;
