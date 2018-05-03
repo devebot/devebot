@@ -7,15 +7,15 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const loader = require('../utils/loader');
 const errorHandler = require('./error-handler').instance;
+const blockRef = chores.getBlockRef(__filename);
 
 function PluginLoader(params) {
   params = params || {};
 
-  let blockRef = chores.getBlockRef(__filename);
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
-  let CTX = {blockRef, LX, LT, schemaValidator: params.schemaValidator};
+  let CTX = {LX, LT, schemaValidator: params.schemaValidator};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [blockRef, 'constructor-begin'],
@@ -136,7 +136,7 @@ let loadAllScripts = function(CTX, scriptMap, scriptType, scriptContext, pluginR
 
 let loadScriptEntries = function(CTX, scriptMap, scriptType, scriptContext, pluginRootDir) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
 
   let scriptSubDir = chores.getComponentDir(pluginRootDir, scriptType);
   let scriptFolder = path.join(pluginRootDir.pathDir, scriptSubDir);
@@ -155,7 +155,7 @@ let loadScriptEntries = function(CTX, scriptMap, scriptType, scriptContext, plug
 
 let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptFile, scriptContext, pluginRootDir) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
   let opStatus = lodash.assign({ type: scriptType, file: scriptFile, subDir: scriptSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, scriptSubDir, scriptFile);
   try {
@@ -234,7 +234,7 @@ let parseScriptTree = function(scriptFile, scriptInstance, isHierarchical) {
 
 let validateScript = function(CTX, scriptObject, scriptType) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
   scriptObject = scriptObject || {};
   let results = [];
 
@@ -267,7 +267,7 @@ let loadAllMetainfs = function(CTX, metainfMap, pluginRootDirs) {
 
 let loadMetainfEntries = function(CTX, metainfMap, pluginRootDir) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
   let metainfType = 'METAINF';
   let metainfSubDir = chores.getComponentDir(pluginRootDir, metainfType);
   let metainfFolder = path.join(pluginRootDir.pathDir, metainfSubDir);
@@ -285,7 +285,7 @@ let loadMetainfEntries = function(CTX, metainfMap, pluginRootDir) {
 
 let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, pluginRootDir) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
   let metainfType = 'METAINF';
   let opStatus = lodash.assign({ type: 'METAINF', file: schemaFile, subDir: metainfSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, metainfSubDir, schemaFile);
@@ -339,7 +339,7 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
 
 let validateMetainf = function(CTX, metainfObject) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
   let metainfType = 'METAINF';
   metainfObject = metainfObject || {};
   let results = [];
@@ -366,7 +366,7 @@ let loadAllGadgets = function(CTX, gadgetMap, gadgetType, pluginRootDirs) {
 
 let loadGadgetEntries = function(CTX, gadgetMap, gadgetType, pluginRootDir) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
 
   let gadgetSubDir = chores.getComponentDir(pluginRootDir, gadgetType);
   let gadgetFolder = path.join(pluginRootDir.pathDir, gadgetSubDir);
@@ -385,7 +385,7 @@ let loadGadgetEntries = function(CTX, gadgetMap, gadgetType, pluginRootDir) {
 
 let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetFile, pluginRootDir) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
   let opStatus = lodash.assign({ type: gadgetType, file: gadgetFile, subDir: gadgetSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, gadgetSubDir, gadgetFile);
   try {
@@ -422,7 +422,7 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
 
 let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRootDir) {
   CTX = CTX || this;
-  let {blockRef, LX, LT, schemaValidator} = CTX;
+  let {LX, LT, schemaValidator} = CTX;
   let result = {};
 
   if (!lodash.isFunction(gadgetConstructor)) {
