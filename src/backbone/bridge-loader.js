@@ -5,15 +5,15 @@ const LogTracer = require('logolite').LogTracer;
 const loader = require('../utils/loader');
 const chores = require('../utils/chores');
 const errorHandler = require('./error-handler').instance;
+const blockRef = chores.getBlockRef(__filename);
 
 function BridgeLoader(params) {
   params = params || {};
 
-  let blockRef = chores.getBlockRef(__filename);
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
-  let CTX = {blockRef, LX, LT};
+  let CTX = {LX, LT};
 
   let store = {};
 
@@ -100,7 +100,7 @@ let extractBridgeCode = function(ctx, bridgeRef) {
 }
 
 let loadBridgeContructor = function(ctx, bridgeRef) {
-  let {blockRef, LX, LT} = ctx;
+  let {LX, LT} = ctx;
 
   bridgeRef = bridgeRef || {};
 
@@ -157,7 +157,7 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
 };
 
 let loadBridgeConstructors = function(ctx, bridgeRefs) {
-  let {blockRef, LX, LT} = ctx;
+  let {LX, LT} = ctx;
 
   bridgeRefs = lodash.isArray(bridgeRefs) ? bridgeRefs : [];
 
@@ -186,7 +186,7 @@ let loadBridgeConstructors = function(ctx, bridgeRefs) {
 };
 
 let buildBridgeDialect = function(ctx, dialectOpts) {
-  let {blockRef, LX, LT} = ctx;
+  let {LX, LT} = ctx;
   let {pluginName, bridgeCode, bridgeRecord, dialectName, optType} = dialectOpts;
   let result = {};
 
@@ -348,7 +348,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
 };
 
 let buildBridgeDialects = function(ctx, bridgeRefs, dialectOptions, optType) {
-  let {blockRef, LX, LT} = ctx;
+  let {LX, LT} = ctx;
 
   optType = (lodash.isNumber(optType)) ? optType : 0;
 
