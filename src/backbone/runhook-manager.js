@@ -1,13 +1,14 @@
 'use strict';
 
-var events = require('events');
-var util = require('util');
-var path = require('path');
-var Promise = require('bluebird');
-var Injektor = require('injektor');
-var lodash = require('lodash');
-var chores = require('../utils/chores');
-var constx = require('../utils/constx');
+const events = require('events');
+const util = require('util');
+const path = require('path');
+const Promise = require('bluebird');
+const Injektor = require('injektor');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
+const constx = require('../utils/constx');
+const blockRef = chores.getBlockRef(__filename);
 
 /**
  * The constructor for RunhookManager class.
@@ -16,14 +17,13 @@ var constx = require('../utils/constx');
  * @param {Object} params - The parameters of the constructor.
  * @param {Object} params.runhook - The parameters that sent to Runhooks
  */
-var Service = function(params) {
+function RunhookManager(params) {
   params = params || {};
-  var self = this;
+  let self = this;
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(blockRef);
-  var LX = loggingFactory.getLogger();
-  var LT = loggingFactory.getTracer();
+  let loggingFactory = params.loggingFactory.branch(blockRef);
+  let LX = loggingFactory.getLogger();
+  let LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.add({
     sandboxName: params.sandboxName
@@ -32,7 +32,7 @@ var Service = function(params) {
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
-  var runhookInstance = {
+  let runhookInstance = {
     appName: params.appName,
     appInfo: params.appInfo,
     sandboxName: params.sandboxName,
@@ -42,29 +42,29 @@ var Service = function(params) {
     injectedServices: params.injectedHandlers
   };
 
-  var buildRunhookInstance = function(runhookName, runhookId) {
+  let buildRunhookInstance = function(runhookName, runhookId) {
     return lodash.defaults({
       loggingFactory: params.loggingFactory.branch(runhookName, runhookId)
     }, runhookInstance);
   };
 
-  var predefinedContext = lodash.get(params, [
+  let predefinedContext = lodash.get(params, [
       'profileConfig', constx.ROUTINE.ROOT_KEY, 'predefinedContext'
   ]) == true;
 
-  var routineMap = {};
-  var routineStore = new Injektor(chores.injektorOptions);
+  let routineMap = {};
+  let routineStore = new Injektor(chores.injektorOptions);
 
-  var getRunhooks = function() {
+  let getRunhooks = function() {
     return (routineMap = routineMap || {});
   };
 
-  var getRunhook = function(command) {
+  let getRunhook = function(command) {
     if (!command || !command.name) return {
       code: -1,
       message: 'command.name is undefined'
     };
-    var fn = routineStore.suggestName(command.name);
+    let fn = routineStore.suggestName(command.name);
     if (fn == null || fn.length == 0) return {
       code: -2,
       message: 'command.name not found'
@@ -114,7 +114,7 @@ var Service = function(params) {
     context = context || {};
     command = command || {};
     command.requestId = command.requestId || LT.getLogID();
-    var reqTr = LT.branch({ key: 'requestId', value: command.requestId });
+    let reqTr = LT.branch({ key: 'requestId', value: command.requestId });
     LX.has('trace') && LX.log('trace', reqTr.add({
       commandName: command.name,
       command: command
@@ -123,8 +123,8 @@ var Service = function(params) {
       text: '{commandName}#{requestId} - validate: {command}'
     }));
 
-    var routine = getRunhook(command);
-    var validationError = null;
+    let routine = getRunhook(command);
+    let validationError = null;
 
     if (lodash.isEmpty(routine) || routine.code === -1) {
       validationError = {
@@ -149,8 +149,8 @@ var Service = function(params) {
       return Promise.reject(validationError);
     }
 
-    var payload = command.data;
-    var schema = routine && routine.info && routine.info.schema;
+    let payload = command.data;
+    let schema = routine && routine.info && routine.info.schema;
     if (schema && lodash.isObject(schema)) {
       LX.has('silly') && LX.log('silly', reqTr.add({
         commandName: command.name,
@@ -160,7 +160,7 @@ var Service = function(params) {
         tags: [ blockRef, 'execute', 'validate-by-schema' ],
         text: '{commandName}#{requestId} - validate payload: {payload} by schema: {schema}'
       }));
-      var result = params.schemaValidator.validate(payload, schema);
+      let result = params.schemaValidator.validate(payload, schema);
       if (result.valid === false) {
         validationError = {
           message: 'failed validation using schema',
@@ -168,7 +168,7 @@ var Service = function(params) {
         };
       }
     }
-    var validate = routine && routine.info && routine.info.validate;
+    let validate = routine && routine.info && routine.info.validate;
     if (validate && lodash.isFunction(validate)) {
       LX.has('silly') && LX.log('silly', reqTr.add({
         commandName: command.name,
@@ -196,12 +196,12 @@ var Service = function(params) {
       text: '{commandName}#{requestId} - enqueue'
     }));
 
-    var promize = null;
-    var mode = routine.mode || command.mode;
+    let promize = null;
+    let mode = routine.mode || command.mode;
     if (mode !== 'remote' || params.jobqueueBinder.enabled === false) {
-      var progressMeter = self.createProgressMeter({
+      let progressMeter = self.createProgressMeter({
         progress: function(completed, total, data) {
-          var percent = -1;
+          let percent = -1;
           if (lodash.isNumber(total) && total > 0 &&
               lodash.isNumber(completed) && completed >= 0 &&
               completed <= total) {
@@ -253,7 +253,7 @@ var Service = function(params) {
     context = context || {};
     command = command || {};
     command.requestId = command.requestId || LT.getLogID();
-    var reqTr = LT.branch({ key: 'requestId', value: command.requestId });
+    let reqTr = LT.branch({ key: 'requestId', value: command.requestId });
 
     LX.has('trace') && LX.log('trace', reqTr.add({
       commandName: command.name,
@@ -263,10 +263,10 @@ var Service = function(params) {
       text: '{commandName}#{requestId} - process: {command}'
     }));
 
-    var routine = getRunhook(command);
-    var handler = routine && routine.handler;
-    var options = command.options;
-    var payload = command.data || command.payload;
+    let routine = getRunhook(command);
+    let handler = routine && routine.handler;
+    let options = command.options;
+    let payload = command.data || command.payload;
     if (lodash.isFunction(handler)) {
       LX.has('trace') && LX.log('trace', reqTr.add({
         commandName: command.name,
@@ -309,7 +309,7 @@ var Service = function(params) {
   }));
 };
 
-Service.argumentSchema = {
+RunhookManager.argumentSchema = {
   "$id": "runhookManager",
   "type": "object",
   "properties": {
@@ -349,12 +349,12 @@ Service.argumentSchema = {
   }
 };
 
-Service.prototype.getServiceInfo = function() {
+RunhookManager.prototype.getServiceInfo = function() {
   return {};
 };
 
-Service.prototype.getServiceHelp = function() {
+RunhookManager.prototype.getServiceHelp = function() {
   return [];
 };
 
-module.exports = Service;
+module.exports = RunhookManager;
