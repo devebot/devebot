@@ -1,27 +1,30 @@
 'use strict';
 
-var lodash = require('lodash');
-var events = require('events');
-var util = require('util');
-var chores = require('../utils/chores');
+const lodash = require('lodash');
+const events = require('events');
+const util = require('util');
+const chores = require('../utils/chores');
+const blockRef = chores.getBlockRef(__filename);
 
-var RepeatedTimer = function(kwargs) {
+const MIN_PERIOD = 10;
+const MIN_OFFSET = 0;
+
+function RepeatedTimer(kwargs) {
   events.EventEmitter.call(this);
 
   kwargs = kwargs || {};
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingFactory = kwargs.loggingFactory.branch(blockRef);
-  var LX = loggingFactory.getLogger();
-  var LT = loggingFactory.getTracer();
+  let loggingFactory = kwargs.loggingFactory.branch(blockRef);
+  let LX = loggingFactory.getLogger();
+  let LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  var self = this;
-  var config = lodash.pick(kwargs, ['target', 'period', 'offset', 'total', 'activated', 'name']);
+  let self = this;
+  let config = lodash.pick(kwargs, ['target', 'period', 'offset', 'total', 'activated', 'name']);
 
   config.target = config.target || function() {};
 
@@ -33,10 +36,10 @@ var RepeatedTimer = function(kwargs) {
   config.period = standardizeInt(MIN_PERIOD, config.period || 1000);
   config.offset = standardizeInt(MIN_OFFSET, config.offset || 0);
 
-  var taskHandler = null;
-  var taskCounter = 0;
+  let taskHandler = null;
+  let taskCounter = 0;
 
-  var taskWrapper = function() {
+  let taskWrapper = function() {
     taskCounter++;
     if (0 == config.total || taskCounter <= config.total) {
       config.target.call(self);
@@ -45,7 +48,7 @@ var RepeatedTimer = function(kwargs) {
     }
   };
 
-  var startTime, finishTime;
+  let startTime, finishTime;
 
   this.start = function() {
     LX.has('trace') && LX.log('trace', LT.toMessage({
@@ -61,10 +64,10 @@ var RepeatedTimer = function(kwargs) {
       return this;
     }
     if (!taskHandler) {
-      var taskFunction = taskWrapper;
+      let taskFunction = taskWrapper;
       if (config.offset > 0) {
         taskFunction = function() {
-          setTimeout(taskWrapper, getRandomInt(0, config.offset));
+          setTimeout(taskWrapper, lodash.random(0, config.offset));
         };
       }
       taskHandler = setInterval(taskFunction, config.period);
@@ -124,12 +127,5 @@ util.inherits(RepeatedTimer, events.EventEmitter);
 function standardizeInt(min, number) {
   return (number > min) ? number : min;
 }
-
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-var MIN_PERIOD = 10;
-var MIN_OFFSET = 0;
 
 module.exports = RepeatedTimer;
