@@ -1,24 +1,24 @@
 'use strict';
 
-var lodash = require('lodash');
-var chores = require('../utils/chores');
-var LoggingWrapper = require('./logging-wrapper');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
+const LoggingWrapper = require('./logging-wrapper');
+const blockRef = chores.getBlockRef(__filename);
 
 function ErrorHandler(params) {
-  var self = this;
   params = params || {};
+  let self = this;
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingWrapper = new LoggingWrapper(blockRef);
-  var LX = loggingWrapper.getLogger();
-  var LT = loggingWrapper.getTracer();
+  let loggingWrapper = new LoggingWrapper(blockRef);
+  let LX = loggingWrapper.getLogger();
+  let LT = loggingWrapper.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  var opStates = [];
+  let opStates = [];
 
   this.init = function() {
     return this.reset();
@@ -37,7 +37,7 @@ function ErrorHandler(params) {
 
   this.examine = function(options) {
     options = options || {};
-    var summary = lodash.reduce(opStates, function(store, item) {
+    let summary = lodash.reduce(opStates, function(store, item) {
       if (item.hasError) {
         store.numberOfErrors += 1;
         store.failedServices.push(item);
@@ -57,8 +57,8 @@ function ErrorHandler(params) {
 
   this.barrier = function(options) {
     options = options || {};
-    var silent = chores.isSilentForced('error-handler', options);
-    var summary = this.examine(options);
+    let silent = chores.isSilentForced('error-handler', options);
+    let summary = this.examine(options);
     if (summary.numberOfErrors > 0) {
       if (!silent) {
         console.error('[x] There are %s error(s) occurred during load:', summary.numberOfErrors);
@@ -182,7 +182,7 @@ ErrorHandler.argumentSchema = {
 
 module.exports = ErrorHandler;
 
-var errorHandler;
+let errorHandler;
 
 Object.defineProperty(ErrorHandler, 'instance', {
   get: function() {

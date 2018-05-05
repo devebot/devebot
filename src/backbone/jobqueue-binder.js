@@ -1,18 +1,18 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var chores = require('../utils/chores');
-var constx = require('../utils/constx');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
+const constx = require('../utils/constx');
+const blockRef = chores.getBlockRef(__filename);
 
-var Service = function(params) {
-  var self = this;
+function JobqueueBinder(params) {
+  let self = this;
   params = params || {};
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(blockRef);
-  var LX = loggingFactory.getLogger();
-  var LT = loggingFactory.getTracer();
+  let loggingFactory = params.loggingFactory.branch(blockRef);
+  let LX = loggingFactory.getLogger();
+  let LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.add({
     sandboxName: params.sandboxName
@@ -21,16 +21,16 @@ var Service = function(params) {
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
-  var jqCfg = lodash.get(params, ['profileConfig', 'devebot', 'jobqueue'], {});
+  let jqCfg = lodash.get(params, ['profileConfig', 'devebot', 'jobqueue'], {});
 
-  var jobqueueMasterName = null;
-  var getJobqueueMasterName = function() {
+  let jobqueueMasterName = null;
+  let getJobqueueMasterName = function() {
     return jobqueueMasterName = jobqueueMasterName ||
         jqCfg.pluginId && [jqCfg.pluginId, "jobqueueMaster"].join(chores.getSeparator());
   }
 
-  var jobqueueMaster = null;
-  var getJobQueueMaster = function() {
+  let jobqueueMaster = null;
+  let getJobQueueMaster = function() {
     return jobqueueMaster = jobqueueMaster ||
         getJobqueueMasterName() && params.injectedHandlers[getJobqueueMasterName()];
   }
@@ -38,7 +38,7 @@ var Service = function(params) {
   Object.defineProperties(this, {
     enabled: {
       get: function() {
-        var enabled = jqCfg.enabled !== false && getJobQueueMaster() != null;
+        let enabled = jqCfg.enabled !== false && getJobQueueMaster() != null;
         LX.has('conlog') && LX.log('conlog', LT.add({
           enabled: enabled,
           sandboxName: params.sandboxName
@@ -63,7 +63,7 @@ var Service = function(params) {
   }));
 };
 
-Service.argumentSchema = {
+JobqueueBinder.argumentSchema = {
   "$id": "jobqueueBinder",
   "type": "object",
   "properties": {
@@ -85,4 +85,4 @@ Service.argumentSchema = {
   }
 };
 
-module.exports = Service;
+module.exports = JobqueueBinder;
