@@ -1,20 +1,19 @@
 'use strict';
 
-var lodash = require('lodash');
-var LogFactory = require('logzilla');
-var LogAdapter = require('logolite').LogAdapter;
-var LogConfig = require('logolite').LogConfig;
-var LogTracer = require('logolite').LogTracer;
-var chores = require('../utils/chores');
-var constx = require('../utils/constx');
+const lodash = require('lodash');
+const LogFactory = require('logzilla');
+const LogAdapter = require('logolite').LogAdapter;
+const LogConfig = require('logolite').LogConfig;
+const LogTracer = require('logolite').LogTracer;
+const chores = require('../utils/chores');
+const constx = require('../utils/constx');
+const DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
 
-var DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
-
-var Service = function(params) {
+function LoggingService(params) {
   params = params || {};
 
-  var more = {};
-  var logFactory = new LogFactory(transformLoggingConfig(params.profileConfig, more));
+  let more = {};
+  let logFactory = new LogFactory(transformLoggingConfig(params.profileConfig, more));
 
   lodash.assign(this, lodash.mapValues(lodash.pick(logFactory, [
     'getServiceInfo', 'getServiceHelp'
@@ -29,7 +28,7 @@ var Service = function(params) {
   });
 };
 
-var LoggingFactory = function(args) {
+let LoggingFactory = function(args) {
   args = args || {};
 
   args.root = args.root || {};
@@ -38,12 +37,12 @@ var LoggingFactory = function(args) {
       throw new Error('The root LoggingFactory must be provided the originalLogger');
     }
 
-    var logoliteLogger = {};
-    var originalLogger = args.originalLogger;
+    let logoliteLogger = {};
+    let originalLogger = args.originalLogger;
     LogAdapter.connectTo(originalLogger);
 
     args.root.getLogger = function(opts) {
-      var logger = null;
+      let logger = null;
       if (opts) {
         if (opts.type === 'origin' || opts.origin === true) {
           logger = originalLogger;
@@ -72,7 +71,7 @@ var LoggingFactory = function(args) {
     }
   };
 
-  var self = this;
+  let self = this;
 
   this.branch = function(sectorName, sectorId) {
     return new LoggingFactory({
@@ -87,23 +86,23 @@ var LoggingFactory = function(args) {
     return args.root.getLogger(lodash.defaults({ sector: args.sectorName }, opts));
   }
 
-  var subTracer = null;
+  let subTracer = null;
   this.getTracer = function() {
-    var parentTracer = args.parent.getTracer();
+    let parentTracer = args.parent.getTracer();
     if (subTracer == null) {
       subTracer = parentTracer.branch({
         key: constx.TRACER.SECTOR.ID_FIELD,
         value: args.sectorId || LogTracer.getLogID()
       });
 
-      var blockInfo = {
+      let blockInfo = {
         parentKey: parentTracer.key,
         parentValue: parentTracer.value
       }
       if (args.sectorName) {
         blockInfo[constx.TRACER.SECTOR.NAME_FIELD] = args.sectorName;
       }
-      var rootLogger = args.root.getLogger();
+      let rootLogger = args.root.getLogger();
       rootLogger.has('info') && rootLogger.log('info', subTracer.add(blockInfo)
           .toMessage({ tags: [ 'devebot-metadata' ] }));
     }
@@ -114,23 +113,23 @@ var LoggingFactory = function(args) {
   this.getTracer();
 };
 
-var transformLoggingConfig = function(profileConfig, derivative) {
+let transformLoggingConfig = function(profileConfig, derivative) {
   profileConfig = profileConfig || {};
-  var loggingConfig = profileConfig.logger;
+  let loggingConfig = profileConfig.logger;
 
   derivative = derivative || {};
   if (lodash.isObject(loggingConfig)) {
-    var defaultLabels = transformLoggingLabels(constx.LOGGER.LABELS);
-    var labels = transformLoggingLabels(loggingConfig.labels);
+    let defaultLabels = transformLoggingLabels(constx.LOGGER.LABELS);
+    let labels = transformLoggingLabels(loggingConfig.labels);
 
     derivative.mappings = labels.mappings;
     loggingConfig.levels = lodash.isEmpty(labels.levels) ? defaultLabels.levels : labels.levels;
     loggingConfig.colors = lodash.isEmpty(labels.colors) ? defaultLabels.colors : labels.colors;
     delete loggingConfig.labels;
 
-    var transportDefs = loggingConfig.transports;
+    let transportDefs = loggingConfig.transports;
     if (lodash.isObject(transportDefs)) {
-      var transports = [];
+      let transports = [];
       lodash.forOwn(transportDefs, function(transportDef, key) {
         if (lodash.isObject(transportDef)) {
           if (!transportDef.type) {
@@ -147,13 +146,13 @@ var transformLoggingConfig = function(profileConfig, derivative) {
   return profileConfig;
 };
 
-var transformLoggingLabels = function(loglabelConfig) {
+let transformLoggingLabels = function(loglabelConfig) {
   if (lodash.isEmpty(loglabelConfig)) return {};
-  var result = { levels: {}, colors: {}, mappings: {} };
+  let result = { levels: {}, colors: {}, mappings: {} };
   lodash.forOwn(loglabelConfig, function(info, label) {
     result.levels[label] = info.level;
     result.colors[label] = info.color;
-    var links = lodash.isArray(info.inflow) ? info.inflow : [info.inflow];
+    let links = lodash.isArray(info.inflow) ? info.inflow : [info.inflow];
     lodash.forEach(links, function(link) {
       if (lodash.isString(link) && !lodash.isEmpty(link)) {
         result.mappings[link] = label;
@@ -163,7 +162,7 @@ var transformLoggingLabels = function(loglabelConfig) {
   return result;
 };
 
-Service.argumentSchema = {
+LoggingService.argumentSchema = {
   "$id": "loggingFactory",
   "type": "object",
   "properties": {
@@ -173,9 +172,9 @@ Service.argumentSchema = {
   }
 };
 
-Service.reset = function() {
+LoggingService.reset = function() {
   LogConfig.reset();
   LogTracer.reset();
 }
 
-module.exports = Service;
+module.exports = LoggingService;

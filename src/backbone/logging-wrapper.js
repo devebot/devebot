@@ -1,15 +1,15 @@
 'use strict';
 
-var lodash = require('lodash');
-var LogAdapter = require('logolite').LogAdapter;
-var LogTracer = require('logolite').LogTracer;
-var chores = require('../utils/chores');
-var constx = require('../utils/constx');
+const lodash = require('lodash');
+const LogAdapter = require('logolite').LogAdapter;
+const LogTracer = require('logolite').LogTracer;
+const chores = require('../utils/chores');
+const constx = require('../utils/constx');
 
-var Service = function(sectorName) {
+function LoggingWrapper(sectorName) {
   sectorName = sectorName || chores.getBlockRef(__filename);
 
-  var __logger = null;
+  let __logger = null;
   this.getLogger = function() {
     return __logger = __logger || LogAdapter.getLogger({
       sector: sectorName,
@@ -17,22 +17,22 @@ var Service = function(sectorName) {
     });
   }
 
-  var __tracer = null;
+  let __tracer = null;
   this.getTracer = function() {
     if (__tracer == null) {
-      var parentTracer = LogTracer.ROOT;
+      let parentTracer = LogTracer.ROOT;
       __tracer = parentTracer.branch({
         key: constx.TRACER.SECTOR.ID_FIELD,
         value: LogTracer.getLogID()
       });
 
-      var blockInfo = {
+      let blockInfo = {
         parentKey: parentTracer.key,
         parentValue: parentTracer.value
       }
       blockInfo[constx.TRACER.SECTOR.NAME_FIELD] = sectorName;
 
-      var rootLogger = this.getLogger();
+      let rootLogger = this.getLogger();
       rootLogger.has('info') && rootLogger.log('info', __tracer.add(blockInfo)
           .toMessage({ tags: [ 'devebot-metadata' ] }));
     }
@@ -42,4 +42,4 @@ var Service = function(sectorName) {
   return this;
 }
 
-module.exports = Service;
+module.exports = LoggingWrapper;
