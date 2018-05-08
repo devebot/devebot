@@ -1,30 +1,30 @@
 'use strict';
 
-var path = require('path');
-var fs = require('fs');
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var chores = require('../utils/chores');
-var constx = require('../utils/constx');
+const path = require('path');
+const fs = require('fs');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
+const constx = require('../utils/constx');
+const blockRef = chores.getBlockRef(__filename);
 
-var Service = function(params) {
-  var self = this;
+function SecurityManager(params) {
+  let self = this;
   params = params || {};
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(blockRef);
-  var LX = loggingFactory.getLogger();
-  var LT = loggingFactory.getTracer();
+  let loggingFactory = params.loggingFactory.branch(blockRef);
+  let LX = loggingFactory.getLogger();
+  let LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  var authenCfg = lodash.get(params, ['profileConfig', 'devebot', 'authen'], {});
+  let authenCfg = lodash.get(params, ['profileConfig', 'devebot', 'authen'], {});
 
   self.authenticate = function(tokens) {
-    var output = Promise.resolve({ result: true });
+    let output = Promise.resolve({ result: true });
 
     LX.has('silly') && LX.log('silly', LT.add({
       tokens: tokens,
@@ -37,9 +37,9 @@ var Service = function(params) {
     if (authenCfg.disabled) return output;
 
     return loadTokenStore(authenCfg.tokenStoreFile).then(function(store) {
-      var storeTokens = store.tokens || [];
-      for(var i=0; i<storeTokens.length; i++) {
-        var storeToken = storeTokens[i];
+      let storeTokens = store.tokens || [];
+      for(let i=0; i<storeTokens.length; i++) {
+        let storeToken = storeTokens[i];
         if (storeToken.key && storeToken.key == tokens['x-token-key'] &&
             storeToken.secret == tokens['x-token-secret']) {
           return output;
@@ -49,10 +49,10 @@ var Service = function(params) {
     });
   };
 
-  var loadTokenStore = function(storefile) {
-    var readFile = Promise.promisify(fs.readFile);
+  let loadTokenStore = function(storefile) {
+    let readFile = Promise.promisify(fs.readFile);
     return readFile(storefile, 'utf8').then(function(text) {
-      var data = JSON.parse(text);
+      let data = JSON.parse(text);
       if (lodash.isEmpty(data.tokens) || !lodash.isArray(data.tokens)) {
         LX.has('silly') && LX.log('silly', LT.add({
           storefile: storefile
@@ -90,7 +90,7 @@ var Service = function(params) {
   }));
 };
 
-Service.argumentSchema = {
+SecurityManager.argumentSchema = {
   "$id": "securityManager",
   "type": "object",
   "properties": {
@@ -103,4 +103,4 @@ Service.argumentSchema = {
   }
 };
 
-module.exports = Service;
+module.exports = SecurityManager;

@@ -1,19 +1,18 @@
 'use strict';
 
-var lodash = require('lodash');
-var chores = require('../utils/chores');
-
-var Validator = require('schemato').Validator;
-var validator = new Validator({ schemaVersion: 4 });
+const lodash = require('lodash');
+const chores = require('../utils/chores');
+const Validator = require('schemato').Validator;
+const validator = new Validator({ schemaVersion: 4 });
+const blockRef = chores.getBlockRef(__filename);
 
 function SchemaValidator(params) {
-  var self = this;
+  let self = this;
   params = params || {};
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(blockRef);
-  var LX = loggingFactory.getLogger();
-  var LT = loggingFactory.getTracer();
+  let loggingFactory = params.loggingFactory.branch(blockRef);
+  let LX = loggingFactory.getLogger();
+  let LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -21,7 +20,7 @@ function SchemaValidator(params) {
   }));
 
   self.validate = function(object, schema) {
-    var result = validator.validate(object, schema);
+    let result = validator.validate(object, schema);
     if (typeof result.ok === 'boolean') {
       result.valid = result.ok;
     }
