@@ -9,9 +9,9 @@ const constx = require('../utils/constx');
 const blockRef = chores.getBlockRef(__filename);
 
 function ScriptRenderer(params) {
-  let self = this;
   params = params || {};
 
+  let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();

@@ -19,8 +19,8 @@ const blockRef = chores.getBlockRef(__filename);
  */
 function RunhookManager(params) {
   params = params || {};
-  let self = this;
 
+  let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();

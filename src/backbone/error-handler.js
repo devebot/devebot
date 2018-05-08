@@ -7,8 +7,8 @@ const blockRef = chores.getBlockRef(__filename);
 
 function ErrorHandler(params) {
   params = params || {};
-  let self = this;
 
+  let self = this;
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();

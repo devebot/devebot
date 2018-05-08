@@ -9,12 +9,13 @@ const constx = require('../utils/constx');
 const blockRef = chores.getBlockRef(__filename);
 
 function SecurityManager(params) {
-  let self = this;
   params = params || {};
 
+  let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
+  let CTX = {LX, LT};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -36,7 +37,7 @@ function SecurityManager(params) {
 
     if (authenCfg.disabled) return output;
 
-    return loadTokenStore(authenCfg.tokenStoreFile).then(function(store) {
+    return loadTokenStore(CTX, authenCfg.tokenStoreFile).then(function(store) {
       let storeTokens = store.tokens || [];
       for(let i=0; i<storeTokens.length; i++) {
         let storeToken = storeTokens[i];
@@ -46,41 +47,6 @@ function SecurityManager(params) {
         }
       }
       return Promise.resolve({ result: false, code: 401, name: 'Token Not Found'});
-    });
-  };
-
-  let loadTokenStore = function(storefile) {
-    let readFile = Promise.promisify(fs.readFile);
-    return readFile(storefile, 'utf8').then(function(text) {
-      let data = JSON.parse(text);
-      if (lodash.isEmpty(data.tokens) || !lodash.isArray(data.tokens)) {
-        LX.has('silly') && LX.log('silly', LT.add({
-          storefile: storefile
-        }).toMessage({
-          tags: [ blockRef, 'loadTokenStore', 'invalid' ],
-          text: ' - invalid tokenStore ({storefile}), "tokens" must be an array'
-        }));
-        return {};
-      }
-      LX.has('silly') && LX.log('silly', LT.add({
-        storefile: storefile,
-        tokenTotal: data.tokens.length
-      }).toMessage({
-        tags: [ blockRef, 'loadTokenStore', 'ok' ],
-        text: ' - tokenStore ({storefile}) has {tokenTotal} items'
-      }));
-      return data;
-    }).catch(function(err) {
-      LX.has('silly') && LX.log('silly', LT.add({
-        storefile: storefile,
-        errorCode: err.code,
-        errorName: err.name || 'Error',
-        errorMessage: err.message
-      }).toMessage({
-        tags: [ blockRef, 'loadTokenStore', 'error' ],
-        text: ' - tokenStore ({storefile}) loading is failed. {errorName}: {errorMessage}'
-      }));
-      return {};
     });
   };
 
@@ -104,3 +70,39 @@ SecurityManager.argumentSchema = {
 };
 
 module.exports = SecurityManager;
+
+let loadTokenStore = function(ctx, storefile) {
+  let {LX, LT} = ctx;
+  let readFile = Promise.promisify(fs.readFile);
+  return readFile(storefile, 'utf8').then(function(text) {
+    let data = JSON.parse(text);
+    if (lodash.isEmpty(data.tokens) || !lodash.isArray(data.tokens)) {
+      LX.has('silly') && LX.log('silly', LT.add({
+        storefile: storefile
+      }).toMessage({
+        tags: [ blockRef, 'loadTokenStore', 'invalid' ],
+        text: ' - invalid tokenStore ({storefile}), "tokens" must be an array'
+      }));
+      return {};
+    }
+    LX.has('silly') && LX.log('silly', LT.add({
+      storefile: storefile,
+      tokenTotal: data.tokens.length
+    }).toMessage({
+      tags: [ blockRef, 'loadTokenStore', 'ok' ],
+      text: ' - tokenStore ({storefile}) has {tokenTotal} items'
+    }));
+    return data;
+  }).catch(function(err) {
+    LX.has('silly') && LX.log('silly', LT.add({
+      storefile: storefile,
+      errorCode: err.code,
+      errorName: err.name || 'Error',
+      errorMessage: err.message
+    }).toMessage({
+      tags: [ blockRef, 'loadTokenStore', 'error' ],
+      text: ' - tokenStore ({storefile}) loading is failed. {errorName}: {errorMessage}'
+    }));
+    return {};
+  });
+};

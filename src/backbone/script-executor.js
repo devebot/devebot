@@ -6,9 +6,9 @@ const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 
 function ScriptExecutor(params) {
-  let self = this;
   params = params || {};
 
+  let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
