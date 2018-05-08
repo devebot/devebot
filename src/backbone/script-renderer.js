@@ -1,27 +1,27 @@
 'use strict';
 
-var assert = require('assert');
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var util = require('util');
-var chores = require('../utils/chores');
-var constx = require('../utils/constx');
+const assert = require('assert');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const util = require('util');
+const chores = require('../utils/chores');
+const constx = require('../utils/constx');
+const blockRef = chores.getBlockRef(__filename);
 
 function ScriptRenderer(params) {
-  var self = this;
+  let self = this;
   params = params || {};
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(blockRef);
-  var LX = loggingFactory.getLogger();
-  var LT = loggingFactory.getTracer();
+  let loggingFactory = params.loggingFactory.branch(blockRef);
+  let LX = loggingFactory.getLogger();
+  let LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  var defaultOpts = lodash.assign({
+  let defaultOpts = lodash.assign({
     logger: LX,
     tracer: LT
   }, lodash.pick(params, ['schemaValidator']));
@@ -36,14 +36,14 @@ function ScriptRenderer(params) {
   }));
 }
 
-var AbstractOutlet = function(params) {
-  var self = this;
+function AbstractOutlet(params) {
+  let self = this;
 
   self._send = function(message) {
     assert.fail('_send() method must be overriden');
   }
 
-  self.render = function(state, payload) {
+  self.render = function(state, output) {
     switch(state) {
       case 'error':
       self._send(JSON.stringify({
@@ -55,7 +55,7 @@ var AbstractOutlet = function(params) {
       case 'definition':
       self._send(JSON.stringify({
         state: 'definition',
-        value: payload.value
+        value: output.value
       }));
       break;
 
@@ -70,8 +70,10 @@ var AbstractOutlet = function(params) {
       self._send(JSON.stringify({
         state: constx.WEBSOCKET.STATE.PROGRESS,
         message: constx.WEBSOCKET.MSG_ON.PROGRESS,
-        progress: payload.progress,
-        data: payload.data
+        percent: output.progress,
+        payload: output.data,
+        progress: output.progress, //deprecated
+        data: output.data //deprecated
       }));
       break;
 
@@ -79,7 +81,7 @@ var AbstractOutlet = function(params) {
       self._send(JSON.stringify({
         state: constx.WEBSOCKET.STATE.FAILED,
         message: constx.WEBSOCKET.MSG_ON.FAILED,
-        details: standardizeOutput(payload, true)
+        details: standardizeOutput(params.schemaValidator, output, true)
       }));
       break;
 
@@ -87,7 +89,7 @@ var AbstractOutlet = function(params) {
       self._send(JSON.stringify({
         state: constx.WEBSOCKET.STATE.COMPLETED,
         message: constx.WEBSOCKET.MSG_ON.COMPLETED,
-        details: standardizeOutput(payload, false)
+        details: standardizeOutput(params.schemaValidator, output, false)
       }));
       break;
 
@@ -105,40 +107,27 @@ var AbstractOutlet = function(params) {
       break;
     }
   }
-
-  var standardizeOutput = function(output, isError) {
-    var outputArray = lodash.isArray(output) ? output : [output];
-    outputArray = lodash.filter(outputArray, function(outputObject) {
-      return lodash.isObject(outputObject) && !lodash.isEmpty(outputObject);
-    });
-    var result = params.schemaValidator.validate(outputArray, constx.WEBSOCKET.DETAILS.SCHEMA);
-    if (!result.valid) {
-      outputArray = [{
-        type: 'json',
-        title: isError ? constx.WEBSOCKET.MSG_ON.FAILED : constx.WEBSOCKET.MSG_ON.COMPLETED,
-        data: output
-      }];
-    }
-    return outputArray;
-  };
 }
 
-var WebSocketOutlet = function(params) {
+function WebSocketOutlet(params) {
   AbstractOutlet.apply(this, arguments);
 
-  var self = this;
-  params = params && lodash.clone(params) || {};
-  assert(lodash.isObject(params.ws));
+  params = params || {};
+  let {logger: LX, tracer: LT, ws} = params;
 
-  params.logger.has('conlog') && params.logger.log('conlog', params.tracer.toMessage({
+  assert(lodash.isObject(LX));
+  assert(lodash.isObject(LT));
+  assert(lodash.isObject(ws));
+
+  LX.has('conlog') && LX.log('conlog', LT.toMessage({
     text: ' - create a new WebSocketOutlet()'
   }));
 
-  self._send = function(message) {
-    params.ws.send(message);
+  this._send = function(message) {
+    ws.send(message);
   }
 
-  params.logger.has('conlog') && params.logger.log('conlog', params.tracer.toMessage({
+  LX.has('conlog') && LX.log('conlog', LT.toMessage({
     text: ' - the new WebSocketOutlet() has been created'
   }));
 }
@@ -159,3 +148,19 @@ ScriptRenderer.argumentSchema = {
 };
 
 module.exports = ScriptRenderer;
+
+let standardizeOutput = function(schemaValidator, output, isError) {
+  let outputArray = lodash.isArray(output) ? output : [output];
+  outputArray = lodash.filter(outputArray, function(outputObject) {
+    return lodash.isObject(outputObject) && !lodash.isEmpty(outputObject);
+  });
+  let result = schemaValidator.validate(outputArray, constx.WEBSOCKET.DETAILS.SCHEMA);
+  if (!result.valid) {
+    outputArray = [{
+      type: 'json',
+      title: isError ? constx.WEBSOCKET.MSG_ON.FAILED : constx.WEBSOCKET.MSG_ON.COMPLETED,
+      data: output
+    }];
+  }
+  return outputArray;
+};

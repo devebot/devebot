@@ -1,27 +1,27 @@
 'use strict';
 
-var Promise = require('bluebird');
-var lodash = require('lodash');
-var chores = require('../utils/chores');
+const Promise = require('bluebird');
+const lodash = require('lodash');
+const chores = require('../utils/chores');
+const blockRef = chores.getBlockRef(__filename);
 
-var ScriptExecutor = function(params) {
-  var self = this;
+function ScriptExecutor(params) {
+  let self = this;
   params = params || {};
 
-  var blockRef = chores.getBlockRef(__filename);
-  var loggingFactory = params.loggingFactory.branch(blockRef);
-  var LX = loggingFactory.getLogger();
-  var LT = loggingFactory.getTracer();
+  let loggingFactory = params.loggingFactory.branch(blockRef);
+  let LX = loggingFactory.getLogger();
+  let LT = loggingFactory.getTracer();
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  var sandboxManager = params.sandboxManager;
-  var runhookManager = sandboxManager.getRunhookManager();
+  let sandboxManager = params.sandboxManager;
+  let runhookManager = sandboxManager.getRunhookManager();
 
-  var resolveCommand = function(command) {
+  let resolveCommand = function(command) {
     command = command || {};
     command = lodash.isString(command) ? JSON.parse(command) : command;
     // rename "command" field -> "name" field
@@ -44,7 +44,7 @@ var ScriptExecutor = function(params) {
       return;
     }
 
-    var reqTr = LT.branch({ key: 'requestId', value: command.requestId });
+    let reqTr = LT.branch({ key: 'requestId', value: command.requestId });
 
     LX.has('info') && LX.log('info', reqTr.add({
       commandName: command.name,
@@ -54,7 +54,7 @@ var ScriptExecutor = function(params) {
       text: '{commandName}#{requestId} start, details: {command}'
     }));
 
-    var promize;
+    let promize;
     if (command.name == 'definition') {
       promize = Promise.resolve().then(function() {
         outlet.render('definition', {
