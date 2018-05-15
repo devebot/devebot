@@ -494,7 +494,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
   wrapperConstructor.prototype = Object.create(gadgetConstructor.prototype);
 
   let wrappedArgumentSchema = {
-    "$id": wrapperName,
+    "$id": uniqueName,
     "type": "object",
     "properties": {}
   }
@@ -510,7 +510,11 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
   });
 
   if (gadgetConstructor.argumentSchema) {
-    wrapperConstructor.argumentSchema = lodash.merge(wrappedArgumentSchema, gadgetConstructor.argumentSchema);
+    let originalArgumentSchema = gadgetConstructor.argumentSchema;
+    if (originalArgumentSchema['$id']) {
+      originalArgumentSchema = lodash.omit(originalArgumentSchema, ['$id']);
+    }
+    wrapperConstructor.argumentSchema = lodash.merge(wrappedArgumentSchema, originalArgumentSchema);
     if (!lodash.isEmpty(referenceAlias)) {
       let properties = lodash.mapKeys(gadgetConstructor.argumentSchema.properties, function(val, key) {
         return referenceAlias[key] || key;

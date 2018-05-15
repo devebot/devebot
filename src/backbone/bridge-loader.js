@@ -311,7 +311,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
   dialectConstructor.prototype = Object.create(bridgeConstructor.prototype);
 
   dialectConstructor.argumentSchema = {
-    "$id": dialectName,
+    "$id": uniqueName,
     "type": "object",
     "properties": {
       "sandboxName": {
