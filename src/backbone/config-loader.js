@@ -143,12 +143,17 @@ let loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName
       text: ' + load the default config from plugins'
     }));
     lodash.forEach(libRefs, function(libRef) {
+      if (libRef.presets && chores.isFeatureSupported('presets')) {
+        LX.has('conlog') && LX.log('conlog', LT.add(libRef).toMessage({
+          text: ' - Presets of ${type}[${name}]: ${presets}'
+        }));
+      }
       let libRootDir = path.dirname(libRef.path);
       let libType = libRef.type || 'plugin';
       let libName = libRef.name;
       let defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
       config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
-          transformConfig(ctx, configType, loadConfigFile(ctx, defaultFile), libType, libName));
+          transformConfig(ctx, configType, loadConfigFile(ctx, defaultFile), libType, libName, libRef.presets));
     });
 
     LX.has('conlog') && LX.log('conlog', LT.add({
@@ -262,48 +267,53 @@ let standardizeNames = function(ctx, cfgLabels) {
   return cfgLabels;
 }
 
-let transformConfig = function(ctx, configType, configData, moduleType, moduleName) {
+let transformConfig = function(ctx, configType, configData, moduleType, moduleName, modulePresets) {
   if (!chores.isFeatureSupported('bridge-full-ref')) {
     return configData;
   }
   if (configType === CONFIG_SANDBOX_NAME) {
-    return transformSandboxConfig(ctx, configData, moduleType, moduleName);
+    return transformSandboxConfig(ctx, configData, moduleType, moduleName, modulePresets);
   }
   return configData;
 }
 
-let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName) {
+let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, modulePresets) {
   let { LX, LT } = ctx || this;
   if (lodash.isEmpty(sandboxConfig) || !lodash.isObject(sandboxConfig)) {
     return sandboxConfig;
   }
-  if (lodash.isObject(sandboxConfig.bridges) && !sandboxConfig.bridges.__status__) {
-    let cfgBridges = sandboxConfig.bridges || {};
-    let newBridges = { __status__: true };
-    let traverseBackward = function(cfgBridges, newBridges) {
-      lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
-        if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
-          if (moduleType === 'application') {
-            newBridges[cfgName] = newBridges[cfgName] || {};
-            lodash.merge(newBridges[cfgName], bridgeCfg);
-          } else
-          if (moduleType === 'plugin') {
-            moduleName = moduleName || '*';
-            let bridgeNames = lodash.keys(bridgeCfg);
-            if (bridgeNames.length === 1) {
-              let bridgeName = bridgeNames[0];
-              newBridges[bridgeName] = newBridges[bridgeName] || {};
-              newBridges[bridgeName][moduleName] = newBridges[bridgeName][moduleName] || {};
-              if (lodash.isObject(bridgeCfg[bridgeName])) {
-                newBridges[bridgeName][moduleName][cfgName] = bridgeCfg[bridgeName];
+  if (modulePresets && modulePresets.configTags) {
+    let tags = modulePresets.configTags;
+    tags = lodash.isArray(tags) ? tags : [tags];
+    if (lodash.isObject(sandboxConfig.bridges) && !sandboxConfig.bridges.__status__ &&
+        tags.indexOf('bridge[dialect-bridge]') >= 0) {
+      let cfgBridges = sandboxConfig.bridges || {};
+      let newBridges = { __status__: true };
+      let traverseBackward = function(cfgBridges, newBridges) {
+        lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
+          if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
+            if (moduleType === 'application') {
+              newBridges[cfgName] = newBridges[cfgName] || {};
+              lodash.merge(newBridges[cfgName], bridgeCfg);
+            } else
+            if (moduleType === 'plugin') {
+              moduleName = moduleName || '*';
+              let bridgeNames = lodash.keys(bridgeCfg);
+              if (bridgeNames.length === 1) {
+                let bridgeName = bridgeNames[0];
+                newBridges[bridgeName] = newBridges[bridgeName] || {};
+                newBridges[bridgeName][moduleName] = newBridges[bridgeName][moduleName] || {};
+                if (lodash.isObject(bridgeCfg[bridgeName])) {
+                  newBridges[bridgeName][moduleName][cfgName] = bridgeCfg[bridgeName];
+                }
               }
             }
           }
-        }
-      });
+        });
+      }
+      traverseBackward(cfgBridges, newBridges);
+      sandboxConfig.bridges = newBridges;
     }
-    traverseBackward(cfgBridges, newBridges);
-    sandboxConfig.bridges = newBridges;
   }
   return sandboxConfig;
 }
