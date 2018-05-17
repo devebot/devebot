@@ -124,9 +124,9 @@ chores.stringLabelCase = function labelCase(str) {
 
 chores.stringCamelCase = function camelCase(str) {
   if (!chores.isString(str)) return str;
-  return str.replace(/-([a-z])/g, function (m, w) {
-    return w.toUpperCase();
-  });
+  return str
+    .replace(/-([a-z])/g, function (m, w) { return w.toUpperCase(); })
+    .replace(/-([0-9])/g, function (m, w) { return '_' + w; });
 }
 
 chores.assertDir = function(appName) {
@@ -201,7 +201,8 @@ chores.extractCodeByPattern = function(ctx, patterns, name) {
     }));
     return { i: -1, code: name };
   }
-  info.code = name.replace(patterns[info.i], '\$1')
+  info.code = name.replace(patterns[info.i], '\$1');
+  info.codeInCamel = info.code
     .replace(/-([a-z])/g, function (m, w) { return w.toUpperCase(); })
     .replace(/-([0-9])/g, function (m, w) { return '_' + w; });
   LX.has('conlog') && LX.log('conlog', LT.add({

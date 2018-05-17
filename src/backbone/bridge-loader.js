@@ -15,12 +15,15 @@ function BridgeLoader(params) {
   let LT = loggingFactory.getTracer();
   let CTX = {LX, LT};
 
-  let store = {};
-
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
+
+  lodash.forEach(params.bridgeRefs, function(bridgeRef) {
+    bridgeRef.code = bridgeRef.codeInCamel;
+    return bridgeRef;
+  });
 
   LX.has('conlog') && LX.log('conlog', LT.add({
     bridgeRefs: params.bridgeRefs
@@ -81,24 +84,6 @@ module.exports = BridgeLoader;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
-const BRIDGE_NAME_PATTERNS = [
-  /^devebot-co-([a-z][a-z0-9\-]*)$/g,
-  /^([a-z][a-z0-9\-]*)$/g
-];
-
-let extractBridgeCode = function(ctx, bridgeRef) {
-  let info = chores.extractCodeByPattern(ctx, BRIDGE_NAME_PATTERNS, bridgeRef.name);
-  if (info.i < 0) {
-    errorHandler.collect(lodash.assign({
-      stage: 'naming',
-      type: 'bridge',
-      hasError: true,
-      stack: BRIDGE_NAME_PATTERNS.toString()
-    }, bridgeRef));
-  }
-  return info.code;
-}
-
 let loadBridgeContructor = function(ctx, bridgeRef) {
   let {LX, LT} = ctx;
 
@@ -115,7 +100,7 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
 
   let result = {};
 
-  let bridgeCode = extractBridgeCode(ctx, bridgeRef);
+  let bridgeCode = bridgeRef.code;
   if (typeof(bridgeCode) !== 'string') return result;
 
   let opStatus = lodash.assign({ type: 'DIALECT', code: bridgeCode }, bridgeRef);

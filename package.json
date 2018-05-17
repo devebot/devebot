@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "directories": {
@@ -40,7 +40,7 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "injektor": "^0.1.17",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.10",
     "logolite": "^0.1.7",
     "logzilla": "^0.1.17",
     "schemato": "^0.1.2",

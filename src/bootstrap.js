@@ -24,6 +24,7 @@ function appLoader(params) {
   params = params || {};
 
   let { logger: LX, tracer: LT } = runLoggingWrapper();
+  let ctx = { LX, LT };
 
   LX.has('silly') && LX.log('silly', LT.add({
     context: lodash.cloneDeep(params)
@@ -72,9 +73,10 @@ function appLoader(params) {
     path: path.join(topRootPath, 'index.js')
   };
 
-  let libRefs = [].concat(lodash.values(params.pluginRefs), devebotRef);
+  extractAliasNames(ctx, 'plugin', params.pluginRefs);
+  extractAliasNames(ctx, 'bridge', params.bridgeRefs);
 
-  let configLoader = new ConfigLoader(appName, appOptions, appRef, libRefs);
+  let configLoader = new ConfigLoader(appName, appOptions, appRef, devebotRef, params.pluginRefs, params.bridgeRefs);
   let config = configLoader.config;
 
   config.appName = appName;
@@ -236,6 +238,40 @@ let expandExtensions = function (context, pluginNames, bridgeNames) {
     return pluginInitializer(params);
   }, context);
 };
+
+const LIB_NAME_PATTERNS = {
+  bridge: [
+    /^devebot-co-([a-z][a-z0-9\-]*[a-z0-9])$/g,
+    /^([a-z][a-z0-9\-]*[a-z0-9])$/g
+  ],
+  plugin: [
+    /^devebot-dp-([a-z][a-z0-9\-]*[a-z0-9])$/g,
+    /^([a-z][a-z0-9\-]*[a-z0-9])$/g
+  ]
+}
+
+let extractAliasNames = function(ctx, type, myRefs) {
+  lodash.forOwn(myRefs, function(myRef, myId) {
+    let info = chores.extractCodeByPattern(ctx, LIB_NAME_PATTERNS[type], myRef.name);
+    if (info.i >= 0) {
+      myRef.code = info.code;
+      myRef.codeInCamel = info.codeInCamel;
+      if (info.code == myRef.name) {
+        myRef.nameInCamel = info.codeInCamel;
+      } else {
+        myRef.nameInCamel = chores.stringCamelCase(myRef.name);
+      }
+    } else {
+      errorHandler.collect(lodash.assign({
+        stage: 'naming',
+        type: type,
+        hasError: true,
+        stack: LIB_NAME_PATTERNS[type].toString()
+      }, myRef));
+    }
+  });
+  return myRefs;
+}
 
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
