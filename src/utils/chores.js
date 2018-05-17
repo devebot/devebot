@@ -202,14 +202,9 @@ chores.extractCodeByPattern = function(ctx, patterns, name) {
     return { i: -1, code: name };
   }
   info.code = name.replace(patterns[info.i], '\$1');
-  info.codeInCamel = info.code
-    .replace(/-([a-z])/g, function (m, w) { return w.toUpperCase(); })
-    .replace(/-([0-9])/g, function (m, w) { return '_' + w; });
-  LX.has('conlog') && LX.log('conlog', LT.add({
-    name: name,
-    code: info.code
-  }).toMessage({
-    text: ' - extracted code of "${name}" is "${code}"'
+  info.codeInCamel = chores.stringCamelCase(info.code);
+  LX.has('conlog') && LX.log('conlog', LT.add(lodash.assign({name}, info)).toMessage({
+    text: ' - extracted code of "${name}" is "${code}", camelCase: ${codeInCamel}'
   }));
   return info;
 }
