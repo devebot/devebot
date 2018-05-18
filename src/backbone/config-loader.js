@@ -17,7 +17,7 @@ const CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox'
 const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
-function Loader(appName, appOptions, appRef, libRefs) {
+function Loader(appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs) {
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
@@ -29,7 +29,9 @@ function Loader(appName, appOptions, appRef, libRefs) {
     appName: appName,
     appOptions: appOptions,
     appRef: appRef,
-    libRefs: libRefs,
+    devebotRef: devebotRef,
+    pluginRefs: pluginRefs,
+    bridgeRefs: bridgeRefs,
     label: label
   }).toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -39,10 +41,14 @@ function Loader(appName, appOptions, appRef, libRefs) {
   appOptions = appOptions || {};
 
   let config = loadConfig
-      .bind(null, CTX, appName, appOptions, appRef, libRefs)
+      .bind(null, CTX, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs)
       .apply(null, Object.keys(CONFIG_VAR_NAMES).map(function(varName) {
         return readVariable(CTX, label, CONFIG_VAR_NAMES[varName]);
       }));
+
+  if (chores.isFeatureSupported('standardizing-config')) {
+    config = doAliasMap(CTX, config, buildRelativeAliasMap(pluginRefs), buildRelativeAliasMap(bridgeRefs));
+  }
 
   Object.defineProperty(this, 'config', {
     get: function() { return config },
@@ -87,9 +93,19 @@ let readVariable = function(ctx, appLabel, varName) {
   return value;
 }
 
-let loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName, sandboxName, customDir, customEnv) {
+let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, profileName, sandboxName, customDir, customEnv) {
   let { LX, LT } = ctx || this;
   appOptions = appOptions || {};
+
+  let pluginAliasMap = buildAbsoluteAliasMap(pluginRefs);
+  let bridgeAliasMap = buildAbsoluteAliasMap(bridgeRefs);
+
+  let transCTX = { LX, LT, pluginAliasMap, bridgeAliasMap };
+
+  let libRefs = lodash.values(pluginRefs);
+  if (devebotRef) {
+    libRefs.push(devebotRef);
+  }
 
   let appRootDir = null;
   if (appRef && lodash.isString(appRef.path)) {
@@ -136,7 +152,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName
       }).toMessage({
         text: ' + load the default config: ${defaultFile}'
       }));
-      config[configType]['default'] = transformConfig(ctx, configType, loadConfigFile(ctx, defaultFile), 'application');
+      config[configType]['default'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
     }
 
     LX.has('conlog') && LX.log('conlog', LT.toMessage({
@@ -153,7 +169,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName
       let libName = libRef.name;
       let defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
       config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
-          transformConfig(ctx, configType, loadConfigFile(ctx, defaultFile), libType, libName, libRef.presets));
+          transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), libType, libName, libRef.presets));
     });
 
     LX.has('conlog') && LX.log('conlog', LT.add({
@@ -174,7 +190,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, libRefs, profileName
         }).toMessage({
           text: ' - load the environment config: ${configFile}'
         }));
-        let configObj = lodash.defaultsDeep(transformConfig(ctx, configType, loadConfigFile(ctx, configFile), 'application'), accum);
+        let configObj = lodash.defaultsDeep(transformConfig(transCTX, configType, loadConfigFile(ctx, configFile), 'application'), accum);
         if (configObj.disabled) return accum;
         config[configType]['names'].push(mixtureItem[1]);
         return configObj;
@@ -267,12 +283,32 @@ let standardizeNames = function(ctx, cfgLabels) {
   return cfgLabels;
 }
 
+let buildAbsoluteAliasMap = function(myRefs, aliasMap) {
+  aliasMap = aliasMap || {};
+  lodash.forOwn(myRefs, function(myRef) {
+    aliasMap[myRef.name] = myRef.name;
+    aliasMap[myRef.nameInCamel] = myRef.name;
+    aliasMap[myRef.code] = aliasMap[myRef.code] || myRef.name;
+    aliasMap[myRef.codeInCamel] = aliasMap[myRef.codeInCamel] || myRef.name;
+  });
+  return aliasMap;
+}
+
+let buildRelativeAliasMap = function(myRefs, aliasMap) {
+  aliasMap = aliasMap || {};
+  lodash.forOwn(myRefs, function(myRef) {
+    aliasMap[myRef.name] = myRef.codeInCamel;
+  });
+  return aliasMap;
+}
+
 let transformConfig = function(ctx, configType, configData, moduleType, moduleName, modulePresets) {
-  if (!chores.isFeatureSupported('bridge-full-ref')) {
-    return configData;
-  }
-  if (configType === CONFIG_SANDBOX_NAME) {
-    return transformSandboxConfig(ctx, configData, moduleType, moduleName, modulePresets);
+  let { LX, LT, pluginAliasMap, bridgeAliasMap } = ctx || this;
+  if (chores.isFeatureSupported('bridge-full-ref')) {
+    if (configType === CONFIG_SANDBOX_NAME) {
+      configData = transformSandboxConfig(ctx, configData, moduleType, moduleName, modulePresets);
+      configData = doAliasMap(ctx, configData, pluginAliasMap, bridgeAliasMap);
+    }
   }
   return configData;
 }
@@ -312,6 +348,32 @@ let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName
         });
       }
       traverseBackward(cfgBridges, newBridges);
+      sandboxConfig.bridges = newBridges;
+    }
+  }
+  return sandboxConfig;
+}
+
+let doAliasMap = function(ctx, sandboxConfig, pluginAliasMap, bridgeAliasMap) {
+  let { LX, LT } = ctx || this;
+  if (chores.isFeatureSupported('standardizing-config')) {
+    if (sandboxConfig && lodash.isObject(sandboxConfig.bridges)) {
+      let oldBridges = sandboxConfig.bridges;
+      let newBridges = {};
+      lodash.forOwn(oldBridges, function(oldBridge, oldBridgeName) {
+        let newBridgeName = bridgeAliasMap[oldBridgeName] || oldBridgeName;
+        if (newBridgeName) {
+          if (lodash.isObject(oldBridge)) {
+            newBridges[newBridgeName] = {};
+            lodash.forOwn(oldBridge, function(oldPlugin, oldPluginName) {
+              let newPluginName = pluginAliasMap[oldPluginName] || oldPluginName;
+              newBridges[newBridgeName][newPluginName] = oldPlugin;
+            });
+          } else {
+            newBridges[newBridgeName] = oldBridge;
+          }
+        }
+      });
       sandboxConfig.bridges = newBridges;
     }
   }
