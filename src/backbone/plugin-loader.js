@@ -141,9 +141,7 @@ let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptF
   try {
     let scriptInit = loader(filepath, { stopWhenError: true });
     if (lodash.isFunction(scriptInit)) {
-      LX.has('conlog') && LX.log('conlog', LT.add({
-        filepath: filepath
-      }).toMessage({
+      LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
         text: ' - script file ${filepath} is ok'
       }));
       let scriptObject = scriptInit(scriptContext);
@@ -178,17 +176,13 @@ let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptF
         lodash.defaultsDeep(scriptMap, entry);
       }
     } else {
-      LX.has('conlog') && LX.log('conlog', LT.add({
-        filepath: filepath
-      }).toMessage({
+      LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
         text: ' - script file ${filepath} doesnot contain a function.'
       }));
       opStatus.hasError = true;
     }
   } catch (err) {
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      filepath: filepath
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
       text: ' - script file ${filepath} loading has failed.'
     }));
     opStatus.hasError = true;
@@ -305,9 +299,7 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
       lodash.defaultsDeep(metainfMap, entry);
     }
   } catch(err) {
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      filepath: filepath
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
       text: ' - schema file ${filepath} loading has failed'
     }));
     LX.has('conlog') && chores.printError(err);
@@ -370,9 +362,7 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
   let filepath = path.join(pluginRootDir.pathDir, gadgetSubDir, gadgetFile);
   try {
     let gadgetConstructor = loader(filepath, { stopWhenError: true });
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      filepath: filepath
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
       text: ' - gadget file ${filepath} loading has done'
     }));
     if (lodash.isFunction(gadgetConstructor)) {
@@ -380,17 +370,13 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
       lodash.defaults(gadgetMap, buildGadgetWrapper(CTX, gadgetConstructor, gadgetName, pluginRootDir));
       opStatus.hasError = false;
     } else {
-      LX.has('conlog') && LX.log('conlog', LT.add({
-        filepath: filepath
-      }).toMessage({
+      LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
         text: ' - gadget file ${filepath} doesnot contain a function'
       }));
       opStatus.hasError = true;
     }
   } catch(err) {
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      filepath: filepath
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
       text: ' - gadget file ${filepath} loading has failed'
     }));
     LX.has('conlog') && chores.printError(err);
