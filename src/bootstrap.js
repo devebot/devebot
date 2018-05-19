@@ -76,7 +76,9 @@ function appLoader(params) {
   extractAliasNames(ctx, 'plugin', params.pluginRefs);
   extractAliasNames(ctx, 'bridge', params.bridgeRefs);
 
-  let configLoader = new ConfigLoader(appName, appOptions, appRef, devebotRef, params.pluginRefs, params.bridgeRefs);
+  let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
+    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs
+  });
   let config = configLoader.config;
 
   config.appName = appName;

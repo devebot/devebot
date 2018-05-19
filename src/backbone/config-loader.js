@@ -17,7 +17,7 @@ const CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox'
 const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
-function Loader(appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs) {
+function ConfigLoader({appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs}) {
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
@@ -64,7 +64,7 @@ function Loader(appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs)
   }));
 }
 
-module.exports = Loader;
+module.exports = ConfigLoader;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
