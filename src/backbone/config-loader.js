@@ -47,7 +47,10 @@ function Loader(appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs)
       }));
 
   if (chores.isFeatureSupported('standardizing-config')) {
-    config = doAliasMap(CTX, config, buildRelativeAliasMap(pluginRefs), buildRelativeAliasMap(bridgeRefs));
+    let pluginReverseMap = buildRelativeAliasMap(pluginRefs);
+    let bridgeReverseMap = buildRelativeAliasMap(bridgeRefs);
+    doAliasMap(CTX, config.sandbox.default, pluginReverseMap, bridgeReverseMap);
+    doAliasMap(CTX, config.sandbox.mixture, pluginReverseMap, bridgeReverseMap);
   }
 
   Object.defineProperty(this, 'config', {
@@ -115,9 +118,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   let config = {};
   let configDir = resolveConfigDir(ctx, appName, appRootDir, customDir, customEnv);
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    configDir: configDir
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ configDir }).toMessage({
     tags: [ blockRef, 'config-dir' ],
     text: ' - configDir: ${configDir}'
   }));
@@ -147,9 +148,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
 
     if (configDir) {
       let defaultFile = path.join(configDir, configType + '.js');
-      LX.has('conlog') && LX.log('conlog', LT.add({
-        defaultFile: defaultFile
-      }).toMessage({
+      LX.has('conlog') && LX.log('conlog', LT.add({ defaultFile }).toMessage({
         text: ' + load the default config: ${defaultFile}'
       }));
       config[configType]['default'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
@@ -172,9 +171,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
           transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), libType, libName, libRef.presets));
     });
 
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      configType: configType
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
       text: ' + load the custom config of ${configType}'
     }));
     config[configType]['mixture'] = {};
@@ -185,9 +182,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     if (configDir) {
       config[configType]['mixture'] = lodash.reduce(mixtureNames, function(accum, mixtureItem) {
         let configFile = path.join(configDir, mixtureItem.join('_') + '.js');
-        LX.has('conlog') && LX.log('conlog', LT.add({
-          configFile: configFile
-        }).toMessage({
+        LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
           text: ' - load the environment config: ${configFile}'
         }));
         let configObj = lodash.defaultsDeep(transformConfig(transCTX, configType, loadConfigFile(ctx, configFile), 'application'), accum);
