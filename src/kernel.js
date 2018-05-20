@@ -25,20 +25,22 @@ function Kernel(params) {
   }));
 
   // init the default parameters
-  params = params || {};
+  let { configObject, nameResolver } = params || {};
 
   // create injektor instance
   let injektor = new Injektor(chores.injektorOptions);
 
   ['appName', 'appInfo', 'bridgeRefs', 'pluginRefs'].forEach(function(refName) {
-    injektor.registerObject(refName, params[refName], chores.injektorContext);
+    injektor.registerObject(refName, configObject[refName], chores.injektorContext);
   });
 
   injektor
-    .registerObject('sandboxNames', params['sandbox']['names'], chores.injektorContext)
-    .registerObject('sandboxConfig', params['sandbox']['mixture'], chores.injektorContext)
-    .registerObject('profileNames', params['profile']['names'], chores.injektorContext)
-    .registerObject('profileConfig', params['profile']['mixture'], chores.injektorContext);
+    .registerObject('sandboxNames', configObject['sandbox']['names'], chores.injektorContext)
+    .registerObject('sandboxConfig', configObject['sandbox']['mixture'], chores.injektorContext)
+    .registerObject('profileNames', configObject['profile']['names'], chores.injektorContext)
+    .registerObject('profileConfig', configObject['profile']['mixture'], chores.injektorContext);
+
+  injektor.registerObject('nameResolver', nameResolver, chores.injektorContext);
 
   lodash.forOwn(CONSTRUCTORS, function(constructor, serviceName) {
     injektor.defineService(serviceName, constructor, chores.injektorContext);
@@ -59,7 +61,7 @@ function Kernel(params) {
     text: " - bridge's metadata: ${metadata}"
   }));
 
-  let bridgeConfig = lodash.get(params, ['sandbox', 'mixture', 'bridges'], {});
+  let bridgeConfig = lodash.get(configObject, ['sandbox', 'mixture', 'bridges'], {});
 
   validateBridgeConfig({LX, LT, schemaValidator}, bridgeConfig, bridgeMetadata, result);
 
@@ -94,8 +96,8 @@ function Kernel(params) {
   let pluginSchema = extractPluginSchema(pluginMetadata);
 
   let pluginConfig = {
-    profile: lodash.get(params, ['profile', 'mixture'], {}),
-    sandbox: lodash.pick(lodash.get(params, ['sandbox', 'mixture'], {}), ['application', 'plugins'])
+    profile: lodash.get(configObject, ['profile', 'mixture'], {}),
+    sandbox: lodash.pick(lodash.get(configObject, ['sandbox', 'mixture'], {}), ['application', 'plugins'])
   }
 
   LX.has('silly') && LX.log('silly', LT.add({

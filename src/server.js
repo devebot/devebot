@@ -19,8 +19,6 @@ function Server(params) {
   Kernel.call(this, params);
 
   // init the default parameters
-  params = params || {};
-
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
@@ -34,6 +32,7 @@ function Server(params) {
   let injektor = this._injektor;
   delete this._injektor;
 
+  let profileConfig = injektor.lookup('profileConfig', chores.injektorContext);
   let loggingFactory = injektor.lookup('loggingFactory', chores.injektorContext);
   let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
   let scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
@@ -41,11 +40,11 @@ function Server(params) {
   let securityManager = injektor.lookup('securityManager', chores.injektorContext);
 
   // application root url
-  let appName = params.appName || 'devebot';
+  let appName = injektor.lookup('appName', chores.injektorContext);
   let appRootUrl = '/' + chores.stringKebabCase(appName);
 
   // devebot configures
-  let devebotCfg = lodash.get(params, ['profile', 'mixture', 'devebot'], {});
+  let devebotCfg = lodash.get(profileConfig, ['devebot'], {});
 
   let tunnelCfg = lodash.get(devebotCfg, ['tunnel'], {});
   let sslEnabled = tunnelCfg.enabled && tunnelCfg.key_file && tunnelCfg.crt_file;

@@ -7,6 +7,7 @@ const appinfoLoader = require('./backbone/appinfo-loader');
 const errorHandler = require('./backbone/error-handler').instance;
 const ConfigLoader = require('./backbone/config-loader');
 const LoggingWrapper = require('./backbone/logging-wrapper');
+const NameResolver = require('./backbone/name-resolver');
 const chores = require('./utils/chores');
 const Runner = require('./runner');
 const Server = require('./server');
@@ -76,6 +77,10 @@ function appLoader(params) {
   extractAliasNames(ctx, 'plugin', params.pluginRefs);
   extractAliasNames(ctx, 'bridge', params.bridgeRefs);
 
+  let nameResolver = new NameResolver({
+    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs
+  });
+
   let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
     pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs
   });
@@ -86,17 +91,18 @@ function appLoader(params) {
   config.bridgeRefs = lodash.values(params.bridgeRefs);
   config.pluginRefs = [].concat(appRef || [], lodash.values(params.pluginRefs), devebotRef);
 
+  let args = { configObject: config, nameResolver };
   let app = { config: config };
 
   let _runner;
   Object.defineProperty(app, 'runner', {
-    get: function() { return _runner = _runner || new Runner(config) },
+    get: function() { return _runner = _runner || new Runner(args) },
     set: function(value) {}
   });
 
   let _server;
   Object.defineProperty(app, 'server', {
-    get: function() { return _server = _server || new Server(config) },
+    get: function() { return _server = _server || new Server(args) },
     set: function(value) {}
   });
 
