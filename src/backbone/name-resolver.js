@@ -38,6 +38,19 @@ function NameResolver(params) {
     return relativeAliasMap;
   }
 
+  this.getAliasBy = function(selectedField, crateDescriptor) {
+    crateDescriptor = crateDescriptor || {};
+    let crateAlias = crateDescriptor[selectedField];
+    if (crateDescriptor.type === 'application') {
+      crateAlias = crateDescriptor.type;
+    }
+    return crateAlias;
+  }
+
+  this.getOriginalName = this.getAliasBy.bind(this, 'name');
+
+  this.getDefaultAlias = this.getAliasBy.bind(this, 'codeInCamel');
+
   extractAliasNames(CTX, 'plugin', params.pluginRefs);
   extractAliasNames(CTX, 'bridge', params.bridgeRefs);
 

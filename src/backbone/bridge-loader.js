@@ -81,13 +81,13 @@ module.exports = BridgeLoader;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
 let loadBridgeContructor = function(ctx, bridgeRef) {
-  let {LX, LT} = ctx;
+  let {LX, LT, nameResolver} = ctx;
 
   bridgeRef = bridgeRef || {};
 
-  let bridgeName = bridgeRef.name;
+  let bridgeName = nameResolver.getOriginalName(bridgeRef);
+  let bridgeCode = nameResolver.getDefaultAlias(bridgeRef);
   let bridgePath = bridgeRef.path;
-  let bridgeCode = bridgeRef.codeInCamel;
 
   LX.has('conlog') && LX.log('conlog', LT.add(bridgeRef).toMessage({
     text: ' - bridge constructor (${name}) loading is started'

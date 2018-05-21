@@ -174,15 +174,6 @@ chores.isSpecialPlugin = function(pluginCode) {
   return (SPECIAL_PLUGINS.indexOf(pluginCode) >= 0);
 }
 
-chores.getPluginRefBy = function(selectedField, pluginDescriptor) {
-  pluginDescriptor = pluginDescriptor || {};
-  let pluginRef = pluginDescriptor[selectedField];
-  if (pluginDescriptor.type === 'application') {
-    pluginRef = pluginDescriptor.type;
-  }
-  return pluginRef;
-}
-
 chores.extractCodeByPattern = function(ctx, patterns, name) {
   assert.ok(patterns instanceof Array);
   for(let k in patterns) {

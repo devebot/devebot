@@ -15,7 +15,7 @@ function PluginLoader(params) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
-  let CTX = {LX, LT, schemaValidator: params.schemaValidator};
+  let CTX = {LX, LT, nameResolver: params.nameResolver, schemaValidator: params.schemaValidator};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [blockRef, 'constructor-begin'],
@@ -71,6 +71,9 @@ PluginLoader.argumentSchema = {
         }
       }
     },
+    "nameResolver": {
+      "type": "object"
+    },
     "loggingFactory": {
       "type": "object"
     },
@@ -97,9 +100,6 @@ let hasSeparatedDir = function(scriptType) {
 let getFilterPattern = function(scriptType) {
   return hasSeparatedDir(scriptType) ? '.*\.js' : constx[scriptType].ROOT_KEY + '_.*\.js';
 }
-
-let getPluginRefByName = chores.getPluginRefBy.bind(chores, 'name');
-let getPluginRefByCode = chores.getPluginRefBy.bind(chores, 'codeInCamel');
 
 let loadAllScripts = function(CTX, scriptMap, scriptType, scriptContext, pluginRootDirs) {
   scriptMap = scriptMap || {};
@@ -134,7 +134,7 @@ let loadScriptEntries = function(CTX, scriptMap, scriptType, scriptContext, plug
 
 let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptFile, scriptContext, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, schemaValidator} = CTX;
+  let {LX, LT, nameResolver, schemaValidator} = CTX;
   let opStatus = lodash.assign({ type: scriptType, file: scriptFile, subDir: scriptSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, scriptSubDir, scriptFile);
   try {
@@ -165,7 +165,7 @@ let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptF
         opStatus.hasError = false;
         let scriptName = scriptFile.replace('.js', '').toLowerCase();
         let uniqueName = [pluginRootDir.name, scriptName].join(chores.getSeparator());
-        let pluginName = getPluginRefByName(pluginRootDir);
+        let pluginName = nameResolver.getOriginalName(pluginRootDir);
         let entry = {};
         entry[uniqueName] = {
           crateScope: pluginName,
@@ -258,7 +258,7 @@ let loadMetainfEntries = function(CTX, metainfMap, pluginRootDir) {
 
 let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, schemaValidator} = CTX;
+  let {LX, LT, nameResolver, schemaValidator} = CTX;
   let metainfType = 'METAINF';
   let opStatus = lodash.assign({ type: 'METAINF', file: schemaFile, subDir: metainfSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, metainfSubDir, schemaFile);
@@ -289,8 +289,8 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
       let entry = {};
       entry[uniqueName] = entry[uniqueName] || {};
       entry[uniqueName][subtypeName] = {
-        crateScope: getPluginRefByName(pluginRootDir),
-        pluginCode: getPluginRefByCode(pluginRootDir),
+        crateScope: nameResolver.getOriginalName(pluginRootDir),
+        pluginCode: nameResolver.getDefaultAlias(pluginRootDir),
         type: typeName,
         subtype: subtypeName,
         schema: metainfObject.schema
@@ -387,7 +387,7 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
 
 let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, schemaValidator} = CTX;
+  let {LX, LT, nameResolver, schemaValidator} = CTX;
   let result = {};
 
   if (!lodash.isFunction(gadgetConstructor)) {
@@ -397,8 +397,8 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     return result;
   }
 
-  let pluginName = getPluginRefByName(pluginRootDir);
-  let pluginCode = getPluginRefByCode(pluginRootDir);
+  let pluginName = nameResolver.getOriginalName(pluginRootDir);
+  let pluginCode = nameResolver.getDefaultAlias(pluginRootDir);
   let uniqueName = [pluginRootDir.name, wrapperName].join(chores.getSeparator());
   let referenceAlias = lodash.get(pluginRootDir, ['presets', 'referenceAlias'], {});
 
