@@ -78,11 +78,11 @@ function appLoader(params) {
   extractAliasNames(ctx, 'bridge', params.bridgeRefs);
 
   let nameResolver = new NameResolver({
-    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs
+    pluginRefs: lodash.values(params.pluginRefs), bridgeRefs: lodash.values(params.bridgeRefs)
   });
 
   let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
-    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs
+    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, nameResolver
   });
   let config = configLoader.config;
 

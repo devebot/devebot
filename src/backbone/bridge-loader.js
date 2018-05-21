@@ -13,7 +13,7 @@ function BridgeLoader(params) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
-  let CTX = {LX, LT};
+  let CTX = {LX, LT, nameResolver: params.nameResolver};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -73,6 +73,9 @@ BridgeLoader.argumentSchema = {
           }
         }
       }
+    },
+    "nameResolver": {
+      "type": "object"
     },
     "loggingFactory": {
       "type": "object"
@@ -312,7 +315,8 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
 };
 
 let buildBridgeDialects = function(ctx, bridgeRefs, dialectOptions, optType) {
-  let {LX, LT} = ctx;
+  let {LX, LT, nameResolver} = ctx;
+  let absolutePluginAliasMap = nameResolver.getAbsoluteAliasMap().plugin;
 
   optType = (lodash.isNumber(optType)) ? optType : 0;
 
@@ -377,6 +381,7 @@ let buildBridgeDialects = function(ctx, bridgeRefs, dialectOptions, optType) {
     lodash.forOwn(dialectOptions, function(bridgeMap, bridgeCode) {
       if (!bridgeCode || !bridgeConstructors[bridgeCode]) return;
       lodash.forOwn(bridgeMap, function(pluginMap, pluginName) {
+        pluginName = absolutePluginAliasMap[pluginName] || pluginName;
         lodash.forOwn(pluginMap, function(dialectConfig, dialectName) {
           lodash.assign(bridgeDialects, buildBridgeDialect(ctx, {
             pluginName,

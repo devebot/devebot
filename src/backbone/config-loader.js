@@ -17,11 +17,12 @@ const CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox'
 const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 
-function ConfigLoader({appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs}) {
+function ConfigLoader(params={}) {
+  let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, nameResolver} = params;
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
-  let CTX = { LX, LT };
+  let CTX = { LX, LT, nameResolver };
 
   let label = chores.stringLabelCase(appName);
 
@@ -47,8 +48,7 @@ function ConfigLoader({appName, appOptions, appRef, devebotRef, pluginRefs, brid
       }));
 
   if (chores.isFeatureSupported('standardizing-config')) {
-    let pluginReverseMap = buildRelativeAliasMap(pluginRefs);
-    let bridgeReverseMap = buildRelativeAliasMap(bridgeRefs);
+    let {plugin: pluginReverseMap, bridge: bridgeReverseMap} = nameResolver.getRelativeAliasMap();
     doAliasMap(CTX, config.sandbox.default, pluginReverseMap, bridgeReverseMap);
     doAliasMap(CTX, config.sandbox.mixture, pluginReverseMap, bridgeReverseMap);
   }
@@ -97,12 +97,10 @@ let readVariable = function(ctx, appLabel, varName) {
 }
 
 let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, profileName, sandboxName, customDir, customEnv) {
-  let { LX, LT } = ctx || this;
+  let { LX, LT, nameResolver } = ctx || this;
   appOptions = appOptions || {};
 
-  let pluginAliasMap = buildAbsoluteAliasMap(pluginRefs);
-  let bridgeAliasMap = buildAbsoluteAliasMap(bridgeRefs);
-
+  let {plugin: pluginAliasMap, bridge: bridgeAliasMap} = nameResolver.getAbsoluteAliasMap();
   let transCTX = { LX, LT, pluginAliasMap, bridgeAliasMap };
 
   let libRefs = lodash.values(pluginRefs);
@@ -276,25 +274,6 @@ let standardizeNames = function(ctx, cfgLabels) {
   cfgLabels = lodash.map(cfgLabels, lodash.trim);
   cfgLabels = lodash.filter(cfgLabels, lodash.negate(lodash.isEmpty));
   return cfgLabels;
-}
-
-let buildAbsoluteAliasMap = function(myRefs, aliasMap) {
-  aliasMap = aliasMap || {};
-  lodash.forOwn(myRefs, function(myRef) {
-    aliasMap[myRef.name] = myRef.name;
-    aliasMap[myRef.nameInCamel] = myRef.name;
-    aliasMap[myRef.code] = aliasMap[myRef.code] || myRef.name;
-    aliasMap[myRef.codeInCamel] = aliasMap[myRef.codeInCamel] || myRef.name;
-  });
-  return aliasMap;
-}
-
-let buildRelativeAliasMap = function(myRefs, aliasMap) {
-  aliasMap = aliasMap || {};
-  lodash.forOwn(myRefs, function(myRef) {
-    aliasMap[myRef.name] = myRef.codeInCamel;
-  });
-  return aliasMap;
 }
 
 let transformConfig = function(ctx, configType, configData, moduleType, moduleName, modulePresets) {

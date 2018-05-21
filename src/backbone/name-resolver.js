@@ -49,10 +49,10 @@ NameResolver.argumentSchema = {
   "type": "object",
   "properties": {
     "pluginRefs": {
-      "type": "object"
+      "type": "array"
     },
     "bridgeRefs": {
-      "type": "object"
+      "type": "array"
     }
   }
 };
@@ -61,7 +61,7 @@ module.exports = NameResolver;
 
 let buildAbsoluteAliasMap = function(myRefs, aliasMap) {
   aliasMap = aliasMap || {};
-  lodash.forOwn(myRefs, function(myRef) {
+  lodash.forEach(myRefs, function(myRef) {
     aliasMap[myRef.name] = myRef.name;
     aliasMap[myRef.nameInCamel] = myRef.name;
     aliasMap[myRef.code] = aliasMap[myRef.code] || myRef.name;
@@ -72,7 +72,7 @@ let buildAbsoluteAliasMap = function(myRefs, aliasMap) {
 
 let buildRelativeAliasMap = function(myRefs, aliasMap) {
   aliasMap = aliasMap || {};
-  lodash.forOwn(myRefs, function(myRef) {
+  lodash.forEach(myRefs, function(myRef) {
     aliasMap[myRef.name] = myRef.codeInCamel;
   });
   return aliasMap;
