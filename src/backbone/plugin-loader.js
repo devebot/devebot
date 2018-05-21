@@ -23,7 +23,6 @@ function PluginLoader(params) {
   }));
 
   lodash.forEach(params.pluginRefs, function(pluginRef) {
-    pluginRef.code = pluginRef.codeInCamel;
     pluginRef.pathDir = path.dirname(pluginRef.path);
     return pluginRef;
   });
@@ -100,7 +99,7 @@ let getFilterPattern = function(scriptType) {
 }
 
 let getPluginRefByName = chores.getPluginRefBy.bind(chores, 'name');
-let getPluginRefByCode = chores.getPluginRefBy.bind(chores, 'code');
+let getPluginRefByCode = chores.getPluginRefBy.bind(chores, 'codeInCamel');
 
 let loadAllScripts = function(CTX, scriptMap, scriptType, scriptContext, pluginRootDirs) {
   scriptMap = scriptMap || {};

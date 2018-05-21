@@ -20,14 +20,7 @@ function BridgeLoader(params) {
     text: ' + constructor start ...'
   }));
 
-  lodash.forEach(params.bridgeRefs, function(bridgeRef) {
-    bridgeRef.code = bridgeRef.codeInCamel;
-    return bridgeRef;
-  });
-
-  LX.has('conlog') && LX.log('conlog', LT.add({
-    bridgeRefs: params.bridgeRefs
-  }).toMessage({
+  LX.has('conlog') && LX.log('conlog', LT.add(params).toMessage({
     text: ' + bridgeLoader start with bridgeRefs: ${bridgeRefs}'
   }));
 
@@ -94,7 +87,7 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
 
   let bridgeName = bridgeRef.name;
   let bridgePath = bridgeRef.path;
-  let bridgeCode = bridgeRef.code;
+  let bridgeCode = bridgeRef.codeInCamel;
 
   LX.has('conlog') && LX.log('conlog', LT.add(bridgeRef).toMessage({
     text: ' - bridge constructor (${name}) loading is started'

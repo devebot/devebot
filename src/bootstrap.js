@@ -151,8 +151,7 @@ function launchApplication(context, pluginNames, bridgeNames) {
   if (lodash.isString(context)) {
     context = { appRootPath: context };
   }
-  return appLoader(lodash.assign(context, expandExtensions(
-      lodash.omit(context, ATTRS), pluginNames, bridgeNames)));
+  return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS), pluginNames, bridgeNames)));
 }
 
 let expandExtensions = function (context, pluginNames, bridgeNames) {
