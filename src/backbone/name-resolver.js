@@ -38,6 +38,9 @@ function NameResolver(params) {
     return relativeAliasMap;
   }
 
+  extractAliasNames(CTX, 'plugin', params.pluginRefs);
+  extractAliasNames(CTX, 'bridge', params.bridgeRefs);
+
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
@@ -58,6 +61,45 @@ NameResolver.argumentSchema = {
 };
 
 module.exports = NameResolver;
+
+const LIB_NAME_PATTERNS = {
+  bridge: [
+    /^devebot-co-([a-z][a-z0-9\-]*[a-z0-9])$/g,
+    /^([a-z][a-z0-9\-]*[a-z0-9])$/g
+  ],
+  plugin: [
+    /^devebot-dp-([a-z][a-z0-9\-]*[a-z0-9])$/g,
+    /^([a-z][a-z0-9\-]*[a-z0-9])$/g
+  ]
+}
+
+let extractAliasNames = function(ctx, type, myRefs) {
+  let generateAlias = function(myRef, myId) {
+    let info = chores.extractCodeByPattern(ctx, LIB_NAME_PATTERNS[type], myRef.name);
+    if (info.i >= 0) {
+      myRef.code = info.code;
+      myRef.codeInCamel = info.codeInCamel;
+      if (info.code == myRef.name) {
+        myRef.nameInCamel = info.codeInCamel;
+      } else {
+        myRef.nameInCamel = chores.stringCamelCase(myRef.name);
+      }
+    } else {
+      errorHandler.collect(lodash.assign({
+        stage: 'naming',
+        type: type,
+        hasError: true,
+        stack: LIB_NAME_PATTERNS[type].toString()
+      }, myRef));
+    }
+  }
+  if (lodash.isArray(myRefs)) {
+    lodash.forEach(myRefs, generateAlias);
+  } else if (lodash.isObject(myRefs)) {
+    lodash.forOwn(myRefs, generateAlias);
+  }
+  return myRefs;
+}
 
 let buildAbsoluteAliasMap = function(myRefs, aliasMap) {
   aliasMap = aliasMap || {};

@@ -74,12 +74,9 @@ function appLoader(params) {
     path: path.join(topRootPath, 'index.js')
   };
 
-  extractAliasNames(ctx, 'plugin', params.pluginRefs);
-  extractAliasNames(ctx, 'bridge', params.bridgeRefs);
-
-  let nameResolver = new NameResolver({
-    pluginRefs: lodash.values(params.pluginRefs), bridgeRefs: lodash.values(params.bridgeRefs)
-  });
+  let pluginRefList = lodash.values(params.pluginRefs);
+  let bridgeRefList = lodash.values(params.bridgeRefs);
+  let nameResolver = new NameResolver({ pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
 
   let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
     pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, nameResolver
@@ -88,8 +85,8 @@ function appLoader(params) {
 
   config.appName = appName;
   config.appInfo = appInfo;
-  config.bridgeRefs = lodash.values(params.bridgeRefs);
-  config.pluginRefs = [].concat(appRef || [], lodash.values(params.pluginRefs), devebotRef);
+  config.bridgeRefs = bridgeRefList;
+  config.pluginRefs = [].concat(appRef || [], pluginRefList, devebotRef);
 
   let args = { configObject: config, nameResolver };
   let app = { config: config };
@@ -246,40 +243,6 @@ let expandExtensions = function (context, pluginNames, bridgeNames) {
     return pluginInitializer(params);
   }, context);
 };
-
-const LIB_NAME_PATTERNS = {
-  bridge: [
-    /^devebot-co-([a-z][a-z0-9\-]*[a-z0-9])$/g,
-    /^([a-z][a-z0-9\-]*[a-z0-9])$/g
-  ],
-  plugin: [
-    /^devebot-dp-([a-z][a-z0-9\-]*[a-z0-9])$/g,
-    /^([a-z][a-z0-9\-]*[a-z0-9])$/g
-  ]
-}
-
-let extractAliasNames = function(ctx, type, myRefs) {
-  lodash.forOwn(myRefs, function(myRef, myId) {
-    let info = chores.extractCodeByPattern(ctx, LIB_NAME_PATTERNS[type], myRef.name);
-    if (info.i >= 0) {
-      myRef.code = info.code;
-      myRef.codeInCamel = info.codeInCamel;
-      if (info.code == myRef.name) {
-        myRef.nameInCamel = info.codeInCamel;
-      } else {
-        myRef.nameInCamel = chores.stringCamelCase(myRef.name);
-      }
-    } else {
-      errorHandler.collect(lodash.assign({
-        stage: 'naming',
-        type: type,
-        hasError: true,
-        stack: LIB_NAME_PATTERNS[type].toString()
-      }, myRef));
-    }
-  });
-  return myRefs;
-}
 
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
