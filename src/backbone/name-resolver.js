@@ -65,10 +65,34 @@ NameResolver.argumentSchema = {
   "type": "object",
   "properties": {
     "pluginRefs": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": ["name"]
+      }
     },
     "bridgeRefs": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": ["name"]
+      }
     }
   }
 };
@@ -91,9 +115,9 @@ let extractAliasNames = function(ctx, type, myRefs) {
     let info = chores.extractCodeByPattern(ctx, LIB_NAME_PATTERNS[type], myRef.name);
     if (info.i >= 0) {
       myRef.code = info.code;
-      myRef.codeInCamel = info.codeInCamel;
-      if (info.code == myRef.name) {
-        myRef.nameInCamel = info.codeInCamel;
+      myRef.codeInCamel = chores.stringCamelCase(myRef.code);
+      if (myRef.name == myRef.code) {
+        myRef.nameInCamel = myRef.codeInCamel;
       } else {
         myRef.nameInCamel = chores.stringCamelCase(myRef.name);
       }

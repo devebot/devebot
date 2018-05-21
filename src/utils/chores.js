@@ -185,17 +185,14 @@ chores.extractCodeByPattern = function(ctx, patterns, name) {
     if (name.match(patterns[info.i])) break;
   }
   if (info.i >= patterns.length) {
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      name: name
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ name }).toMessage({
       text: ' - The name "${name}" is not matched the patterns'
     }));
     return { i: -1, code: name };
   }
   info.code = name.replace(patterns[info.i], '\$1');
-  info.codeInCamel = chores.stringCamelCase(info.code);
   LX.has('conlog') && LX.log('conlog', LT.add(lodash.assign({name}, info)).toMessage({
-    text: ' - extracted code of "${name}" is "${code}", camelCase: ${codeInCamel}'
+    text: ' - extracted code of "${name}" is "${code}"'
   }));
   return info;
 }

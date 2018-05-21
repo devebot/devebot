@@ -64,7 +64,8 @@ BridgeLoader.argumentSchema = {
           "path": {
             "type": "string"
           }
-        }
+        },
+        "required": ["name", "path"]
       }
     },
     "nameResolver": {
