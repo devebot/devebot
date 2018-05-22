@@ -115,10 +115,7 @@ function SandboxManager(params) {
   let instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers) {
     let exceptions = [];
     let handlerName = [handlerRecord.crateScope, handlerRecord.name].join(_injektor.separator);
-    LX.has('silly') && LX.log('silly', LT.add({
-      handlerName: handlerName,
-      handlerType: handlerType
-    }).toMessage({
+    LX.has('silly') && LX.log('silly', LT.add({ handlerName, handlerType }).toMessage({
       tags: [ blockRef, 'instantiateObject' ],
       text: ' - instantiate object: ${handlerName}'
     }));
@@ -246,10 +243,7 @@ function SandboxManager(params) {
     lodash.forOwn(triggerMap, function(triggerRecord, triggerId) {
       let triggerName = [triggerRecord.crateScope, triggerRecord.name].join(sandboxInjektor.separator);
       if (!triggerNames || triggerNames.indexOf(triggerName) >= 0) {
-        LX.has('silly') && LX.log('silly', LT.add({
-          actionName: actionName,
-          triggerName: triggerName
-        }).toMessage({
+        LX.has('silly') && LX.log('silly', LT.add({ actionName, triggerName }).toMessage({
           tags: [ blockRef, 'trigger', 'action' ],
           text: ' - ${actionName} trigger[${triggerName}]'
         }));

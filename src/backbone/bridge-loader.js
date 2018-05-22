@@ -250,9 +250,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
         }));
       }
 
-      bridgeConstructor.call(this, lodash.assign({
-        tracking_code: kwargs.sandboxName
-      }, lodash.get(kwargs, configPath, {})));
+      bridgeConstructor.call(this, lodash.get(kwargs, configPath, {}));
 
       if (newFeatures.logoliteEnabled) {
         LX.has('silly') && LX.log('silly', LT.toMessage({

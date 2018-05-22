@@ -206,16 +206,12 @@ let loadConfigFile = function(ctx, configFile) {
   try {
     content = loader(configFile, { stopWhenError: true });
     opStatus.hasError = false;
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      configFile: configFile
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
       text: ' - config file ${configFile} loading has done.'
     }));
   } catch(err) {
     if (err.code != 'MODULE_NOT_FOUND') {
-      LX.has('conlog') && LX.log('conlog', LT.add({
-        configFile: configFile
-      }).toMessage({
+      LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
         text: ' - config file ${configFile} loading is failed.'
       }));
       opStatus.hasError = true;

@@ -349,12 +349,4 @@ RunhookManager.argumentSchema = {
   }
 };
 
-RunhookManager.prototype.getServiceInfo = function() {
-  return {};
-};
-
-RunhookManager.prototype.getServiceHelp = function() {
-  return [];
-};
-
 module.exports = RunhookManager;
