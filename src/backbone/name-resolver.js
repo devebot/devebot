@@ -47,6 +47,14 @@ function NameResolver(params) {
     return crateAlias;
   }
 
+  this.getOriginalNameOf = function(crateName, crateType) {
+    if (crateType === 'plugin' || crateType === 'bridge') {
+      let absoluteAlias = this.getAbsoluteAliasMap();
+      crateName = absoluteAlias[crateType][crateName] || crateName;
+    }
+    return crateName;
+  }
+
   this.getOriginalName = this.getAliasBy.bind(this, 'name');
 
   this.getDefaultAlias = this.getAliasBy.bind(this, 'codeInCamel');

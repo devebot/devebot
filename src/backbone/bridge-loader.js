@@ -310,7 +310,6 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
 
 let buildBridgeDialects = function(ctx, bridgeRefs, dialectOptions, optType) {
   let {LX, LT, nameResolver} = ctx;
-  let absolutePluginAliasMap = nameResolver.getAbsoluteAliasMap().plugin;
 
   optType = (lodash.isNumber(optType)) ? optType : 0;
 
@@ -375,7 +374,7 @@ let buildBridgeDialects = function(ctx, bridgeRefs, dialectOptions, optType) {
     lodash.forOwn(dialectOptions, function(bridgeMap, bridgeCode) {
       if (!bridgeCode || !bridgeConstructors[bridgeCode]) return;
       lodash.forOwn(bridgeMap, function(pluginMap, pluginName) {
-        pluginName = absolutePluginAliasMap[pluginName] || pluginName;
+        pluginName = nameResolver.getOriginalNameOf(pluginName, 'plugin');
         lodash.forOwn(pluginMap, function(dialectConfig, dialectName) {
           lodash.assign(bridgeDialects, buildBridgeDialect(ctx, {
             pluginName,
