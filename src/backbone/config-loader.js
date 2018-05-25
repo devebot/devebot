@@ -47,12 +47,6 @@ function ConfigLoader(params={}) {
         return readVariable(CTX, label, CONFIG_VAR_NAMES[varName]);
       }));
 
-  if (chores.isFeatureSupported('standardizing-config')) {
-    let {plugin: pluginReverseMap, bridge: bridgeReverseMap} = nameResolver.getRelativeAliasMap();
-    doAliasMap(CTX, config.sandbox.default, pluginReverseMap, bridgeReverseMap);
-    doAliasMap(CTX, config.sandbox.mixture, pluginReverseMap, bridgeReverseMap);
-  }
-
   Object.defineProperty(this, 'config', {
     get: function() { return config },
     set: function(value) {}
@@ -193,6 +187,12 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     LX.has('conlog') && LX.log('conlog', ' - environment config object: %s',
         util.inspect(config[configType], {depth: 8}));
   });
+
+  if (chores.isFeatureSupported('standardizing-config')) {
+    let {plugin: pluginReverseMap, bridge: bridgeReverseMap} = nameResolver.getRelativeAliasMap();
+    doAliasMap(ctx, config.sandbox.default, pluginReverseMap, bridgeReverseMap);
+    doAliasMap(ctx, config.sandbox.mixture, pluginReverseMap, bridgeReverseMap);
+  }
 
   errorHandler.barrier({ invoker: blockRef });
 

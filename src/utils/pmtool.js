@@ -1,6 +1,7 @@
 'use strict';
 
-const debugx = require('./pinbug')('devebot:utils:pmtool');
+const DEFAULT_SCOPE = process.env.DEVEBOT_DEFAULT_SCOPE || 'devebot';
+const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:pmtool');
 
 function PmTool() {
   let pm_id = parseInt(process.env.pm_id);

@@ -9,9 +9,12 @@ const util = require('util');
 const uuidv4 = require('logolite/uuidv4');
 const constx = require('./constx');
 const loader = require('./loader');
-const debugx = require('./pinbug')('devebot:utils:chores');
+
+const DEFAULT_SCOPE = process.env.DEVEBOT_DEFAULT_SCOPE || 'devebot';
+const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:chores');
 
 let store = {
+  defaultScope: DEFAULT_SCOPE,
   injektorOptions: {
     namePatternTemplate: '^[a-zA-Z]{1}[a-zA-Z0-9&#\\-_%s]*$',
     separator: '/'
@@ -208,7 +211,7 @@ chores.getComponentDir = function(pluginRef, componentType) {
 chores.getBlockRef = function(filename, blockScope) {
   if (filename == null) return null;
   let blockName = chores.stringCamelCase(path.basename(filename, '.js'));
-  blockScope = blockScope || 'devebot';
+  blockScope = blockScope || store.defaultScope;
   if (!chores.isArray(blockScope)) blockScope = [blockScope];
   return blockScope.concat(blockName).join(chores.getSeparator());
 }

@@ -1,6 +1,7 @@
 'use strict';
 
-const debugx = require('./pinbug')('devebot:utils:loader');
+const DEFAULT_SCOPE = process.env.DEVEBOT_DEFAULT_SCOPE || 'devebot';
+const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:loader');
 
 const MAPPINGS = {
   'MODULE_NOT_FOUND': 'Module not found'

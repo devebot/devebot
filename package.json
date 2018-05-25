@@ -8,6 +8,7 @@
   },
   "files": [
     "bin/",
+    "config/",
     "dist/",
     "lib/"
   ],
