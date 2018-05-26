@@ -166,22 +166,21 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
       text: ' + load the custom config of ${configType}'
     }));
-    config[configType]['mixture'] = {};
-
-    let mixtureNames = filterConfigBy(ctx, configInfos, includedNames, configType);
-
     config[configType]['names'] = ['default'];
+    config[configType]['mixture'] = {};
     if (configDir) {
-      config[configType]['mixture'] = lodash.reduce(mixtureNames, function(accum, mixtureItem) {
-        let configFile = path.join(configDir, mixtureItem.join('_') + '.js');
+      let partialNames = filterConfigBy(ctx, configInfos, includedNames, configType);
+      config[configType]['partial'] = lodash.reduce(partialNames, function(accum, partialItem) {
+        let configFile = path.join(configDir, partialItem.join('_') + '.js');
         LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
           text: ' - load the environment config: ${configFile}'
         }));
         let configObj = lodash.defaultsDeep(transformConfig(transCTX, configType, loadConfigFile(ctx, configFile), 'application'), accum);
         if (configObj.disabled) return accum;
-        config[configType]['names'].push(mixtureItem[1]);
+        config[configType]['names'].push(partialItem[1]);
         return configObj;
-      }, lodash.cloneDeep(config[configType]['default']));
+      }, {});
+      config[configType]['mixture'] = lodash.defaultsDeep(lodash.cloneDeep(config[configType]['partial']), config[configType]['default']);
     }
 
     LX.has('conlog') && LX.log('conlog', ' - environment config object: %s',
@@ -191,6 +190,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   if (chores.isFeatureSupported('standardizing-config')) {
     let {plugin: pluginReverseMap, bridge: bridgeReverseMap} = nameResolver.getRelativeAliasMap();
     doAliasMap(ctx, config.sandbox.default, pluginReverseMap, bridgeReverseMap);
+    doAliasMap(ctx, config.sandbox.partial, pluginReverseMap, bridgeReverseMap);
     doAliasMap(ctx, config.sandbox.mixture, pluginReverseMap, bridgeReverseMap);
   }
 
