@@ -267,7 +267,7 @@ chores.printError = function(err) {
   });
 }
 
-let stringToArray = function(labels) {
+chores.stringToArray = function(labels) {
   labels = labels || '';
   return labels.split(',').map(function(item) {
     return item.trim();
@@ -280,10 +280,10 @@ chores.isFeatureSupported = function(label) {
     store.featureEnabled = null;
   }
   if (!store.featureDisabled) {
-    store.featureDisabled = stringToArray(process.env.DEVEBOT_FEATURE_DISABLED);
+    store.featureDisabled = chores.stringToArray(process.env.DEVEBOT_FEATURE_DISABLED);
   }
   if (!store.featureEnabled) {
-    store.featureEnabled = stringToArray(process.env.DEVEBOT_FEATURE_ENABLED ||
+    store.featureEnabled = chores.stringToArray(process.env.DEVEBOT_FEATURE_ENABLED ||
       process.env.DEVEBOT_FEATURE_LABELS);
   }
   if (store.featureDisabled.indexOf(label) >= 0) return false;
