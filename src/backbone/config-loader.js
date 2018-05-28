@@ -138,14 +138,6 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   CONFIG_TYPES.forEach(function(configType) {
     config[configType] = config[configType] || {};
 
-    if (configDir) {
-      let defaultFile = path.join(configDir, configType + '.js');
-      LX.has('conlog') && LX.log('conlog', LT.add({ defaultFile }).toMessage({
-        text: ' + load the default config: ${defaultFile}'
-      }));
-      config[configType]['default'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
-    }
-
     LX.has('conlog') && LX.log('conlog', LT.toMessage({
       text: ' + load the default config from plugins'
     }));
@@ -162,6 +154,16 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
           transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), libType, libName, libRef.presets));
     });
+
+    if (configDir) {
+      let defaultFile = path.join(configDir, configType + '.js');
+      LX.has('conlog') && LX.log('conlog', LT.add({ defaultFile }).toMessage({
+        text: ' + load the default config: ${defaultFile}'
+      }));
+      config[configType]['default'] = lodash.defaultsDeep(
+          transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application'),
+          config[configType]['default']);
+    }
 
     LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
       text: ' + load the custom config of ${configType}'
@@ -180,11 +182,10 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
         config[configType]['names'].push(partialItem[1]);
         return configObj;
       }, {});
-      config[configType]['mixture'] = lodash.defaultsDeep(lodash.cloneDeep(config[configType]['partial']), config[configType]['default']);
+      config[configType]['mixture'] = lodash.defaultsDeep({}, config[configType]['partial'], config[configType]['default']);
     }
 
-    LX.has('conlog') && LX.log('conlog', ' - environment config object: %s',
-        util.inspect(config[configType], {depth: 8}));
+    LX.has('conlog') && LX.log('conlog', ' - Final config object: %s', util.inspect(config[configType], {depth: 8}));
   });
 
   if (chores.isFeatureSupported('standardizing-config')) {
