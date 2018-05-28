@@ -139,7 +139,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     config[configType] = config[configType] || {};
 
     LX.has('conlog') && LX.log('conlog', LT.toMessage({
-      text: ' + load the default config from plugins'
+      text: ' + load the default config from plugins & framework'
     }));
     lodash.forEach(libRefs, function(libRef) {
       if (libRef.presets && chores.isFeatureSupported('presets')) {
@@ -158,11 +158,10 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     if (configDir) {
       let defaultFile = path.join(configDir, configType + '.js');
       LX.has('conlog') && LX.log('conlog', LT.add({ defaultFile }).toMessage({
-        text: ' + load the default config: ${defaultFile}'
+        text: ' + load the default application config: ${defaultFile}'
       }));
-      config[configType]['default'] = lodash.defaultsDeep(
-          transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application'),
-          config[configType]['default']);
+      config[configType]['partial'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
+      config[configType]['default'] = lodash.defaultsDeep({}, config[configType]['partial'], config[configType]['default']);
     }
 
     LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
@@ -181,7 +180,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
         if (configObj.disabled) return accum;
         config[configType]['names'].push(partialItem[1]);
         return configObj;
-      }, {});
+      }, config[configType]['partial']);
       config[configType]['mixture'] = lodash.defaultsDeep({}, config[configType]['partial'], config[configType]['default']);
     }
 
