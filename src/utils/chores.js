@@ -286,6 +286,15 @@ chores.isFeatureSupported = function(label) {
     store.featureEnabled = chores.stringToArray(process.env.DEVEBOT_FEATURE_ENABLED ||
       process.env.DEVEBOT_FEATURE_LABELS);
   }
+  label = chores.isArray(label) ? label : [label];
+  let ok = true;
+  for(let k in label) {
+    if (!checkFeatureSupported(label[k])) return false;
+  }
+  return true;
+}
+
+let checkFeatureSupported = function(label) {
   if (store.featureDisabled.indexOf(label) >= 0) return false;
   if (constx.FEATURE_ENABLED.indexOf(label) >= 0) return true;
   return (store.featureEnabled.indexOf(label) >= 0);
