@@ -79,34 +79,63 @@ function StateInspector(params) {
       text: ' - sandbox middle config: ${sandboxMiddleConfig}'
     }));
     let pluginMixture = lodash.get(stateMap, 'config.sandbox.mixture.plugins', {});
-    let pluginSupplement = sandboxMiddleConfig.plugins;
-    if (pluginSupplement) {
-      lodash.forEach(pluginNames, function(name) {
-        let codeInCamel = services.nameResolver.getDefaultAliasOf(name, 'plugin');
-        if (codeInCamel in pluginSupplement) {
-          if (lodash.isEmpty(pluginSupplement[codeInCamel])) {
-            lodash.set(summary, ['config', 'sandbox', 'plugins', name], {
-              code: codeInCamel,
-              status: 0,
-              body: pluginSupplement[codeInCamel],
-              final: pluginMixture[codeInCamel]
-            })
-          } else {
-            lodash.set(summary, ['config', 'sandbox', 'plugins', name], {
-              code: codeInCamel,
-              status: 1,
-              body: pluginSupplement[codeInCamel],
-              final: pluginMixture[codeInCamel]
-            })
-          }
+    let pluginExpanse = sandboxMiddleConfig.plugins || {};
+    lodash.forEach(pluginNames, function(name) {
+      let codeInCamel = services.nameResolver.getDefaultAliasOf(name, 'plugin');
+      if (codeInCamel in pluginExpanse) {
+        if (lodash.isEmpty(pluginExpanse[codeInCamel])) {
+          lodash.set(summary, ['config', 'sandbox', 'plugins', name], {
+            code: codeInCamel,
+            status: 0,
+            expanse: pluginExpanse[codeInCamel],
+            mixture: pluginMixture[codeInCamel]
+          })
         } else {
           lodash.set(summary, ['config', 'sandbox', 'plugins', name], {
             code: codeInCamel,
-            status: -1,
-            body: null,
-            final: pluginMixture[codeInCamel]
+            status: 1,
+            expanse: pluginExpanse[codeInCamel],
+            mixture: pluginMixture[codeInCamel]
           })
-        } 
+        }
+      } else {
+        lodash.set(summary, ['config', 'sandbox', 'plugins', name], {
+          code: codeInCamel,
+          status: -1,
+          expanse: null,
+          mixture: pluginMixture[codeInCamel]
+        })
+      }
+    });
+
+    // examine configuration of bridges
+    let bridgeMixtureInDeep = lodash.get(stateMap, 'config.sandbox.mixture.bridges', {});
+    let bridgeExpanseInDeep = sandboxMiddleConfig.bridges || {};
+    if (chores.isFeatureSupported('bridge-full-ref')) {
+      let bridgeMixture = flattenBridgeConfig(bridgeMixtureInDeep);
+      let bridgeExpanse = flattenBridgeConfig(bridgeExpanseInDeep);
+      lodash.forOwn(bridgeMixture, function(bridgeInfo, bridgeName) {
+        if (bridgeName in bridgeExpanse) {
+          if (lodash.isEmpty(bridgeExpanse[bridgeName])) {
+            lodash.set(summary, ['config', 'sandbox', 'bridges', bridgeName], {
+              status: 0,
+              expanse: bridgeExpanse[bridgeName],
+              mixture: bridgeMixture[bridgeName]
+            })
+          } else {
+            lodash.set(summary, ['config', 'sandbox', 'bridges', bridgeName], {
+              status: 1,
+              expanse: bridgeExpanse[bridgeName],
+              mixture: bridgeMixture[bridgeName]
+            })
+          }
+        } else {
+          lodash.set(summary, ['config', 'sandbox', 'bridges', bridgeName], {
+            status: -1,
+            expanse: null,
+            mixture: bridgeMixture[bridgeName]
+          })
+        }
       });
     }
 
@@ -116,14 +145,19 @@ function StateInspector(params) {
   this.conclude = function(opts) {
     if (isEnabled(options)) {
       let label = getModeLabel(options);
-      if (hasTask(options, 'check-config')) {
-        printSummary(this.examine(opts));
+      try {
+        if (hasTask(options, 'check-config')) {
+          printSummary(this.examine(opts));
+        }
+        if (hasTask(options, 'print-config')) {
+          printContent(stateMap);
+        }
+      } catch(err) {
+        console.error('Task %s has failed. Exception:\n%s', label, err.stack);
+      } finally {
+        console.log('Task %s has finished. application loading end.', label);
+        process.exit(0);
       }
-      if (hasTask(options, 'print-config')) {
-        printContent(stateMap);
-      }
-      console.log('Task %s has finished. application loading end.', label);
-      process.exit(0);
     }
     return this;
   }
@@ -178,7 +212,7 @@ let hasTask = function(options, taskName) {
 }
 
 let printContent = function(stateMap) {
-  console.log('[+] Display configuration content:');
+  console.log('[+] Display final configuration content:');
   lodash.forEach(['profile', 'sandbox'], function(cfgType) {
     let cfgObj = lodash.get(stateMap, ['config', cfgType, 'mixture'], null);
     console.log('[-] Final %s configuration:\n%s', cfgType, JSON.stringify(cfgObj, null, 2));
@@ -191,21 +225,55 @@ let printSummary = function(summary) {
   lodash.forOwn(pluginInfos, function(info, name) {
     switch (info.status) {
       case -1:
-      console.log('[-] NULL: config of plugin [%s](%s) in application is undefined, use DEFAULT:\n%s',
-          info.code, name, JSON.stringify(info.final, null, 2));
+      console.log('--> NULL: config of plugin [%s](%s) in application is undefined, use DEFAULT:\n%s',
+          info.code, name, JSON.stringify(info.mixture, null, 2));
       break;
 
       case 0:
-      console.log('[-] EMPTY: config of plugin [%s](%s) in application is empty, use DEFAULT:\n%s',
-          info.code, name, JSON.stringify(info.final, null, 2));
+      console.log('--> EMPTY: config of plugin [%s](%s) in application is empty, use DEFAULT:\n%s',
+          info.code, name, JSON.stringify(info.mixture, null, 2));
       break;
 
       case 1:
-      console.log('[-] OK: config of plugin [%s](%s) in application is defined, use MIXTURE:\n%s',
-          info.code, name, JSON.stringify(info.final, null, 2));
+      console.log('--> OK: config of plugin [%s](%s) in application is defined, use MIXTURE:\n%s',
+          info.code, name, JSON.stringify(info.mixture, null, 2));
       break;
     }
   });
+
+  console.log('[+] Bridge configuration checking result:');
+  let bridgeInfos = lodash.get(summary, ['config', 'sandbox', 'bridges'], {});
+  lodash.forOwn(bridgeInfos, function(info, name) {
+    switch (info.status) {
+      case -1:
+      console.log('--> NULL: confirmed configure of dialect [%s] is undefined, use DEFAULT:\n%s',
+          name, JSON.stringify(info.mixture, null, 2));
+      break;
+
+      case 0:
+      console.log('--> EMPTY: confirmed configure of dialect [%s] is empty, use DEFAULT:\n%s',
+          name, JSON.stringify(info.mixture, null, 2));
+      break;
+
+      case 1:
+      console.log('--> OK: confirmed configure of dialect [%s] is determined, use MIXTURE:\n%s',
+          name, JSON.stringify(info.mixture, null, 2));
+      break;
+    }
+  });
+}
+
+let flattenBridgeConfig = function(bridgeConfig, flatBridgeCfgs) {
+  flatBridgeCfgs = flatBridgeCfgs || {};
+  lodash.forOwn(bridgeConfig, function(bridgeInfo, bridgeName) {
+    lodash.forOwn(bridgeInfo, function(pluginInfo, pluginName) {
+      lodash.forOwn(pluginInfo, function(dialectInfo, dialectName) {
+        let fullname = [pluginName, '/', bridgeName, '#', dialectName].join('');
+        flatBridgeCfgs[fullname] = dialectInfo;
+      });
+    });
+  });
+  return flatBridgeCfgs;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance

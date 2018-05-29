@@ -416,10 +416,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     kwargs.componentId = wrapperName;
     // resolve newFeatures
     let newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', pluginCode], {});
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      pluginCode: pluginCode,
-      newFeatures: newFeatures
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ pluginCode, newFeatures }).toMessage({
       text: ' - newFeatures[${pluginCode}]: ${newFeatures}'
     }));
     // resolve plugin configuration path
