@@ -120,10 +120,7 @@ function StateInspector(params) {
         printSummary(this.examine(opts));
       }
       if (hasTask(options, 'print-config')) {
-        lodash.forEach(['profile', 'sandbox'], function(cfgType) {
-          let cfgObj = lodash.get(stateMap, ['config', cfgType, 'mixture'], null);
-          console.log('[-] Final %s configuration: %s', cfgType, JSON.stringify(cfgObj, null, 2));
-        });
+        printContent(stateMap);
       }
       console.log('Task %s has finished. application loading end.', label);
       process.exit(0);
@@ -180,23 +177,31 @@ let hasTask = function(options, taskName) {
   return options && lodash.isArray(options.mode) && options.mode.indexOf(taskName) >= 0;
 }
 
+let printContent = function(stateMap) {
+  console.log('[+] Display configuration content:');
+  lodash.forEach(['profile', 'sandbox'], function(cfgType) {
+    let cfgObj = lodash.get(stateMap, ['config', cfgType, 'mixture'], null);
+    console.log('[-] Final %s configuration:\n%s', cfgType, JSON.stringify(cfgObj, null, 2));
+  });
+}
+
 let printSummary = function(summary) {
-  console.log('+ Plugin configuration checking result:');
+  console.log('[+] Plugin configuration checking result:');
   let pluginInfos = lodash.get(summary, ['config', 'sandbox', 'plugins'], {});
   lodash.forOwn(pluginInfos, function(info, name) {
     switch (info.status) {
       case -1:
-      console.log('- [WARN] config of plugin [%s](%s) in application is UNDEFINED, use DEFAULT:\n%s',
+      console.log('[-] NULL: config of plugin [%s](%s) in application is undefined, use DEFAULT:\n%s',
           info.code, name, JSON.stringify(info.final, null, 2));
       break;
 
       case 0:
-      console.log('- [WARN] config of plugin [%s](%s) in application is EMPTY, use DEFAULT:\n%s',
+      console.log('[-] EMPTY: config of plugin [%s](%s) in application is empty, use DEFAULT:\n%s',
           info.code, name, JSON.stringify(info.final, null, 2));
       break;
 
       case 1:
-      console.log('- [PASS] config of plugin [%s](%s) in application is DEFINED, use MIXTURE:\n%s',
+      console.log('[-] OK: config of plugin [%s](%s) in application is defined, use MIXTURE:\n%s',
           info.code, name, JSON.stringify(info.final, null, 2));
       break;
     }
