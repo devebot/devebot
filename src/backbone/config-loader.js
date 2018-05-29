@@ -8,6 +8,7 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const loader = require('../utils/loader');
 const errorHandler = require('./error-handler').instance;
+const stateInspector = require('./state-inspector').instance;
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
@@ -192,6 +193,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     doAliasMap(ctx, config.sandbox.default, pluginReverseMap, bridgeReverseMap);
     doAliasMap(ctx, config.sandbox.partial, pluginReverseMap, bridgeReverseMap);
     doAliasMap(ctx, config.sandbox.mixture, pluginReverseMap, bridgeReverseMap);
+    stateInspector.collect({config});
   }
 
   errorHandler.barrier({ invoker: blockRef });

@@ -5,6 +5,7 @@ const lodash = require('lodash');
 
 const appinfoLoader = require('./backbone/appinfo-loader');
 const errorHandler = require('./backbone/error-handler').instance;
+const stateInspector = require('./backbone/state-inspector').instance;
 const ConfigLoader = require('./backbone/config-loader');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const NameResolver = require('./backbone/name-resolver');
@@ -77,6 +78,8 @@ function appLoader(params) {
   let pluginRefList = lodash.values(params.pluginRefs);
   let bridgeRefList = lodash.values(params.bridgeRefs);
   let nameResolver = new NameResolver({ pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
+
+  stateInspector.register({ nameResolver, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
 
   let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
     pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, nameResolver
