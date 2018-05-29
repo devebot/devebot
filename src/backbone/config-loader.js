@@ -161,8 +161,8 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       LX.has('conlog') && LX.log('conlog', LT.add({ defaultFile }).toMessage({
         text: ' + load the default application config: ${defaultFile}'
       }));
-      config[configType]['partial'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
-      config[configType]['default'] = lodash.defaultsDeep({}, config[configType]['partial'], config[configType]['default']);
+      config[configType]['expanse'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
+      config[configType]['default'] = lodash.defaultsDeep({}, config[configType]['expanse'], config[configType]['default']);
     }
 
     LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
@@ -171,18 +171,18 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     config[configType]['names'] = ['default'];
     config[configType]['mixture'] = {};
     if (configDir) {
-      let partialNames = filterConfigBy(ctx, configInfos, includedNames, configType);
-      config[configType]['partial'] = lodash.reduce(partialNames, function(accum, partialItem) {
-        let configFile = path.join(configDir, partialItem.join('_') + '.js');
+      let expanseNames = filterConfigBy(ctx, configInfos, includedNames, configType);
+      config[configType]['expanse'] = lodash.reduce(expanseNames, function(accum, expanseItem) {
+        let configFile = path.join(configDir, expanseItem.join('_') + '.js');
         LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
           text: ' - load the environment config: ${configFile}'
         }));
         let configObj = lodash.defaultsDeep(transformConfig(transCTX, configType, loadConfigFile(ctx, configFile), 'application'), accum);
         if (configObj.disabled) return accum;
-        config[configType]['names'].push(partialItem[1]);
+        config[configType]['names'].push(expanseItem[1]);
         return configObj;
-      }, config[configType]['partial']);
-      config[configType]['mixture'] = lodash.defaultsDeep({}, config[configType]['partial'], config[configType]['default']);
+      }, config[configType]['expanse']);
+      config[configType]['mixture'] = lodash.defaultsDeep({}, config[configType]['expanse'], config[configType]['default']);
     }
 
     LX.has('conlog') && LX.log('conlog', ' - Final config object: %s', util.inspect(config[configType], {depth: 8}));
@@ -191,7 +191,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   if (chores.isFeatureSupported('standardizing-config')) {
     let {plugin: pluginReverseMap, bridge: bridgeReverseMap} = nameResolver.getRelativeAliasMap();
     doAliasMap(ctx, config.sandbox.default, pluginReverseMap, bridgeReverseMap);
-    doAliasMap(ctx, config.sandbox.partial, pluginReverseMap, bridgeReverseMap);
+    doAliasMap(ctx, config.sandbox.expanse, pluginReverseMap, bridgeReverseMap);
     doAliasMap(ctx, config.sandbox.mixture, pluginReverseMap, bridgeReverseMap);
     stateInspector.collect({config});
   }

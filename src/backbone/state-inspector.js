@@ -74,12 +74,8 @@ function StateInspector(params) {
     let summary = { config: { sandbox: { plugins: {}, bridges: {} } } };
 
     // examines configuration of plugins
-    let sandboxMiddleConfig = lodash.get(stateMap, 'config.sandbox.partial', {});
-    LX.has('silly') && LX.log('silly', LT.add({sandboxMiddleConfig}).toMessage({
-      text: ' - sandbox middle config: ${sandboxMiddleConfig}'
-    }));
     let pluginMixture = lodash.get(stateMap, 'config.sandbox.mixture.plugins', {});
-    let pluginExpanse = sandboxMiddleConfig.plugins || {};
+    let pluginExpanse = lodash.get(stateMap, 'config.sandbox.expanse.plugins', {});
     lodash.forEach(pluginNames, function(name) {
       let codeInCamel = services.nameResolver.getDefaultAliasOf(name, 'plugin');
       if (codeInCamel in pluginExpanse) {
@@ -110,7 +106,7 @@ function StateInspector(params) {
 
     // examine configuration of bridges
     let bridgeMixtureInDeep = lodash.get(stateMap, 'config.sandbox.mixture.bridges', {});
-    let bridgeExpanseInDeep = sandboxMiddleConfig.bridges || {};
+    let bridgeExpanseInDeep = lodash.get(stateMap, 'config.sandbox.expanse.bridges', {});
     if (chores.isFeatureSupported(['presets', 'bridge-full-ref', 'standardizing-config'])) {
       let bridgeMixture = flattenBridgeConfig(bridgeMixtureInDeep);
       let bridgeExpanse = flattenBridgeConfig(bridgeExpanseInDeep);
