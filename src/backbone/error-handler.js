@@ -150,16 +150,14 @@ function ErrorHandler(params) {
     }
   }
 
-  this.exit = function(code) {
-    code = lodash.isNumber(code) ? code : 0;
-    LX.has('silly') && LX.log('silly', LT.add({
-      exitCode: code
-    }).toMessage({
+  this.exit = function(exitCode) {
+    exitCode = lodash.isNumber(exitCode) ? exitCode : 0;
+    LX.has('silly') && LX.log('silly', LT.add({ exitCode }).toMessage({
       tags: [ blockRef, 'exit' ],
       text: 'process.exit(${exitCode}) is invoked'
     }));
     if (!chores.skipProcessExit()) {
-      process.exit(code);
+      process.exit(exitCode);
     }
   }
 

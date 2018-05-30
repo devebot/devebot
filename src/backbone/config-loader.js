@@ -276,26 +276,24 @@ let standardizeNames = function(ctx, cfgLabels) {
 
 let transformConfig = function(ctx, configType, configData, moduleType, moduleName, modulePresets) {
   let { LX, LT, pluginAliasMap, bridgeAliasMap } = ctx || this;
-  if (chores.isFeatureSupported('bridge-full-ref')) {
-    if (configType === CONFIG_SANDBOX_NAME) {
-      configData = transformSandboxConfig(ctx, configData, moduleType, moduleName, modulePresets);
-      configData = doAliasMap(ctx, configData, pluginAliasMap, bridgeAliasMap);
-    }
+  if (configType === CONFIG_SANDBOX_NAME) {
+    configData = convertSandboxConfig(ctx, configData, moduleType, moduleName, modulePresets);
+    configData = doAliasMap(ctx, configData, pluginAliasMap, bridgeAliasMap);
   }
   return configData;
 }
 
-let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, modulePresets) {
+let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, modulePresets) {
   let { LX, LT } = ctx || this;
   if (lodash.isEmpty(sandboxConfig) || !lodash.isObject(sandboxConfig)) {
     return sandboxConfig;
   }
-  if (modulePresets && modulePresets.configTags) {
-    let tags = modulePresets.configTags;
+  // convert old bridge structures
+  if (chores.isFeatureSupported(['bridge-full-ref'])) {
+    let tags = lodash.get(modulePresets, ['configTags'], []);
     tags = lodash.isArray(tags) ? tags : [tags];
-    if (lodash.isObject(sandboxConfig.bridges) && !sandboxConfig.bridges.__status__ &&
-        tags.indexOf('bridge[dialect-bridge]') >= 0) {
-      let cfgBridges = sandboxConfig.bridges || {};
+    let cfgBridges = sandboxConfig.bridges;
+    if (lodash.isObject(cfgBridges) && !cfgBridges.__status__ && tags.indexOf('bridge[dialect-bridge]') >= 0) {
       let newBridges = { __status__: true };
       let traverseBackward = function(cfgBridges, newBridges) {
         lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
@@ -328,7 +326,18 @@ let transformSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName
 
 let doAliasMap = function(ctx, sandboxConfig, pluginAliasMap, bridgeAliasMap) {
   let { LX, LT } = ctx || this;
-  if (chores.isFeatureSupported('standardizing-config')) {
+  if (chores.isFeatureSupported(['standardizing-config'])) {
+    if (sandboxConfig && lodash.isObject(sandboxConfig.plugins)) {
+      let oldPlugins = sandboxConfig.plugins;
+      let newPlugins = {};
+      lodash.forOwn(oldPlugins, function(oldPlugin, oldPluginName) {
+        let newPluginName = pluginAliasMap[oldPluginName] || oldPluginName;
+        newPlugins[newPluginName] = oldPlugin;
+      });
+      sandboxConfig.plugins = newPlugins;
+    }
+  }
+  if (chores.isFeatureSupported(['standardizing-config', 'bridge-full-ref'])) {
     if (sandboxConfig && lodash.isObject(sandboxConfig.bridges)) {
       let oldBridges = sandboxConfig.bridges;
       let newBridges = {};
