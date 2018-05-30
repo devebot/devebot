@@ -17,6 +17,7 @@ const CONFIG_PROFILE_NAME = process.env.DEVEBOT_CONFIG_PROFILE_NAME || 'profile'
 const CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox';
 const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
+const RELOADING_FORCED = true;
 
 function ConfigLoader(params={}) {
   let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, nameResolver} = params;
@@ -221,7 +222,7 @@ let loadConfigFile = function(ctx, configFile) {
     }
   }
   errorHandler.collect(opStatus);
-  return content;
+  return RELOADING_FORCED ? lodash.cloneDeep(content) : content;
 }
 
 let filterConfigBy = function(ctx, configInfos, selectedNames, configType) {
@@ -293,8 +294,9 @@ let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, 
     let tags = lodash.get(modulePresets, ['configTags'], []);
     tags = lodash.isArray(tags) ? tags : [tags];
     let cfgBridges = sandboxConfig.bridges;
-    if (lodash.isObject(cfgBridges) && !cfgBridges.__status__ && tags.indexOf('bridge[dialect-bridge]') >= 0) {
-      let newBridges = { __status__: true };
+    let loadable = RELOADING_FORCED || !(cfgBridges && cfgBridges.__status__);
+    if (lodash.isObject(cfgBridges) && tags.indexOf('bridge[dialect-bridge]') >= 0 && loadable) {
+      let newBridges = RELOADING_FORCED ? {} : { __status__: true };
       let traverseBackward = function(cfgBridges, newBridges) {
         lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
           if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
