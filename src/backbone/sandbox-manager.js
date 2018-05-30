@@ -8,7 +8,6 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const RunhookManager = require('./runhook-manager');
 const errorHandler = require('./error-handler').instance;
-const stateInspector = require('./state-inspector').instance;
 const blockRef = chores.getBlockRef(__filename);
 
 const DEFAULT_SERVICES = [ 'jobqueue-binder' ];
@@ -180,11 +179,6 @@ function SandboxManager(params) {
   runhookInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
 
   runhookInjektor.lookup('runhookManager', chores.injektorContext);
-
-  let devebotCfg = lodash.get(params, ['profileConfig', 'devebot'], {});
-  let opts = lodash.assign({ invoker: blockRef }, devebotCfg);
-  errorHandler.barrier(opts);
-  stateInspector.conclude(opts);
 
   self.getRunhookManager = function() {
     return runhookInjektor.lookup('runhookManager', chores.injektorContext);

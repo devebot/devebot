@@ -290,7 +290,7 @@ let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, 
     return sandboxConfig;
   }
   // convert old bridge structures
-  if (chores.isFeatureSupported(['bridge-full-ref'])) {
+  if (chores.isFeatureSupported(['bridge-full-ref','presets'])) {
     let tags = lodash.get(modulePresets, ['configTags'], []);
     tags = lodash.isArray(tags) ? tags : [tags];
     let cfgBridges = sandboxConfig.bridges;

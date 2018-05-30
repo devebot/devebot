@@ -6,6 +6,7 @@ const path = require('path');
 const chores = require('./utils/chores');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const errorHandler = require('./backbone/error-handler').instance;
+const stateInspector = require('./backbone/state-inspector').instance;
 const blockRef = chores.getBlockRef(__filename);
 
 let CONSTRUCTORS = {};
@@ -119,6 +120,14 @@ function Kernel(params) {
   }));
 
   errorHandler.collect(result).barrier({ invoker: blockRef });
+
+  // initialize plugins, bridges, sandboxManager
+  let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
+
+  let devebotCfg = lodash.get(configObject, ['profile', 'mixture', 'devebot'], {});
+  let inspectingOpts = lodash.assign({ invoker: blockRef }, devebotCfg);
+  errorHandler.barrier(inspectingOpts);
+  stateInspector.conclude(inspectingOpts);
 
   this.invoke = function(block) {
     return lodash.isFunction(block) && Promise.resolve(block(injektor));

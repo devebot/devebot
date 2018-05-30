@@ -229,6 +229,10 @@ chores.injektorOptions = store.injektorOptions;
 
 chores.injektorContext = store.injektorContext;
 
+chores.fatalErrorReaction = function() {
+  return process.env.DEVEBOT_FATAL_ERROR_REACTION;
+}
+
 chores.skipProcessExit = function() {
   return process.env.DEVEBOT_SKIP_PROCESS_EXIT === 'true';
 }

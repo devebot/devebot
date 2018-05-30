@@ -156,6 +156,14 @@ function ErrorHandler(params) {
       tags: [ blockRef, 'exit' ],
       text: 'process.exit(${exitCode}) is invoked'
     }));
+    switch(chores.fatalErrorReaction()) {
+      case 'exit':
+        process.exit(exitCode);
+        break;
+      case 'exception':
+        throw new Error('Fatal error, throw exception with code: ' + exitCode);
+        break;
+    }
     if (!chores.skipProcessExit()) {
       process.exit(exitCode);
     }
