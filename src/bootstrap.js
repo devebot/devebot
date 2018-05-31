@@ -82,7 +82,7 @@ function appLoader(params) {
   stateInspector.register({ nameResolver, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
 
   let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
-    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, errorCollector, nameResolver
+    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, errorCollector, stateInspector, nameResolver
   });
   let config = configLoader.config;
 

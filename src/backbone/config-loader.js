@@ -7,7 +7,6 @@ const path = require('path');
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const loader = require('../utils/loader');
-const stateInspector = require('./state-inspector').instance;
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
@@ -19,11 +18,11 @@ const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONF
 const RELOADING_FORCED = true;
 
 function ConfigLoader(params={}) {
-  let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, errorCollector, nameResolver} = params;
+  let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, errorCollector, stateInspector, nameResolver} = params;
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
-  let CTX = { LX, LT, errorCollector, nameResolver };
+  let CTX = { LX, LT, errorCollector, stateInspector, nameResolver };
 
   let label = chores.stringLabelCase(appName);
 
@@ -92,7 +91,7 @@ let readVariable = function(ctx, appLabel, varName) {
 }
 
 let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, profileName, sandboxName, customDir, customEnv) {
-  let { LX, LT, errorCollector, nameResolver } = ctx || this;
+  let { LX, LT, errorCollector, stateInspector, nameResolver } = ctx || this;
   appOptions = appOptions || {};
 
   let {plugin: pluginAliasMap, bridge: bridgeAliasMap} = nameResolver.getAbsoluteAliasMap();

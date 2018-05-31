@@ -5,7 +5,6 @@ const lodash = require('lodash');
 const path = require('path');
 const chores = require('./utils/chores');
 const LoggingWrapper = require('./backbone/logging-wrapper');
-const stateInspector = require('./backbone/state-inspector').instance;
 const blockRef = chores.getBlockRef(__filename);
 
 let CONSTRUCTORS = {};
@@ -25,7 +24,7 @@ function Kernel(params) {
   }));
 
   // init the default parameters
-  let { configObject, errorCollector, nameResolver } = params || {};
+  let { configObject, errorCollector, stateInspector, nameResolver } = params || {};
 
   // create injektor instance
   let injektor = new Injektor(chores.injektorOptions);
