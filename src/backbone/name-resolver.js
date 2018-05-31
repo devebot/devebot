@@ -4,7 +4,6 @@ const lodash = require('lodash');
 const LogTracer = require('logolite').LogTracer;
 const LoggingWrapper = require('./logging-wrapper');
 const chores = require('../utils/chores');
-const errorHandler = require('./error-handler').instance;
 const blockRef = chores.getBlockRef(__filename);
 
 function NameResolver(params) {
@@ -13,7 +12,7 @@ function NameResolver(params) {
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
-  let CTX = {LX, LT};
+  let CTX = {LX, LT, errorCollector: params.errorCollector};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -81,6 +80,9 @@ NameResolver.argumentSchema = {
   "$id": "nameResolver",
   "type": "object",
   "properties": {
+    "errorCollector": {
+      "type": "object"
+    },
     "pluginRefs": {
       "type": "array",
       "items": {
@@ -139,7 +141,7 @@ let extractAliasNames = function(ctx, type, myRefs) {
         myRef.nameInCamel = chores.stringCamelCase(myRef.name);
       }
     } else {
-      errorHandler.collect(lodash.assign({
+      errorCollector.collect(lodash.assign({
         stage: 'naming',
         type: type,
         hasError: true,

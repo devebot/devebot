@@ -4,7 +4,6 @@ const lodash = require('lodash');
 const LogTracer = require('logolite').LogTracer;
 const loader = require('../utils/loader');
 const chores = require('../utils/chores');
-const errorHandler = require('./error-handler').instance;
 const blockRef = chores.getBlockRef(__filename);
 
 function BridgeLoader(params) {
@@ -13,7 +12,7 @@ function BridgeLoader(params) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
-  let CTX = {LX, LT, nameResolver: params.nameResolver};
+  let CTX = {LX, LT, errorCollector: params.errorCollector, nameResolver: params.nameResolver};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -68,6 +67,9 @@ BridgeLoader.argumentSchema = {
         "required": ["name", "path"]
       }
     },
+    "errorCollector": {
+      "type": "object"
+    },
     "nameResolver": {
       "type": "object"
     },
@@ -82,7 +84,7 @@ module.exports = BridgeLoader;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
 let loadBridgeContructor = function(ctx, bridgeRef) {
-  let {LX, LT, nameResolver} = ctx;
+  let {LX, LT, errorCollector, nameResolver} = ctx;
 
   bridgeRef = bridgeRef || {};
 
@@ -125,7 +127,7 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
     opStatus.stack = err.stack;
   }
 
-  errorHandler.collect(opStatus);
+  errorCollector.collect(opStatus);
 
   return result;
 };
@@ -158,7 +160,7 @@ let loadBridgeConstructors = function(ctx, bridgeRefs) {
 };
 
 let buildBridgeDialect = function(ctx, dialectOpts) {
-  let {LX, LT} = ctx;
+  let {LX, LT, errorCollector} = ctx;
   let {pluginName, bridgeCode, bridgeRecord, dialectName, optType} = dialectOpts;
   let result = {};
 
@@ -266,7 +268,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
       opStatus.hasError = true;
       opStatus.stack = err.stack;
     }
-    errorHandler.collect(opStatus);
+    errorCollector.collect(opStatus);
   }
 
   dialectConstructor.prototype = Object.create(bridgeConstructor.prototype);

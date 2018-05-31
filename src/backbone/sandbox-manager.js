@@ -7,7 +7,6 @@ const Injektor = require('injektor');
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const RunhookManager = require('./runhook-manager');
-const errorHandler = require('./error-handler').instance;
 const blockRef = chores.getBlockRef(__filename);
 
 const DEFAULT_SERVICES = [ 'jobqueue-binder' ];
@@ -16,6 +15,7 @@ function SandboxManager(params) {
   params = params || {};
 
   let self = this;
+  let errorCollector = params.errorCollector;
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
@@ -130,7 +130,7 @@ function SandboxManager(params) {
       }
       lodash.forOwn(methods, function(method, methodName) {
         if (!lodash.isFunction(method)) {
-          errorHandler.collect({
+          errorCollector.collect({
             stage: 'instantiating',
             type: handlerType,
             name: handlerName,
@@ -148,7 +148,7 @@ function SandboxManager(params) {
         hasError: true,
         stack: exception.stack
       };
-      errorHandler.collect(opStatus);
+      errorCollector.collect(opStatus);
     });
   }
 
@@ -325,6 +325,9 @@ SandboxManager.argumentSchema = {
       }
     },
     "profileConfig": {
+      "type": "object"
+    },
+    "errorCollector": {
       "type": "object"
     },
     "loggingFactory": {

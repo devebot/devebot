@@ -5,7 +5,6 @@ const lodash = require('lodash');
 const path = require('path');
 const chores = require('./utils/chores');
 const LoggingWrapper = require('./backbone/logging-wrapper');
-const errorHandler = require('./backbone/error-handler').instance;
 const stateInspector = require('./backbone/state-inspector').instance;
 const blockRef = chores.getBlockRef(__filename);
 
@@ -26,7 +25,7 @@ function Kernel(params) {
   }));
 
   // init the default parameters
-  let { configObject, nameResolver } = params || {};
+  let { configObject, errorCollector, nameResolver } = params || {};
 
   // create injektor instance
   let injektor = new Injektor(chores.injektorOptions);
@@ -39,9 +38,9 @@ function Kernel(params) {
     .registerObject('sandboxNames', configObject['sandbox']['names'], chores.injektorContext)
     .registerObject('sandboxConfig', configObject['sandbox']['mixture'], chores.injektorContext)
     .registerObject('profileNames', configObject['profile']['names'], chores.injektorContext)
-    .registerObject('profileConfig', configObject['profile']['mixture'], chores.injektorContext);
-
-  injektor.registerObject('nameResolver', nameResolver, chores.injektorContext);
+    .registerObject('profileConfig', configObject['profile']['mixture'], chores.injektorContext)
+    .registerObject('errorCollector', errorCollector, chores.injektorContext)
+    .registerObject('nameResolver', nameResolver, chores.injektorContext);
 
   lodash.forOwn(CONSTRUCTORS, function(constructor, serviceName) {
     injektor.defineService(serviceName, constructor, chores.injektorContext);
@@ -119,14 +118,14 @@ function Kernel(params) {
     text: ' - Validating sandbox configuration using schemas'
   }));
 
-  errorHandler.collect(result).barrier({ invoker: blockRef, footmark: 'metadata-validating' });
+  errorCollector.collect(result).barrier({ invoker: blockRef, footmark: 'metadata-validating' });
 
   // initialize plugins, bridges, sandboxManager
   let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
 
   let devebotCfg = lodash.get(configObject, ['profile', 'mixture', 'devebot'], {});
   let inOpts = lodash.assign({ invoker: blockRef, footmark: 'sandbox-loading' }, devebotCfg);
-  errorHandler.barrier(inOpts);
+  errorCollector.barrier(inOpts);
   stateInspector.conclude(inOpts);
 
   this.invoke = function(block) {

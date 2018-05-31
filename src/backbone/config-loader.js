@@ -7,7 +7,6 @@ const path = require('path');
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const loader = require('../utils/loader');
-const errorHandler = require('./error-handler').instance;
 const stateInspector = require('./state-inspector').instance;
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
@@ -20,11 +19,11 @@ const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONF
 const RELOADING_FORCED = true;
 
 function ConfigLoader(params={}) {
-  let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, nameResolver} = params;
+  let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, errorCollector, nameResolver} = params;
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
-  let CTX = { LX, LT, nameResolver };
+  let CTX = { LX, LT, errorCollector, nameResolver };
 
   let label = chores.stringLabelCase(appName);
 
@@ -93,7 +92,7 @@ let readVariable = function(ctx, appLabel, varName) {
 }
 
 let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, profileName, sandboxName, customDir, customEnv) {
-  let { LX, LT, nameResolver } = ctx || this;
+  let { LX, LT, errorCollector, nameResolver } = ctx || this;
   appOptions = appOptions || {};
 
   let {plugin: pluginAliasMap, bridge: bridgeAliasMap} = nameResolver.getAbsoluteAliasMap();
@@ -197,13 +196,13 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     stateInspector.collect({config});
   }
 
-  errorHandler.barrier({ invoker: blockRef, footmark: 'config-file-loading' });
+  errorCollector.barrier({ invoker: blockRef, footmark: 'config-file-loading' });
 
   return config;
 }
 
 let loadConfigFile = function(ctx, configFile) {
-  let { LX, LT } = ctx || this;
+  let { LX, LT, errorCollector } = ctx || this;
   let opStatus = { type: 'CONFIG', file: configFile };
   let content;
   try {
@@ -221,7 +220,7 @@ let loadConfigFile = function(ctx, configFile) {
       opStatus.stack = err.stack;
     }
   }
-  errorHandler.collect(opStatus);
+  errorCollector.collect(opStatus);
   return RELOADING_FORCED ? lodash.cloneDeep(content) : content;
 }
 
@@ -241,7 +240,7 @@ let filterConfigBy = function(ctx, configInfos, selectedNames, configType) {
 }
 
 let resolveConfigDir = function(ctx, appName, appRootDir, configDir, configEnv) {
-  let { LX, LT } = ctx || this;
+  let { LX, LT, errorCollector } = ctx || this;
   let dirPath = configDir;
   if (lodash.isEmpty(dirPath)) {
     if (['production'].indexOf(process.env.NODE_ENV) >= 0) {
@@ -250,7 +249,7 @@ let resolveConfigDir = function(ctx, appName, appRootDir, configDir, configEnv) 
         LX.has('conlog') && LX.log('conlog', LT.toMessage({
           text: 'Run in production mode, but config directory not found'
         }));
-        errorHandler.exit(1);
+        errorCollector.exit(1);
       }
     } else {
       if (!lodash.isEmpty(appRootDir)) {

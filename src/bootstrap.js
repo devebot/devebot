@@ -4,7 +4,7 @@ const path = require('path');
 const lodash = require('lodash');
 
 const appinfoLoader = require('./backbone/appinfo-loader');
-const errorHandler = require('./backbone/error-handler').instance;
+const errorCollector = require('./backbone/error-handler').instance;
 const stateInspector = require('./backbone/state-inspector').instance;
 const ConfigLoader = require('./backbone/config-loader');
 const LoggingWrapper = require('./backbone/logging-wrapper');
@@ -77,12 +77,12 @@ function appLoader(params) {
 
   let pluginRefList = lodash.values(params.pluginRefs);
   let bridgeRefList = lodash.values(params.bridgeRefs);
-  let nameResolver = new NameResolver({ pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
+  let nameResolver = new NameResolver({ errorCollector, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
 
   stateInspector.register({ nameResolver, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
 
   let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
-    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, nameResolver
+    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, errorCollector, nameResolver
   });
   let config = configLoader.config;
 
@@ -91,7 +91,7 @@ function appLoader(params) {
   config.bridgeRefs = bridgeRefList;
   config.pluginRefs = [].concat(appRef || [], pluginRefList, devebotRef);
 
-  let args = { configObject: config, nameResolver };
+  let args = { configObject: config, errorCollector, stateInspector, nameResolver };
   let app = { config: config };
 
   let _runner;
@@ -225,7 +225,7 @@ let expandExtensions = function (context, pluginNames, bridgeNames) {
     }
   });
 
-  errorHandler.barrier({ invoker: blockRef, footmark: 'package-touching' });
+  errorCollector.barrier({ invoker: blockRef, footmark: 'package-touching' });
 
   let pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
     if (chores.isFeatureSupported('presets')) {
@@ -263,7 +263,7 @@ let touchPackage = function(pkgInfo, pkgType, action) {
   try {
     return action(pkgInfo.path);
   } catch (err) {
-    errorHandler.collect({
+    errorCollector.collect({
       stage: 'bootstrap',
       type: pkgType,
       name: pkgInfo.name,
