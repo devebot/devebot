@@ -49,7 +49,7 @@ function ErrorHandler(params) {
       totalOfErrors: summary.numberOfErrors,
       errors: summary.failedServices
     }).toMessage({
-      tags: [ blockRef, 'examine' ],
+      tags: [ blockRef, 'examine', options.footmark ],
       text: ' - Total of errors: ${totalOfErrors}'
     }));
     return summary;
@@ -137,7 +137,7 @@ function ErrorHandler(params) {
         silent: silent,
         exitOnError: (options.exitOnError !== false)
       }).toMessage({
-        tags: [ blockRef, 'barrier' ],
+        tags: [ blockRef, 'barrier', options.footmark ],
         text: ' - Program will be exited? (${exitOnError})'
       }));
       if (options.exitOnError !== false) {

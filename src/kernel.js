@@ -119,15 +119,15 @@ function Kernel(params) {
     text: ' - Validating sandbox configuration using schemas'
   }));
 
-  errorHandler.collect(result).barrier({ invoker: blockRef });
+  errorHandler.collect(result).barrier({ invoker: blockRef, footmark: 'metadata-validating' });
 
   // initialize plugins, bridges, sandboxManager
   let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
 
   let devebotCfg = lodash.get(configObject, ['profile', 'mixture', 'devebot'], {});
-  let inspectingOpts = lodash.assign({ invoker: blockRef }, devebotCfg);
-  errorHandler.barrier(inspectingOpts);
-  stateInspector.conclude(inspectingOpts);
+  let inOpts = lodash.assign({ invoker: blockRef, footmark: 'sandbox-loading' }, devebotCfg);
+  errorHandler.barrier(inOpts);
+  stateInspector.conclude(inOpts);
 
   this.invoke = function(block) {
     return lodash.isFunction(block) && Promise.resolve(block(injektor));

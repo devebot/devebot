@@ -197,7 +197,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     stateInspector.collect({config});
   }
 
-  errorHandler.barrier({ invoker: blockRef });
+  errorHandler.barrier({ invoker: blockRef, footmark: 'config-file-loading' });
 
   return config;
 }

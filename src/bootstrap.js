@@ -225,7 +225,7 @@ let expandExtensions = function (context, pluginNames, bridgeNames) {
     }
   });
 
-  errorHandler.barrier({ invoker: blockRef });
+  errorHandler.barrier({ invoker: blockRef, footmark: 'package-touching' });
 
   let pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
     if (chores.isFeatureSupported('presets')) {
