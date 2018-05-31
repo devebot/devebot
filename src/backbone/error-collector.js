@@ -5,7 +5,7 @@ const chores = require('../utils/chores');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
-function ErrorHandler(params) {
+function ErrorCollector(params) {
   params = params || {};
 
   let self = this;
@@ -57,7 +57,7 @@ function ErrorHandler(params) {
 
   this.barrier = function(options) {
     options = options || {};
-    let silent = chores.isSilentForced('error-handler', options);
+    let silent = chores.isSilentForced('error-collector', options);
     let summary = this.examine(options);
     if (summary.numberOfErrors > 0) {
       if (!silent) {
@@ -180,19 +180,19 @@ function ErrorHandler(params) {
   }));
 }
 
-ErrorHandler.argumentSchema = {
+ErrorCollector.argumentSchema = {
   "$id": "errorHandler",
   "type": "object",
   "properties": {}
 };
 
-module.exports = ErrorHandler;
+module.exports = ErrorCollector;
 
 let errorHandler;
 
-Object.defineProperty(ErrorHandler, 'instance', {
+Object.defineProperty(ErrorCollector, 'instance', {
   get: function() {
-    return (errorHandler = errorHandler || new ErrorHandler());
+    return (errorHandler = errorHandler || new ErrorCollector());
   },
   set: function(value) {}
 });

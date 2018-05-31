@@ -4,7 +4,7 @@ const path = require('path');
 const lodash = require('lodash');
 
 const appinfoLoader = require('./backbone/appinfo-loader');
-const errorCollector = require('./backbone/error-handler').instance;
+const errorCollector = require('./backbone/error-collector').instance;
 const stateInspector = require('./backbone/state-inspector').instance;
 const ConfigLoader = require('./backbone/config-loader');
 const LoggingWrapper = require('./backbone/logging-wrapper');
