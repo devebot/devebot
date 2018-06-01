@@ -28,16 +28,12 @@ function appLoader(params) {
   let { logger: LX, tracer: LT } = runLoggingWrapper();
   let ctx = { LX, LT };
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    context: lodash.cloneDeep(params)
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ context: lodash.cloneDeep(params) }).toMessage({
     tags: [ blockRef, 'constructor-begin', 'appLoader' ],
     text: ' + application loading start ...'
   }));
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
-    context: params
-  }).toMessage({
+  LX.has('conlog') && LX.log('conlog', LT.add({ context: params }).toMessage({
     text: ' * application parameters: ${context}'
   }));
 

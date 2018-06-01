@@ -198,11 +198,11 @@ ErrorCollector.argumentSchema = {
 
 module.exports = ErrorCollector;
 
-let errorHandler;
+let globalErrorCollector;
 
 Object.defineProperty(ErrorCollector, 'instance', {
   get: function() {
-    return (errorHandler = errorHandler || new ErrorCollector());
+    return (globalErrorCollector = globalErrorCollector || new ErrorCollector());
   },
   set: function(value) {}
 });

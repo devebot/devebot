@@ -30,7 +30,7 @@ function StateInspector(params) {
       let tasks = lodash.isArray(opts.tasks) ? opts.tasks : chores.stringToArray(opts.tasks);
       options.mode = filterTask(tasks);
     }
-    return this.reset();
+    return lodash.clone(options.mode);
   }
 
   this.register = function(bean) {
@@ -159,9 +159,12 @@ function StateInspector(params) {
   }
 
   this.reset = function() {
-    if (isEnabled(options)) {
-      stateMap.splice(0, stateMap.length);
-    }
+    Object.keys(services).forEach(function(key) {
+      delete services[key];
+    });
+    Object.keys(stateMap).forEach(function(key) {
+      delete stateMap[key];
+    });
     return this;
   }
 
