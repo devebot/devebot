@@ -128,17 +128,18 @@ function SandboxManager(params) {
         start: (handler.start || handler.open),
         stop: (handler.stop || handler.close)
       }
-      lodash.forOwn(methods, function(method, methodName) {
-        if (!lodash.isFunction(method)) {
-          errorCollector.collect({
-            stage: 'instantiating',
-            type: handlerType,
-            name: handlerName,
-            hasError: true,
-            stack: util.format('Trigger[%s].%s() not found', handlerName, methodName)
-          });
-        }
+      let requiredMethods = lodash.filter(lodash.keys(methods), function(name) {
+        return !lodash.isFunction(methods[name]);
       });
+      if (!lodash.isEmpty(requiredMethods)) {
+        errorCollector.collect({
+          stage: 'check-methods',
+          type: handlerType,
+          name: handlerName,
+          hasError: true,
+          methods: requiredMethods
+        });
+      }
     }
     lodash.forEach(exceptions, function(exception) {
       let opStatus = {

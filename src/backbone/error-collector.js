@@ -112,6 +112,16 @@ function ErrorCollector(params) {
               return;
             }
           }
+          if (fsv.stage === 'check-methods') {
+            switch(fsv.type) {
+              case 'TRIGGER':
+              console.error('--> [%s:%s] required method(s): %s not found', fsv.type, fsv.name, JSON.stringify(fsv.methods));
+              return;
+              default:
+              console.error('--> %s', JSON.stringify(fsv));
+              return;
+            }
+          }
           switch(fsv.type) {
             case 'CONFIG':
             console.error('--> [%s] in (%s):\n   %s', fsv.type, fsv.file, fsv.stack);
