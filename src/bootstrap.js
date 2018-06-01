@@ -2,7 +2,7 @@
 
 const path = require('path');
 const lodash = require('lodash');
-
+const minimist = require('minimist');
 const appinfoLoader = require('./backbone/appinfo-loader');
 const errorCollector = require('./backbone/error-collector').instance;
 const stateInspector = require('./backbone/state-inspector').instance;
@@ -244,6 +244,26 @@ let expandExtensions = function (context, pluginNames, bridgeNames) {
 
 appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
+
+appLoader.parseArguments = function(active) {
+  if (active) {
+    let argv = minimist(process.argv.slice(2));
+    let tasks = argv.task || argv.tasks || argv.mode;
+    if (lodash.isEmpty(tasks)) {
+      if (!lodash.isEmpty(argv._)) {
+        console.log('Incorrect task(s). Should be: (--tasks=print-config,check-config)');
+        process.exit(0);
+      }
+    } else {
+      let jobs = stateInspector.init({ tasks });
+      if (lodash.isEmpty(jobs)) {
+        console.log('Unknown task(s): (%s)!', tasks);
+        process.exit(0);
+      }
+    }
+  }
+  return appLoader;
+}
 
 const builtinPackages = ['bluebird', 'lodash', 'injektor', 'logolite', 'schemato'];
 const internalModules = ['chores', 'loader', 'pinbug'];

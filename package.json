@@ -44,6 +44,7 @@
     "lodash": "^4.17.10",
     "logolite": "^0.1.7",
     "logzilla": "^0.1.17",
+    "minimist": "^1.2.0",
     "schemato": "^0.1.2",
     "ws": "^3.3.2"
   },
