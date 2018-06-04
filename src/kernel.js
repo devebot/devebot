@@ -53,9 +53,7 @@ function Kernel(params) {
   let bridgeMetadata = {};
   bridgeLoader.loadMetadata(bridgeMetadata);
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    metadata: bridgeMetadata
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ metadata: bridgeMetadata }).toMessage({
     tags: [ blockRef, 'bridge-config-schema-input' ],
     text: " - bridge's metadata: ${metadata}"
   }));
@@ -69,9 +67,7 @@ function Kernel(params) {
   let pluginMetadata = {};
   pluginLoader.loadMetadata(pluginMetadata);
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    metadata: pluginMetadata
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ metadata: pluginMetadata }).toMessage({
     tags: [ blockRef, 'plugin-config-schema-input' ],
     text: " - plugin's metadata: ${metadata}"
   }));
@@ -99,10 +95,7 @@ function Kernel(params) {
     sandbox: lodash.pick(lodash.get(configObject, ['sandbox', 'mixture'], {}), ['application', 'plugins'])
   }
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    pluginConfig: pluginConfig,
-    pluginSchema: pluginSchema
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ pluginConfig, pluginSchema }).toMessage({
     tags: [ blockRef, 'validate-plugin-config-by-schema' ],
     text: ' - Synchronize the structure of configuration data and schemas'
   }));
@@ -148,10 +141,7 @@ let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
   bridgeConfig = bridgeConfig || {};
   bridgeSchema = bridgeSchema || {};
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    bridgeConfig: bridgeConfig,
-    bridgeSchema: bridgeSchema
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ bridgeConfig, bridgeSchema }).toMessage({
     tags: [ blockRef, 'validate-bridge-config-by-schema' ],
     text: ' - bridge config/schema:\n${bridgeSchema}\n${bridgeConfig}'
   }));

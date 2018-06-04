@@ -13,10 +13,9 @@ function JobqueueBinder(params) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
+  let sandboxName = params.sandboxName;
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    sandboxName: params.sandboxName
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ sandboxName }).toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
@@ -39,10 +38,7 @@ function JobqueueBinder(params) {
     enabled: {
       get: function() {
         let enabled = jqCfg.enabled !== false && getJobQueueMaster() != null;
-        LX.has('conlog') && LX.log('conlog', LT.add({
-          enabled: enabled,
-          sandboxName: params.sandboxName
-        }).toMessage({
+        LX.has('conlog') && LX.log('conlog', LT.add({ enabled, sandboxName }).toMessage({
           text: ' - jobqueueMaster in sandbox <{sandboxName}> status (enabled): {enabled}'
         }));
         return enabled;

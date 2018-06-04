@@ -50,9 +50,7 @@ function appLoader(params) {
     privateSandbox: params.privateSandbox || params.privateSandboxes
   };
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
-    appName: appName
-  }).toMessage({
+  LX.has('conlog') && LX.log('conlog', LT.add({ appName }).toMessage({
     text: ' - application name (appName): ${appName}'
   }));
 
@@ -246,7 +244,7 @@ appLoader.registerLayerware = registerLayerware;
 appLoader.launchApplication = launchApplication;
 
 appLoader.parseArguments = function(active) {
-  if (active) {
+  if (active !== false) {
     let argv = minimist(process.argv.slice(2));
     let tasks = argv.task || argv.tasks || argv.mode;
     if (lodash.isEmpty(tasks)) {
