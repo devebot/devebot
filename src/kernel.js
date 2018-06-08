@@ -121,7 +121,9 @@ function Kernel(params) {
   stateInspector.conclude(inOpts);
 
   this.invoke = function(block) {
-    return lodash.isFunction(block) && Promise.resolve(block(injektor));
+    return lodash.isFunction(block) && Promise.resolve().then(function() {
+      return block(injektor);
+    });
   }
 
   this._injektor = injektor;

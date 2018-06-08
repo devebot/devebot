@@ -160,7 +160,7 @@ let loadBridgeConstructors = function(ctx, bridgeRefs) {
 };
 
 let buildBridgeDialect = function(ctx, dialectOpts) {
-  let {LX, LT, errorCollector} = ctx;
+  let {LX, LT, errorCollector, nameResolver} = ctx;
   let {pluginName, bridgeCode, bridgeRecord, dialectName, optType} = dialectOpts;
   let result = {};
 
@@ -212,8 +212,17 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
         configPath = ['sandboxConfig', 'bridges', bridgeCode];
     }
   } else {
-    configPath = ['sandboxConfig', 'bridges', bridgeCode, pluginName, dialectName];
+    let pluginAlias = pluginName;
+    if (chores.isFeatureSupported('standardizing-config')) {
+      pluginAlias = nameResolver.getDefaultAliasOf(pluginName, 'plugin');
+    }
+    configPath = ['sandboxConfig', 'bridges', bridgeCode, pluginAlias, dialectName];
   }
+
+  LX.has('silly') && LX.log('silly', LT.add({ configPath }).toMessage({
+    tags: [ sectorRef, 'config-path' ],
+    text: ' - configPath: ${configPath}'
+  }));
 
   function dialectConstructor(kwargs) {
     kwargs = kwargs || {};

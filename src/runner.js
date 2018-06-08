@@ -46,10 +46,6 @@ function Runner(params) {
     return ws.register(new WsClientMock(ws));
   }
 
-  this.invoke = function(block) {
-    return lodash.isFunction(block) && Promise.resolve(block(injektor));
-  }
-
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
