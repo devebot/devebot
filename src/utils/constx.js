@@ -193,7 +193,7 @@ let constx = {
       }
     }
   },
-  FEATURE_ENABLED: [ 'presets', 'bridge-full-ref', 'standardizing-config' ]
+  FEATURE_ENABLED: [ 'presets', 'bridge-full-ref', 'standardizing-config', 'gadget-around-log' ]
 };
 
 module.exports = constx;

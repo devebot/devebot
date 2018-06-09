@@ -454,7 +454,26 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
         });
       }
     }
+    // write around-log begin
+    let _LX, _TR;
+    if (newFeatures.logoliteEnabled && chores.isFeatureSupported('gadget-around-log')) {
+      _LX = kwargs.loggingFactory.getLogger();
+      _TR = kwargs.loggingFactory.getTracer();
+      _LX.has('silly') && _LX.log('silly', _TR.toMessage({
+        tags: [ uniqueName, 'constructor-begin' ],
+        text: ' + constructor begin ...'
+      }));
+    }
+    // invoke original constructor
     gadgetConstructor.call(this, kwargs);
+    // write around-log end
+    if (newFeatures.logoliteEnabled && chores.isFeatureSupported('gadget-around-log')) {
+      _LX.has('silly') && _LX.log('silly', _TR.toMessage({
+        tags: [ uniqueName, 'constructor-end' ],
+        text: ' - constructor has finished'
+      }));
+      _LX = _TR = null;
+    }
   }
 
   wrapperConstructor.prototype = Object.create(gadgetConstructor.prototype);

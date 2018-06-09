@@ -63,10 +63,6 @@ chores.pickProperty = function(propName, containers, propDefault) {
   return propDefault;
 };
 
-chores.listFiles = function(dir, filenames) {
-  return chores.filterFiles(dir, filenames, '.*');
-};
-
 chores.filterFiles = function(dir, filter, filenames) {
   filenames = filenames || [];
   let regex = (filter) ? new RegExp(filter) : null;
