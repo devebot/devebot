@@ -214,7 +214,7 @@ let printContent = function(stateMap) {
   console.log('[+] Display final configuration content:');
   lodash.forEach(['profile', 'sandbox'], function(cfgType) {
     let cfgObj = lodash.get(stateMap, ['config', cfgType, 'mixture'], null);
-    console.log('[-] Final %s configuration:\n%s', cfgType, JSON.stringify(cfgObj, null, 2));
+    console.log('[-] Final %s configuration:\n%s', cfgType, JSON_stringify(cfgObj));
   });
 }
 
@@ -225,17 +225,17 @@ let printSummary = function(summary) {
     switch (info.status) {
       case -1:
       console.log('--> NULL: config of plugin [%s](%s) in application is undefined, use DEFAULT:\n%s',
-          info.code, name, JSON.stringify(info.mixture, null, 2));
+          info.code, name, JSON_stringify(info.mixture));
       break;
 
       case 0:
       console.log('--> EMPTY: config of plugin [%s](%s) in application is empty, use DEFAULT:\n%s',
-          info.code, name, JSON.stringify(info.mixture, null, 2));
+          info.code, name, JSON_stringify(info.mixture));
       break;
 
       case 1:
       console.log('--> OK: config of plugin [%s](%s) in application is defined, use MIXTURE:\n%s',
-          info.code, name, JSON.stringify(info.mixture, null, 2));
+          info.code, name, JSON_stringify(info.mixture));
       break;
     }
   });
@@ -246,17 +246,17 @@ let printSummary = function(summary) {
     switch (info.status) {
       case -1:
       console.log('--> NULL: confirmed configure of dialect [%s] is undefined, use DEFAULT:\n%s',
-          name, JSON.stringify(info.mixture, null, 2));
+          name, JSON_stringify(info.mixture));
       break;
 
       case 0:
       console.log('--> EMPTY: confirmed configure of dialect [%s] is empty, use DEFAULT:\n%s',
-          name, JSON.stringify(info.mixture, null, 2));
+          name, JSON_stringify(info.mixture));
       break;
 
       case 1:
       console.log('--> OK: confirmed configure of dialect [%s] is determined, use MIXTURE:\n%s',
-          name, JSON.stringify(info.mixture, null, 2));
+          name, JSON_stringify(info.mixture));
       break;
     }
   });
@@ -273,6 +273,10 @@ let flattenBridgeConfig = function(bridgeConfig, flatBridgeCfgs) {
     });
   });
   return flatBridgeCfgs;
+}
+
+let JSON_stringify = function(jsObj) {
+  return JSON.stringify(jsObj, null, 2);
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance

@@ -414,9 +414,10 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
       isWrapped = true;
       return kwargs = lodash.clone(kwargs);
     }
-    // crateScope & componentId
+    // crateScope & componentName
     kwargs.packageName = pluginRootDir.name;
-    kwargs.componentId = wrapperName;
+    kwargs.componentName = wrapperName;
+    kwargs.componentId = uniqueName;
     // resolve newFeatures
     let newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', pluginCode], {});
     LX.has('conlog') && LX.log('conlog', LT.add({ pluginCode, newFeatures }).toMessage({
