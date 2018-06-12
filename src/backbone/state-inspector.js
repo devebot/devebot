@@ -3,6 +3,7 @@
 const assert = require('assert');
 const lodash = require('lodash');
 const chores = require('../utils/chores');
+const toolset = require('../utils/toolset');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
@@ -276,6 +277,14 @@ let flattenBridgeConfig = function(bridgeConfig, flatBridgeCfgs) {
 }
 
 let JSON_stringify = function(jsObj) {
+  if (toolset.has('traverse')) {
+    let traverse = toolset.get('traverse');
+    jsObj = traverse(jsObj).forEach(function (x) {
+      if (lodash.isFunction(x)) {
+        this.update('[Function]');
+      }
+    });
+  }
   return JSON.stringify(jsObj, null, 2);
 }
 
