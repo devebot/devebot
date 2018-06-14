@@ -26,15 +26,7 @@ function ConfigLoader(params={}) {
 
   let label = chores.stringLabelCase(appName);
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    appName: appName,
-    appOptions: appOptions,
-    appRef: appRef,
-    devebotRef: devebotRef,
-    pluginRefs: pluginRefs,
-    bridgeRefs: bridgeRefs,
-    label: label
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, label }).toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + Config of application (${appName}) is loaded in name: ${label}'
   }));

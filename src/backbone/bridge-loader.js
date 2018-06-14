@@ -333,10 +333,8 @@ let buildBridgeDialects = function(ctx, bridgeRefs, dialectOptions, optType) {
       text: ' - dialectOptions is not provided, nothing is created'
     }));
   } else {
-    LX.has('silly') && LX.log('silly', LT.add({
-      options: dialectOptions
-    }).toMessage({
-      text: ' - dialectInstances will be built with options: ${options}'
+    LX.has('silly') && LX.log('silly', LT.add({ dialectOptions }).toMessage({
+      text: ' - dialectInstances will be built with options: ${dialectOptions}'
     }));
   }
 
