@@ -230,8 +230,7 @@ function SandboxManager(params) {
 
     if (lodash.isString(triggerNames)) triggerNames = [triggerNames];
     if (triggerNames && !lodash.isArray(triggerNames)) return;
-    triggerNames = triggerNames || 'all';
-    LX.has('silly') && LX.log('silly', LT.add({ triggerNames }).toMessage({
+    LX.has('silly') && LX.log('silly', LT.add({ triggerNames: triggerNames || 'all' }).toMessage({
       tags: [ blockRef, 'trigger', 'loop' ],
       text: ' - Loop triggers: ${triggerNames}'
     }));
