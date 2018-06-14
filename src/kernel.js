@@ -47,6 +47,7 @@ function Kernel(params) {
 
   let schemaValidator = injektor.lookup('schemaValidator', chores.injektorContext);
   let result = [];
+  let CTX = {LX, LT, schemaValidator};
 
   // validate bridge's configures
   let bridgeLoader = injektor.lookup('bridgeLoader', chores.injektorContext);
@@ -58,9 +59,16 @@ function Kernel(params) {
     text: " - bridge's metadata: ${metadata}"
   }));
 
+  lodash.forEach(configObject.bridgeRefs, function(bridgeRef) {
+    let bridgeCode = nameResolver.getDefaultAlias(bridgeRef);
+    if (bridgeRef.presets && bridgeRef.presets.schemaValidation === false) {
+      lodash.set(bridgeMetadata, [bridgeCode, 'metadata', 'enabled'], false);
+    }
+  });
+
   let bridgeConfig = lodash.get(configObject, ['sandbox', 'mixture', 'bridges'], {});
 
-  validateBridgeConfig({LX, LT, schemaValidator}, bridgeConfig, bridgeMetadata, result);
+  validateBridgeConfig(CTX, bridgeConfig, bridgeMetadata, result);
 
   // validate plugin's configures
   let pluginLoader = injektor.lookup('pluginLoader', chores.injektorContext);
@@ -100,12 +108,10 @@ function Kernel(params) {
     text: ' - Synchronize the structure of configuration data and schemas'
   }));
 
-  validatePluginConfig({LX, LT, schemaValidator}, pluginConfig, pluginSchema, result);
+  validatePluginConfig(CTX, pluginConfig, pluginSchema, result);
 
   // summarize validating result
-  LX.has('silly') && LX.log('silly', LT.add({
-    validatingResult: result
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ result }).toMessage({
     tags: [ blockRef, 'validating-config-by-schema-result' ],
     text: ' - Validating sandbox configuration using schemas'
   }));
@@ -164,8 +170,9 @@ let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
     for(let dialectName in bridgeConfig) {
       let dialectMap = bridgeConfig[dialectName] || {};
       for(let bridgeCode in dialectMap) {
-        let dialectSchema = lodash.get(bridgeSchema, [bridgeCode, 'metadata', 'schema'], null);
-        if (lodash.isNull(dialectSchema)) continue;
+        let bridgeMetadata = lodash.get(bridgeSchema, [bridgeCode, 'metadata'], null) || {};
+        let dialectSchema = lodash.get(bridgeMetadata, ['schema'], null);
+        if (bridgeMetadata.enabled === false || lodash.isNull(dialectSchema)) continue;
         let dialectConfig = dialectMap[bridgeCode] || {};
         let r = schemaValidator.validate(dialectConfig, dialectSchema);
         result.push(customizeResult(r, bridgeCode, '*', dialectName));
@@ -176,8 +183,9 @@ let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
 
   for(let bridgeCode in bridgeConfig) {
     let bridgeMap = bridgeConfig[bridgeCode] || {};
-    let dialectSchema = lodash.get(bridgeSchema, [bridgeCode, 'metadata', 'schema'], null);
-    if (lodash.isNull(dialectSchema)) continue;
+    let bridgeMetadata = lodash.get(bridgeSchema, [bridgeCode, 'metadata'], null) || {};
+    let dialectSchema = lodash.get(bridgeMetadata, ['schema'], null);
+    if (bridgeMetadata.enabled === false || lodash.isNull(dialectSchema)) continue;
     for(let pluginName in bridgeMap) {
       let pluginMap = bridgeMap[pluginName] || {};
       for(let dialectName in pluginMap) {
@@ -215,13 +223,9 @@ let validatePluginConfig = function(ctx, pluginConfig, pluginSchema, result) {
       let r = schemaValidator.validate(crateConfig, crateSchema.schema);
       result.push(customizeResult(r, crateSchema.crateScope, crateName));
     } else {
-      LX.has('silly') && LX.log('silly', LT.add({
-        name: crateName,
-        config: crateConfig,
-        schema: crateSchema
-      }).toMessage({
+      LX.has('silly') && LX.log('silly', LT.add({ crateName, crateConfig, crateSchema }).toMessage({
         tags: [ blockRef, 'validate-plugin-config-by-schema-skipped' ],
-        text: ' - Validate sandboxConfig[${name}] is skipped'
+        text: ' - Validating sandboxConfig[${crateName}] is skipped'
       }));
     }
   }

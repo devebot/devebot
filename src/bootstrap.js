@@ -197,7 +197,7 @@ let expandExtensions = function (context, pluginNames, bridgeNames) {
 
   bridgeDiffs.forEach(function(bridgeInfo) {
     if (chores.isFeatureSupported('presets')) {
-      let inc = lodash.pick(bridgeInfo, ['name', 'path']);
+      let inc = lodash.pick(bridgeInfo, ['name', 'path', 'presets']);
       context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], inc);
       return;
     }
