@@ -59,6 +59,7 @@ function Kernel(params) {
     text: " - bridge's metadata: ${metadata}"
   }));
 
+  // apply 'schemaValidation' option from presets for bridges
   lodash.forEach(configObject.bridgeRefs, function(bridgeRef) {
     let bridgeCode = nameResolver.getDefaultAlias(bridgeRef);
     if (bridgeRef.presets && bridgeRef.presets.schemaValidation === false) {
@@ -97,6 +98,18 @@ function Kernel(params) {
     return configSchema;
   }
   let pluginSchema = extractPluginSchema(pluginMetadata);
+
+  // apply 'schemaValidation' option from presets for plugins
+  lodash.forEach(configObject.pluginRefs, function(pluginRef) {
+    let pluginCode = nameResolver.getDefaultAlias(pluginRef);
+    if (pluginRef.presets && pluginRef.presets.schemaValidation === false) {
+      if (!chores.isSpecialPlugin(pluginCode)) {
+        lodash.forEach(['profile', 'sandbox'], function(configType) {
+          lodash.set(pluginSchema, [configType, 'plugins', pluginCode, 'enabled'], false);
+        });
+      }
+    }
+  });
 
   let pluginConfig = {
     profile: lodash.get(configObject, ['profile', 'mixture'], {}),
@@ -219,7 +232,7 @@ let validatePluginConfig = function(ctx, pluginConfig, pluginSchema, result) {
   }
 
   let validateSandbox = function(result, crateConfig, crateSchema, crateName) {
-    if (crateSchema && crateSchema.schema) {
+    if (crateSchema && crateSchema.schema && crateSchema.enabled !== false) {
       let r = schemaValidator.validate(crateConfig, crateSchema.schema);
       result.push(customizeResult(r, crateSchema.crateScope, crateName));
     } else {
