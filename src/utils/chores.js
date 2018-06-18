@@ -11,7 +11,7 @@ const constx = require('./constx');
 const envbox = require('./envbox');
 const loader = require('./loader');
 
-const DEFAULT_SCOPE = process.env.DEVEBOT_DEFAULT_SCOPE || 'devebot';
+const DEFAULT_SCOPE = envbox.getEnv('DEVEBOT_DEFAULT_SCOPE', 'devebot');
 const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:chores');
 
 let store = {
@@ -227,11 +227,11 @@ chores.injektorOptions = store.injektorOptions;
 chores.injektorContext = store.injektorContext;
 
 chores.fatalErrorReaction = function() {
-  return process.env.DEVEBOT_FATAL_ERROR_REACTION;
+  return envbox.getEnv('DEVEBOT_FATAL_ERROR_REACTION');
 }
 
 chores.skipProcessExit = function() {
-  return process.env.DEVEBOT_SKIP_PROCESS_EXIT === 'true';
+  return envbox.getEnv('DEVEBOT_SKIP_PROCESS_EXIT') === 'true';
 }
 
 chores.isSilentForced = function(moduleId, cfg) {

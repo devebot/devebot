@@ -1,6 +1,7 @@
 'use strict';
 
-const DEFAULT_SCOPE = process.env.DEVEBOT_DEFAULT_SCOPE || 'devebot';
+const envbox = require('./envbox');
+const DEFAULT_SCOPE = envbox.getEnv('DEVEBOT_DEFAULT_SCOPE', 'devebot');
 const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:pmtool');
 
 function PmTool() {
