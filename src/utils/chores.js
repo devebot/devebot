@@ -8,9 +8,8 @@ const path = require('path');
 const util = require('util');
 const uuidv4 = require('logolite/uuidv4');
 const constx = require('./constx');
-const envbox = require('./envbox');
 const loader = require('./loader');
-
+const envbox = require('./envbox').instance;
 const DEFAULT_SCOPE = envbox.getEnv('DEVEBOT_DEFAULT_SCOPE', 'devebot');
 const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:chores');
 

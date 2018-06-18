@@ -3,7 +3,7 @@
 const lodash = require('lodash');
 const util = require('util');
 
-const envDefinition = {
+const ENV_DEF_DEFAULT = {
   DEVEBOT_PROFILE: {
     type: "string",
     description: "Customized profile names, merged from right to left"
@@ -69,8 +69,10 @@ const envDefinition = {
   }
 }
 
-function EnvironmentCollection() {
+function EnvironmentCollection(params) {
+  params = params || {};
 
+  let definition = params.definition || {};
   let store = { env: {} };
 
   this.getEnv = function(label, defaultValue) {
@@ -83,17 +85,17 @@ function EnvironmentCollection() {
     }
     if (!(label in store.env)) {
       store.env[label] = process.env[label];
-      if (envDefinition[label]) {
+      if (definition[label]) {
         if (lodash.isUndefined(defaultValue)) {
-          defaultValue = envDefinition[label].defaultValue;
+          defaultValue = definition[label].defaultValue;
         }
-        if (lodash.isArray(envDefinition[label].aliases)) {
-          lodash.forEach(envDefinition[label].aliases, function(alias) {
+        if (lodash.isArray(definition[label].aliases)) {
+          lodash.forEach(definition[label].aliases, function(alias) {
             store.env[label] = store.env[label] || process.env[alias];
           });
         }
         store.env[label] = store.env[label] || defaultValue;
-        if (envDefinition[label].type === 'array') {
+        if (definition[label].type === 'array') {
           store.env[label] = stringToArray(store.env[label]);
         }
       } else {
@@ -119,7 +121,7 @@ function EnvironmentCollection() {
 
   this.printEnvList = function() {
     console.log('[+] Display environment variables:');
-    lodash.forOwn(envDefinition, function(info, label) {
+    lodash.forOwn(definition, function(info, label) {
       let envMsg = util.format(' => %s: %s', label, info.description);;
       if (info && info.defaultValue != null) {
         envMsg += util.format(' (default: %s)', JSON.stringify(info.defaultValue));
@@ -147,4 +149,15 @@ function stringToArray(labels) {
 
 EnvironmentCollection.prototype.stringToArray = stringToArray;
 
-module.exports = new EnvironmentCollection();
+let privateEnvbox;
+
+Object.defineProperty(EnvironmentCollection, 'instance', {
+  get: function() {
+    return (privateEnvbox = privateEnvbox || new EnvironmentCollection({
+      definition: ENV_DEF_DEFAULT
+    }));
+  },
+  set: function(value) {}
+});
+
+module.exports = EnvironmentCollection;

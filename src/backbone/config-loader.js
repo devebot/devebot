@@ -6,8 +6,8 @@ const path = require('path');
 
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
-const envbox = require('../utils/envbox');
 const loader = require('../utils/loader');
+const envbox = require('../utils/envbox').instance;
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
