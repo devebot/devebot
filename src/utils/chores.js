@@ -8,6 +8,7 @@ const path = require('path');
 const util = require('util');
 const uuidv4 = require('logolite/uuidv4');
 const constx = require('./constx');
+const envbox = require('./envbox');
 const loader = require('./loader');
 
 const DEFAULT_SCOPE = process.env.DEVEBOT_DEFAULT_SCOPE || 'devebot';
@@ -234,25 +235,13 @@ chores.skipProcessExit = function() {
 }
 
 chores.isSilentForced = function(moduleId, cfg) {
-  if (process.env.NODE_ENV === 'test') {
-    store.fsm = null;
-  }
-  if (!store.fsm) {
-    let fsstr = process.env.DEVEBOT_FORCING_SILENT || '';
-    store.fsm = fsstr.split(',');
-  }
-  return (store.fsm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose === false);
+  let fsm = envbox.getEnv('DEVEBOT_FORCING_SILENT');
+  return (fsm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose === false);
 }
 
 chores.isVerboseForced = function(moduleId, cfg) {
-  if (process.env.NODE_ENV === 'test') {
-    store.fvm = null;
-  }
-  if (!store.fvm) {
-    let fvstr = process.env.DEVEBOT_FORCING_VERBOSE || '';
-    store.fvm = fvstr.split(',');
-  }
-  return (store.fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
+  let fvm = envbox.getEnv('DEVEBOT_FORCING_VERBOSE');
+  return (fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
 }
 
 chores.printError = function(err) {
@@ -267,24 +256,16 @@ chores.printError = function(err) {
   });
 }
 
-chores.stringToArray = function(labels) {
-  labels = labels || '';
-  return labels.split(',').map(function(item) {
-    return item.trim();
-  });
-}
-
 chores.isFeatureSupported = function(label) {
   if (process.env.NODE_ENV === 'test') {
     store.featureDisabled = null;
     store.featureEnabled = null;
   }
   if (!store.featureDisabled) {
-    store.featureDisabled = chores.stringToArray(process.env.DEVEBOT_FEATURE_DISABLED);
+    store.featureDisabled = envbox.getEnv('DEVEBOT_FEATURE_DISABLED');
   }
   if (!store.featureEnabled) {
-    store.featureEnabled = chores.stringToArray(process.env.DEVEBOT_FEATURE_ENABLED ||
-      process.env.DEVEBOT_FEATURE_LABELS);
+    store.featureEnabled = envbox.getEnv('DEVEBOT_FEATURE_ENABLED');
   }
   label = chores.isArray(label) ? label : [label];
   let ok = true;

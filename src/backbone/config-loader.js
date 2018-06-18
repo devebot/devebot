@@ -6,13 +6,14 @@ const path = require('path');
 
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
+const envbox = require('../utils/envbox');
 const loader = require('../utils/loader');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
 const CONFIG_SUBDIR = '/config';
-const CONFIG_PROFILE_NAME = process.env.DEVEBOT_CONFIG_PROFILE_NAME || 'profile';
-const CONFIG_SANDBOX_NAME = process.env.DEVEBOT_CONFIG_SANDBOX_NAME || 'sandbox';
+const CONFIG_PROFILE_NAME = envbox.getEnv('DEVEBOT_CONFIG_PROFILE_NAME', 'profile');
+const CONFIG_SANDBOX_NAME = envbox.getEnv('DEVEBOT_CONFIG_SANDBOX_NAME', 'sandbox');
 const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 const RELOADING_FORCED = true;
@@ -64,7 +65,7 @@ let readVariable = function(ctx, appLabel, varName) {
   ];
   let value, varLabel;
   for(const varLabel of varLabels) {
-    value = process.env[varLabel];
+    value = envbox.getEnv(varLabel);
     LX.has('conlog') && LX.log('conlog', LT.add({
       label: varLabel,
       value: value

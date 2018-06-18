@@ -3,6 +3,7 @@
 const assert = require('assert');
 const lodash = require('lodash');
 const chores = require('../utils/chores');
+const envbox = require('../utils/envbox');
 const toolset = require('../utils/toolset');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
@@ -21,14 +22,14 @@ function StateInspector(params) {
   }));
 
   let options = {
-    mode: filterTask(chores.stringToArray(process.env.DEVEBOT_VERIFICATION_MODE))
+    mode: filterTask(envbox.getEnv('DEVEBOT_VERIFICATION_MODE'))
   };
   let services = {};
   let stateMap = {};
 
   this.init = function(opts) {
     if (opts && opts.tasks) {
-      let tasks = lodash.isArray(opts.tasks) ? opts.tasks : chores.stringToArray(opts.tasks);
+      let tasks = lodash.isArray(opts.tasks) ? opts.tasks : envbox.stringToArray(opts.tasks);
       options.mode = filterTask(tasks);
     }
     return lodash.clone(options.mode);
@@ -143,6 +144,9 @@ function StateInspector(params) {
     if (isEnabled(options)) {
       let label = getModeLabel(options);
       try {
+        if (hasTask(options, 'list-env-vars')) {
+          envbox.printEnvList();
+        }
         if (hasTask(options, 'check-config')) {
           printSummary(this.examine(opts));
         }
@@ -186,6 +190,7 @@ module.exports = StateInspector;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
 let modeMap = {
+  'list-env-vars': null,
   'print-config': null,
   'check-config': null
 };
