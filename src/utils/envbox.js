@@ -3,81 +3,96 @@
 const lodash = require('lodash');
 const util = require('util');
 
-const ENV_DEF_DEFAULT = {
-  DEVEBOT_PROFILE: {
+const ENV_DEF_DEFAULT = [
+  {
+    name: "DEVEBOT_PROFILE",
     type: "string",
     description: "Customized profile names, merged from right to left"
   },
-  DEVEBOT_SANDBOX: {
+  {
+    name: "DEVEBOT_SANDBOX",
     type: "string",
     description: "Customized sandbox names, merged from right to left"
   },
-  DEVEBOT_CONFIG_DIR: {
+  {
+    name: "DEVEBOT_CONFIG_DIR",
     type: "string",
     description: "The home directory of configuration"
   },
-  DEVEBOT_CONFIG_ENV: {
+  {
+    name: "DEVEBOT_CONFIG_ENV",
     type: "string",
     description: "Staging name for configuration"
   },
-  DEVEBOT_CONFIG_PROFILE_NAME: {
+  {
+    name: "DEVEBOT_CONFIG_PROFILE_NAME",
     type: "string",
     defaultValue: "profile",
     description: "File name (without extension) of 'profile' configuration"
   },
-  DEVEBOT_CONFIG_SANDBOX_NAME: {
+  {
+    name: "DEVEBOT_CONFIG_SANDBOX_NAME",
     type: "string",
     defaultValue: "sandbox",
     description: "File name (without extension) of 'sandbox' configuration"
   },
-  DEVEBOT_DEFAULT_SCOPE: {
+  {
+    name: "DEVEBOT_DEFAULT_SCOPE",
     type: "string",
     defaultValue: "devebot",
     description: "Default scope that used as npm debug's namespace name"
   },
-  DEVEBOT_FEATURE_DISABLED: {
+  {
+    name: "DEVEBOT_FEATURE_DISABLED",
     type: "array",
     description: "List of features that should be disabled"
   },
-  DEVEBOT_FEATURE_ENABLED: {
+  {
+    name: "DEVEBOT_FEATURE_ENABLED",
     type: "array",
     aliases: ["DEVEBOT_FEATURE_LABELS"],
     description: "List of features that should be enabled"
   },
-  DEVEBOT_FORCING_SILENT: {
+  {
+    name: "DEVEBOT_FORCING_SILENT",
     type: "array",
     description: "List of package names that should be muted (server start/stop messages)"
   },
-  DEVEBOT_FORCING_VERBOSE: {
+  {
+    name: "DEVEBOT_FORCING_VERBOSE",
     type: "array",
     description: "List of package names that should be verbose (server start/stop messages)"
   },
-  DEVEBOT_FATAL_ERROR_REACTION: {
+  {
+    name: "DEVEBOT_FATAL_ERROR_REACTION",
     type: "string",
     enum: ["exit", "exception"],
     description: "The action that should do if application encounter a fatal error"
   },
-  DEVEBOT_SKIP_PROCESS_EXIT: {
+  {
+    name: "DEVEBOT_SKIP_PROCESS_EXIT",
     type: "boolean",
     defaultValue: "false",
     description: "Skipping execute process.exit (used in testing environment only)"
   },
-  DEVEBOT_TASKS: {
+  {
+    name: "DEVEBOT_TASKS",
     type: "array",
     aliases: ["DEVEBOT_VERIFICATION_TASK", "DEVEBOT_VERIFICATION_MODE"],
     description: "The action(s) that will be executed instead of start the server"
   }
-}
+]
 
 function EnvironmentCollection(params) {
   params = params || {};
 
-  let definition = params.definition || {};
+  let definition = lodash.keyBy(params.definition || [], 'name');
+  let namespace = params.namespace || 'DEVEBOT';
   let store = { env: {} };
 
   this.getEnv = function(label, defaultValue) {
     if (!lodash.isString(label)) return undefined;
-    if (!lodash.startsWith(label, 'DEVEBOT')) {
+    if (!lodash.startsWith(label, namespace)) {
       return process.env[label];
     }
     if (process.env.NODE_ENV === 'test') {
