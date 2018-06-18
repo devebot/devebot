@@ -22,7 +22,7 @@ function StateInspector(params) {
   }));
 
   let options = {
-    mode: filterTask(envbox.getEnv('DEVEBOT_VERIFICATION_MODE'))
+    mode: filterTask(envbox.getEnv('DEVEBOT_TASKS'))
   };
   let services = {};
   let stateMap = {};

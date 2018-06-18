@@ -1,6 +1,7 @@
 'use strict';
 
 const lodash = require('lodash');
+const util = require('util');
 
 const envDefinition = {
   DEVEBOT_PROFILE: {
@@ -43,11 +44,6 @@ const envDefinition = {
     aliases: ["DEVEBOT_FEATURE_LABELS"],
     description: "List of features that should be enabled"
   },
-  DEVEBOT_VERIFICATION_MODE: {
-    type: "array",
-    aliases: ["DEVEBOT_VERIFICATION_TASK"],
-    description: "The action(s) that will be executed instead of start the server"
-  },
   DEVEBOT_FORCING_SILENT: {
     type: "array",
     description: "List of package names that should be muted (server start/stop messages)"
@@ -65,6 +61,11 @@ const envDefinition = {
     type: "boolean",
     defaultValue: "false",
     description: "Skipping execute process.exit (used in testing environment only)"
+  },
+  DEVEBOT_TASKS: {
+    type: "array",
+    aliases: ["DEVEBOT_VERIFICATION_TASK", "DEVEBOT_VERIFICATION_MODE"],
+    description: "The action(s) that will be executed instead of start the server"
   }
 }
 
@@ -119,15 +120,16 @@ function EnvironmentCollection() {
   this.printEnvList = function() {
     console.log('[+] Display environment variables:');
     lodash.forOwn(envDefinition, function(info, label) {
-      console.log(' => %s: %s', label, info.description);
+      let envMsg = util.format(' => %s: %s', label, info.description);;
+      if (info && info.defaultValue != null) {
+        envMsg += util.format(' (default: %s)', JSON.stringify(info.defaultValue));
+      }
+      console.log(envMsg);
       if (info && info.type === 'array') {
         console.log('    - format: (comma-separated-string)');
       }
       if (info && info.type === 'boolean') {
-        console.log('    - format: true/false');
-      }
-      if (info && info.defaultValue != null) {
-        console.log('    - default value: %s', JSON.stringify(info.defaultValue));
+        console.log('    - format: (true/false)');
       }
       console.log('    - current value: %s', JSON.stringify(store.env[label]));
     });
@@ -138,6 +140,8 @@ function stringToArray(labels) {
   labels = labels || '';
   return labels.split(',').map(function(item) {
     return item.trim();
+  }).filter(function(item) {
+    return item.length > 0;
   });
 }
 
