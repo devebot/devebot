@@ -1,6 +1,7 @@
 'use strict';
 
 const lodash = require('lodash');
+const Chalk = require('../utils/chalk');
 const chores = require('../utils/chores');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
@@ -61,27 +62,31 @@ function ErrorCollector(params) {
     let summary = this.examine(options);
     if (summary.numberOfErrors > 0) {
       if (!silent) {
-        console.error('[x] There are %s error(s) occurred during load:', summary.numberOfErrors);
+        console.error(chalk.errorHeader('[x] There are %s error(s) occurred during load:'), summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
           if (fsv.stage === 'bootstrap') {
             switch(fsv.type) {
               case 'application':
               case 'plugin':
               case 'devebot':
-              console.error('--> [%s:%s] loading plugin is failed, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              console.error(chalk.errorMessage('--> [%s:%s] loading plugin is failed, reasons:'), fsv.type, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
               return;
               case 'bridge':
-              console.error('--> [%s:%s] loading bridge is failed, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              console.error(chalk.errorMessage('--> [%s:%s] loading bridge is failed, reasons:'), fsv.type, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
               return;
             }
           }
           if (fsv.stage === 'naming') {
             switch(fsv.type) {
               case 'plugin':
-              console.error('--> [%s:%s] resolving plugin-code is failed, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              console.error(chalk.errorMessage('--> [%s:%s] resolving plugin-code is failed, reasons:'), fsv.type, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
               return;
               case 'bridge':
-              console.error('--> [%s:%s] resolving bridge-code is failed, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              console.error(chalk.errorMessage('--> [%s:%s] resolving bridge-code is failed, reasons:'), fsv.type, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
               return;
             }
           }
@@ -90,10 +95,12 @@ function ErrorCollector(params) {
               case 'application':
               case 'plugin':
               case 'devebot':
-              console.error('--> [%s:%s] plugin configure is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              console.error(chalk.errorMessage('--> [%s:%s] plugin configure is invalid, reasons:'), fsv.type, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
               return;
               case 'bridge':
-              console.error('--> [%s:%s] bridge configure is invalid, reasons:\n%s', fsv.type, fsv.name, fsv.stack);
+              console.error(chalk.errorMessage('--> [%s:%s] bridge configure is invalid, reasons:'), fsv.type, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
               return;
             }
           }
@@ -102,43 +109,49 @@ function ErrorCollector(params) {
               case 'ROUTINE':
               case 'SERVICE':
               case 'TRIGGER':
-              console.error('--> [%s:%s] new() is failed:\n   %s', fsv.type, fsv.name, fsv.stack);
+              console.error(chalk.errorMessage('--> [%s:%s] new() is failed:'), fsv.type, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
               return;
               case 'DIALECT':
-              console.error('--> [%s:%s/%s] new() is failed:\n   %s', fsv.type, fsv.code, fsv.name, fsv.stack);
+              console.error(chalk.errorMessage('--> [%s:%s/%s] new() is failed:'), fsv.type, fsv.code, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
               return;
               default:
-              console.error('--> %s', JSON.stringify(fsv));
+              console.error(chalk.errorMessage('--> %s'), JSON.stringify(fsv));
               return;
             }
           }
           if (fsv.stage === 'check-methods') {
             switch(fsv.type) {
               case 'TRIGGER':
-              console.error('--> [%s:%s] required method(s): %s not found', fsv.type, fsv.name, JSON.stringify(fsv.methods));
+              console.error(chalk.errorMessage('--> [%s:%s] required method(s): %s not found'), fsv.type, fsv.name, JSON.stringify(fsv.methods));
               return;
               default:
-              console.error('--> %s', JSON.stringify(fsv));
+              console.error(chalk.errorMessage('--> %s'), JSON.stringify(fsv));
               return;
             }
           }
           switch(fsv.type) {
             case 'CONFIG':
-            console.error('--> [%s] in (%s):\n   %s', fsv.type, fsv.file, fsv.stack);
+            console.error(chalk.errorMessage('--> [%s] in (%s):'), fsv.type, fsv.file);
+            console.error(chalk.errorStack("  " + fsv.stack));
             break;
             case 'ROUTINE':
             case 'SERVICE':
             case 'TRIGGER':
-            console.error('--> [%s:%s] - %s in (%s%s):\n   %s', fsv.type, fsv.name, fsv.file, fsv.pathDir, fsv.subDir, fsv.stack);
+            console.error(chalk.errorMessage('--> [%s:%s] - %s in (%s%s):'), fsv.type, fsv.name, fsv.file, fsv.pathDir, fsv.subDir);
+            console.error(chalk.errorStack("  " + fsv.stack));
             break;
             case 'DIALECT':
-            console.error('--> [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.code, fsv.name, fsv.path, fsv.stack);
+            console.error(chalk.errorMessage('--> [%s:%s/%s] in (%s):'), fsv.type, fsv.code, fsv.name, fsv.path);
+            console.error(chalk.errorStack("  " + fsv.stack));
             break;
             case 'application':
-            console.error('--> [%s:%s/%s] in (%s):\n   %s', fsv.type, fsv.name, fsv.code, fsv.path, fsv.stack);
+            console.error(chalk.errorMessage('--> [%s:%s/%s] in (%s):'), fsv.type, fsv.name, fsv.code, fsv.path);
+            console.error(chalk.errorStack("  " + fsv.stack));
             break;
             default:
-            console.error('--> %s', JSON.stringify(fsv));
+            console.error(chalk.errorMessage('--> %s'), JSON.stringify(fsv));
           }
         });
       }
@@ -152,8 +165,8 @@ function ErrorCollector(params) {
       }));
       if (options.exitOnError !== false) {
         if (!silent) {
-          console.warn('==@ The program will exit now.');
-          console.warn('... Please fix the issues and then retry again.');
+          console.warn(chalk.warnHeader('[!] The program will exit now.'));
+          console.warn(chalk.warnMessage('... Please fix the issues and then retry again.'));
         }
         this.exit(1);
       }
@@ -197,6 +210,20 @@ ErrorCollector.argumentSchema = {
 };
 
 module.exports = ErrorCollector;
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
+
+let chalk = new Chalk({
+  themes: {
+    errorHeader: ['red', 'bold'],
+    errorMessage: ['red'],
+    errorStack: ['grey'],
+    warnHeader: ['yellow', 'bold'],
+    warnMessage: ['yellow']
+  }
+});
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance
 
 let globalErrorCollector;
 
