@@ -148,6 +148,9 @@ function StateInspector(params) {
         if (hasTask(options, 'list-env-vars')) {
           envbox.printEnvList();
         }
+        if (hasTask(options, 'list-all-env-vars')) {
+          envbox.printEnvList({ excludes: [] });
+        }
         if (hasTask(options, 'check-config')) {
           printSummary(this.examine(opts));
         }
@@ -209,6 +212,7 @@ let chalk = new Chalk({
 
 let modeMap = {
   'list-env-vars': null,
+  'list-all-env-vars': null,
   'print-config': null,
   'check-config': null
 };

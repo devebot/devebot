@@ -1,9 +1,11 @@
 'use strict';
 
-const loader = require('./loader');
-
 function Toolset() {
-  let box = loader('devebot-tools', { stopWhenError: false });
+  let box = {};
+
+  try {
+    box = require('devebot-tools');
+  } catch(error) {}
 
   this.has = function(packageName) {
     return box[packageName] !== null && box[packageName] !== undefined;

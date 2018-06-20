@@ -2,6 +2,7 @@
 
 const lodash = require('lodash');
 const util = require('util');
+const Chalk = require('./chalk');
 
 const ENV_DEF_DEFAULT = [
   {
@@ -40,45 +41,52 @@ const ENV_DEF_DEFAULT = [
     name: "DEVEBOT_DEFAULT_SCOPE",
     type: "string",
     defaultValue: "devebot",
+    scope: "test",
     description: "Default scope that used as npm debug's namespace name"
   },
   {
     name: "DEVEBOT_FEATURE_DISABLED",
     type: "array",
+    scope: "test",
     description: "List of features that should be disabled"
   },
   {
     name: "DEVEBOT_FEATURE_ENABLED",
     type: "array",
     aliases: ["DEVEBOT_FEATURE_LABELS"],
+    scope: "test",
     description: "List of features that should be enabled"
   },
   {
     name: "DEVEBOT_FORCING_SILENT",
     type: "array",
+    scope: "test",
     description: "List of package names that should be muted (server start/stop messages)"
   },
   {
     name: "DEVEBOT_FORCING_VERBOSE",
     type: "array",
+    scope: "test",
     description: "List of package names that should be verbose (server start/stop messages)"
   },
   {
     name: "DEVEBOT_FATAL_ERROR_REACTION",
     type: "string",
     enum: ["exit", "exception"],
+    scope: "test",
     description: "The action that should do if application encounter a fatal error"
   },
   {
     name: "DEVEBOT_SKIP_PROCESS_EXIT",
     type: "boolean",
     defaultValue: "false",
+    scope: "test",
     description: "Skipping execute process.exit (used in testing environment only)"
   },
   {
     name: "DEVEBOT_TASKS",
     type: "array",
-    aliases: ["DEVEBOT_VERIFICATION_TASK", "DEVEBOT_VERIFICATION_MODE"],
+    aliases: ["DEVEBOT_TASK", "DEVEBOT_VERIFICATION_TASK", "DEVEBOT_VERIFICATION_MODE"],
     description: "The action(s) that will be executed instead of start the server"
   }
 ]
@@ -134,21 +142,28 @@ function EnvironmentCollection(params) {
     return this;
   }
 
-  this.printEnvList = function() {
-    console.log('[+] Display environment variables:');
+  this.printEnvList = function(opts) {
+    opts = opts || {};
+    let excl = opts.excludes || [ 'test' ];
+    excl = lodash.isArray(excl) ? excl : [excl];
+    console.log(chalk.heading1('[+] Display environment variables:'));
     lodash.forOwn(definition, function(info, label) {
-      let envMsg = util.format(' => %s: %s', label, info.description);;
+      if (info && info.scope && excl.indexOf(info.scope) >= 0) return;
+      let envMsg = util.format(' |> %s: %s', chalk.envName(label), info.description);
       if (info && info.defaultValue != null) {
-        envMsg += util.format(' (default: %s)', JSON.stringify(info.defaultValue));
+        envMsg += util.format(' (default: %s)', chalk.defaultValue(JSON.stringify(info.defaultValue)));
       }
       console.log(envMsg);
+      if (info && info.scope) {
+        console.log('    - %s: %s', chalk.envAttrName('scope'), chalk.envAttrValue(info.scope));
+      }
       if (info && info.type === 'array') {
-        console.log('    - format: (comma-separated-string)');
+        console.log('    - %s: (%s)', chalk.envAttrName('format'), chalk.envAttrValue('comma-separated-string'));
       }
       if (info && info.type === 'boolean') {
-        console.log('    - format: (true/false)');
+        console.log('    - %s: (%s)', chalk.envAttrName('format'), chalk.envAttrValue('true/false'));
       }
-      console.log('    - current value: %s', JSON.stringify(store.env[label]));
+      console.log('    - %s: %s', chalk.envAttrName('current value'), chalk.currentValue(JSON.stringify(store.env[label])));
     });
   }
 }
@@ -163,6 +178,22 @@ function stringToArray(labels) {
 }
 
 EnvironmentCollection.prototype.stringToArray = stringToArray;
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
+
+let chalk = new Chalk({
+  themes: {
+    heading1: ['cyan', 'bold'],
+    heading2: 'cyan',
+    envName: ['green', 'bold'],
+    envAttrName: ['grey', 'bold'],
+    envAttrValue: [ 'grey' ],
+    currentValue: ['blue'],
+    defaultValue: ['magenta']
+  }
+});
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance
 
 let privateEnvbox;
 
