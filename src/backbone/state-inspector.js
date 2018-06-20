@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const lodash = require('lodash');
+const Chalk = require('../utils/chalk');
 const chores = require('../utils/chores');
 const toolset = require('../utils/toolset');
 const envbox = require('../utils/envbox').instance;
@@ -187,6 +188,23 @@ StateInspector.argumentSchema = {
 
 module.exports = StateInspector;
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
+
+let chalk = new Chalk({
+  themes: {
+    heading1: ['cyan', 'bold'],
+    heading2: 'cyan',
+    configType: 'underline',
+    configBody: 'grey',
+    configModule: 'underline',
+    configIsNull: ['red', 'bold'],
+    configIsEmpty: ['yellow', 'bold'],
+    configIsOk: ['green', 'bold'],
+    configDefault: ['grey'],
+    configMixture: ['green']
+  }
+});
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
 let modeMap = {
@@ -217,52 +235,53 @@ let hasTask = function(options, taskName) {
 }
 
 let printContent = function(stateMap) {
-  console.log('[+] Display final configuration content:');
+  console.log(chalk.heading1('[+] Display final configuration content:'));
   lodash.forEach(['profile', 'sandbox'], function(cfgType) {
     let cfgObj = lodash.get(stateMap, ['config', cfgType, 'mixture'], null);
-    console.log('[-] Final %s configuration:\n%s', cfgType, JSON_stringify(cfgObj));
+    console.log(chalk.heading2('[-] Final %s configuration:'), chalk.configType(cfgType));
+    console.log(chalk.configBody(JSON_stringify(cfgObj)));
   });
 }
 
 let printSummary = function(summary) {
-  console.log('[+] Plugin configuration checking result:');
+  console.log(chalk.heading1('[+] %s configuration checking result:'), chalk.configModule('Plugin'));
   let pluginInfos = lodash.get(summary, ['config', 'sandbox', 'plugins'], {});
   lodash.forOwn(pluginInfos, function(info, name) {
     switch (info.status) {
       case -1:
-      console.log('--> NULL: config of plugin [%s](%s) in application is undefined, use DEFAULT:\n%s',
-          info.code, name, JSON_stringify(info.mixture));
+      console.log('--> %s(%s) (Undefined/default):', chalk.configIsNull(info.code), chalk.configIsNull(name));
+      console.log(chalk.configDefault(JSON_stringify(info.mixture)));
       break;
 
       case 0:
-      console.log('--> EMPTY: config of plugin [%s](%s) in application is empty, use DEFAULT:\n%s',
-          info.code, name, JSON_stringify(info.mixture));
+      console.log('--> %s(%s) (Empty/default):', chalk.configIsEmpty(info.code), chalk.configIsEmpty(name));
+      console.log(chalk.configDefault(JSON_stringify(info.mixture)));
       break;
 
       case 1:
-      console.log('--> OK: config of plugin [%s](%s) in application is defined, use MIXTURE:\n%s',
-          info.code, name, JSON_stringify(info.mixture));
+      console.log('--> %s(%s) (Ok/customized):', chalk.configIsOk(info.code), chalk.configIsOk(name));
+      console.log(chalk.configMixture(JSON_stringify(info.mixture)));
       break;
     }
   });
 
-  console.log('[+] Bridge configuration checking result:');
+  console.log(chalk.heading1('[+] %s configuration checking result:'), chalk.configModule('Bridge'));
   let bridgeInfos = lodash.get(summary, ['config', 'sandbox', 'bridges'], {});
   lodash.forOwn(bridgeInfos, function(info, name) {
     switch (info.status) {
       case -1:
-      console.log('--> NULL: confirmed configure of dialect [%s] is undefined, use DEFAULT:\n%s',
-          name, JSON_stringify(info.mixture));
+      console.log('--> %s (Undefined/default):', chalk.configIsNull(name));
+      console.log(chalk.configDefault(JSON_stringify(info.mixture)));
       break;
 
       case 0:
-      console.log('--> EMPTY: confirmed configure of dialect [%s] is empty, use DEFAULT:\n%s',
-          name, JSON_stringify(info.mixture));
+      console.log('--> %s (Empty/default):', chalk.configIsEmpty(name));
+      console.log(chalk.configDefault(JSON_stringify(info.mixture)));
       break;
 
       case 1:
-      console.log('--> OK: confirmed configure of dialect [%s] is determined, use MIXTURE:\n%s',
-          name, JSON_stringify(info.mixture));
+      console.log('--> %s (Ok/customized):', chalk.configIsOk(name));
+      console.log(chalk.configMixture(JSON_stringify(info.mixture)));
       break;
     }
   });
