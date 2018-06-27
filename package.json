@@ -9,6 +9,7 @@
   "files": [
     "bin/",
     "config/",
+    "data/",
     "dist/",
     "lib/"
   ],

@@ -86,6 +86,13 @@ function SandboxManager(params) {
   });
 
   let REGISTRY_EXCLUDED_SERVICES = [ getComponentLabel('sandboxRegistry') ];
+  LX.has('silly') && LX.log('silly', LT.add({
+    excludedServices: REGISTRY_EXCLUDED_SERVICES
+  }).toMessage({
+    tags: [ blockRef, 'excluded-internal-services' ],
+    text: ' - REGISTRY_EXCLUDED_SERVICES: ${excludedServices}'
+  }));
+
   sandboxInjektor.registerObject('sandboxRegistry', new SandboxRegistry({
     injektor: sandboxInjektor,
     excludedServices: REGISTRY_EXCLUDED_SERVICES
@@ -104,13 +111,6 @@ function SandboxManager(params) {
   lodash.forOwn(miscObjects, function(obj, name) {
     sandboxInjektor.registerObject(name, obj, chores.injektorContext);
   });
-
-  LX.has('silly') && LX.log('silly', LT.add({
-    excludedServices: REGISTRY_EXCLUDED_SERVICES
-  }).toMessage({
-    tags: [ blockRef, 'excluded-internal-services' ],
-    text: ' - REGISTRY_EXCLUDED_SERVICES: ${excludedServices}'
-  }));
 
   let instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers) {
     let exceptions = [];
@@ -178,11 +178,12 @@ function SandboxManager(params) {
     runhookInjektor.defineService(managerName, managerConstructor, chores.injektorContext);
   });
   runhookInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
+  let runhookManager = runhookInjektor.lookup('runhookManager', chores.injektorContext);
 
-  runhookInjektor.lookup('runhookManager', chores.injektorContext);
+  sandboxInjektor.registerObject('runhookManager', runhookManager, chores.injektorContext);
 
   self.getRunhookManager = function() {
-    return runhookInjektor.lookup('runhookManager', chores.injektorContext);
+    return runhookManager;
   }
 
   self.getSandboxNames = function() {
@@ -387,17 +388,18 @@ let pickSandboxServiceHelp = function(serviceName, blocks) {
   }
 };
 
-let SandboxRegistry = function(params) {
+function SandboxRegistry(params) {
   params = params || {};
+  let {injektor, isExcluded, excludedServices} = params;
   this.defineService = function(name, construktor, context) {
     context = context || {};
-    let info = params.injektor.parseName(name, context);
+    let info = injektor.parseName(name, context);
     if (info.scope === 'devebot') {
       let RestrictedError = chores.buildError('RestrictedDevebotError');
       throw new RestrictedError('dependency scope [devebot] is restricted');
     }
     let exceptions = [];
-    let fullname = params.injektor.resolveName(serviceName, {
+    let fullname = injektor.resolveName(serviceName, {
       scope: context.scope,
       exceptions: exceptions
     });
@@ -405,19 +407,18 @@ let SandboxRegistry = function(params) {
       let DuplicatedError = chores.buildError('DuplicatedDevebotError');
       throw new DuplicatedError('dependency item is duplicated');
     }
-    params.injektor.defineService(name, construktor, context);
+    injektor.defineService(name, construktor, context);
   };
   this.lookupService = function(serviceName, context) {
     context = context || {};
     let exceptions = [];
-    let fullname = params.injektor.resolveName(serviceName, {
+    let fullname = injektor.resolveName(serviceName, {
       scope: context.scope,
       exceptions: exceptions
     });
     if (fullname == null) return null;
-    if (lodash.isFunction(params.isExcluded) && params.isExcluded(fullname)) return null;
-    if (lodash.isArray(params.excludedServices) && 
-        params.excludedServices.indexOf(fullname) >= 0) return null;
-    return params.injektor.lookup(serviceName, context);
+    if (lodash.isFunction(isExcluded) && isExcluded(fullname)) return null;
+    if (lodash.isArray(excludedServices) && excludedServices.indexOf(fullname) >= 0) return null;
+    return injektor.lookup(serviceName, context);
   }
 };
