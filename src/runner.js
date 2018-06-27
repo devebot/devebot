@@ -28,21 +28,19 @@ function Runner(params) {
   let scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
   let scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
 
-  let ws = new WsServerMock();
-
-  let outlet = scriptRenderer.createOutlet({ ws: ws });
-
-  ws.on('message', function(command) {
-    LX.has('silly') && LX.log('silly', LT.add({
-      command: command
-    }).toMessage({
-      tags: [ blockRef, 'receive-a-command' ],
-      text: ' - Runner receives a command: %{command}'
-    }));
-    scriptExecutor.executeCommand(command, outlet);
-  });
-
   this.listen = function() {
+    let ws = new WsServerMock();
+
+    let outlet = scriptRenderer.createOutlet({ ws: ws });
+
+    ws.on('message', function(command) {
+      LX.has('silly') && LX.log('silly', LT.add({ command }).toMessage({
+        tags: [ blockRef, 'receive-a-command' ],
+        text: ' - Runner receives a command: %{command}'
+      }));
+      scriptExecutor.executeCommand(command, outlet);
+    });
+
     return ws.register(new WsClientMock(ws));
   }
 
