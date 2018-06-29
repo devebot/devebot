@@ -55,7 +55,7 @@ function AbstractOutlet(params) {
       case 'definition':
       self._send(JSON.stringify({
         state: 'definition',
-        value: output.value
+        payload: output
       }));
       break;
 
@@ -81,7 +81,7 @@ function AbstractOutlet(params) {
       self._send(JSON.stringify({
         state: constx.WEBSOCKET.STATE.FAILED,
         message: constx.WEBSOCKET.MSG_ON.FAILED,
-        details: standardizeOutput(params.schemaValidator, output, true)
+        payload: standardizeOutput(params.schemaValidator, output, true)
       }));
       break;
 
@@ -89,7 +89,7 @@ function AbstractOutlet(params) {
       self._send(JSON.stringify({
         state: constx.WEBSOCKET.STATE.COMPLETED,
         message: constx.WEBSOCKET.MSG_ON.COMPLETED,
-        details: standardizeOutput(params.schemaValidator, output, false)
+        payload: standardizeOutput(params.schemaValidator, output, false)
       }));
       break;
 

@@ -14,18 +14,12 @@ const Runner = require('./runner');
 const Server = require('./server');
 const blockRef = chores.getBlockRef(__filename);
 
-function runLoggingWrapper() {
-  let loggingWrapper = new LoggingWrapper(blockRef);
-  return {
-    logger: loggingWrapper.getLogger(),
-    tracer: loggingWrapper.getTracer()
-  }
-}
-
 function appLoader(params) {
   params = params || {};
 
-  let { logger: LX, tracer: LT } = runLoggingWrapper();
+  let loggingWrapper = new LoggingWrapper(blockRef);
+  let LX = loggingWrapper.getLogger();
+  let LT = loggingWrapper.getTracer();
   let ctx = { LX, LT };
 
   LX.has('silly') && LX.log('silly', LT.add({ context: lodash.cloneDeep(params) }).toMessage({

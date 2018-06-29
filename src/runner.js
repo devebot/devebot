@@ -44,6 +44,17 @@ function Runner(params) {
     return ws.register(new WsClientMock(ws));
   }
 
+  let profileConfig = injektor.lookup('profileConfig', chores.injektorContext);
+  if (profileConfig.devebot && profileConfig.devebot.coupling === 'loose') {
+    let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
+    this.getSandboxManager = function() {
+      return sandboxManager;
+    }
+    this.getSandboxService = function(serviceName, context) {
+      return sandboxManager.getSandboxService(serviceName, context);
+    }
+  }
+
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'

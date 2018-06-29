@@ -58,12 +58,10 @@ function ScriptExecutor(params) {
     if (command.name == 'definition') {
       promize = Promise.resolve().then(function() {
         outlet.render('definition', {
-          value: {
-            appName: params.appName,
-            appInfo: params.appInfo,
-            appinfo: params.appInfo, // deprecated
-            commands: runhookManager.getDefinitions()
-          }
+          appName: params.appName,
+          appInfo: params.appInfo,
+          appinfo: params.appInfo, // deprecated
+          commands: runhookManager.getDefinitions()
         });
       });
     } else {
