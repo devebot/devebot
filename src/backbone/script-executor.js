@@ -46,12 +46,9 @@ function ScriptExecutor(params) {
 
     let reqTr = LT.branch({ key: 'requestId', value: command.requestId });
 
-    LX.has('info') && LX.log('info', reqTr.add({
-      commandName: command.name,
-      command: command
-    }).toMessage({
+    LX.has('info') && LX.log('info', reqTr.add({ commandName: command.name, command }).toMessage({
       tags: [ blockRef, 'executeCommand', 'begin' ],
-      text: '{commandName}#{requestId} start, details: {command}'
+      text: '${commandName}#${requestId} start, details: {command}'
     }));
 
     let promize;
@@ -60,7 +57,6 @@ function ScriptExecutor(params) {
         outlet.render('definition', {
           appName: params.appName,
           appInfo: params.appInfo,
-          appinfo: params.appInfo, // deprecated
           commands: runhookManager.getDefinitions()
         });
       });
@@ -69,18 +65,14 @@ function ScriptExecutor(params) {
     }
 
     promize.catch(function(error) {
-      LX.has('silly') && LX.log('silly', reqTr.add({
-        commandName: command.name
-      }).toMessage({
+      LX.has('silly') && LX.log('silly', reqTr.add({ commandName: command.name }).toMessage({
         tags: [ blockRef, 'executeCommand', 'failed' ],
-        text: '{commandName}#{requestId} is failed'
+        text: '${commandName}#${requestId} is failed'
       }));
     }).finally(function() {
-      LX.has('info') && LX.log('info', reqTr.add({
-        commandName: command.name
-      }).toMessage({
+      LX.has('info') && LX.log('info', reqTr.add({ commandName: command.name }).toMessage({
         tags: [ blockRef, 'executeCommand', 'done' ],
-        text: '{commandName}#{requestId} has done'
+        text: '${commandName}#${requestId} has done'
       }));
       outlet.render('done');
     });

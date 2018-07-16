@@ -48,10 +48,7 @@ function SandboxManager(params) {
     text: ' - load the sandbox${sandboxNames} with configuration: ${sandboxConfig}'
   }));
 
-  LX.has('silly') && LX.log('silly', LT.add({
-    sandboxNames: sandboxNames,
-    sandboxConfig: sandboxConfig
-  }).toMessage({
+  LX.has('silly') && LX.log('silly', LT.add({ sandboxNames, sandboxConfig }).toMessage({
     tags: [ blockRef, 'sandbox-info' ],
     text: ' - create sandbox${sandboxNames}.injektor object'
   }));
@@ -99,6 +96,7 @@ function SandboxManager(params) {
   }), chores.injektorContext);
 
   let injectedHandlers = {};
+  let injectedServices = {};
   let sandboxName = params['sandboxNames'].join(',');
   let profileName = params['profileNames'].join(',');
   let miscObjects = {
@@ -112,7 +110,7 @@ function SandboxManager(params) {
     sandboxInjektor.registerObject(name, obj, chores.injektorContext);
   });
 
-  let instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers) {
+  let instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers, injectedServices) {
     let exceptions = [];
     let handlerName = [handlerRecord.crateScope, handlerRecord.name].join(_injektor.separator);
     LX.has('silly') && LX.log('silly', LT.add({ handlerName, handlerType }).toMessage({
@@ -122,6 +120,10 @@ function SandboxManager(params) {
     let handler = _injektor.lookup(handlerName, exceptions);
     if (handler && injectedHandlers) {
       injectedHandlers[handlerName] = handler;
+    }
+    if (handler && injectedServices && handlerRecord.crateScope) {
+      injectedServices[handlerRecord.crateScope] = injectedServices[handlerRecord.crateScope] || {};
+      injectedServices[handlerRecord.crateScope][handlerName] = handler;
     }
     if (handler && handlerType === 'TRIGGER') {
       let methods = {
@@ -154,15 +156,15 @@ function SandboxManager(params) {
   }
 
   lodash.forOwn(dialectMap, function(dialectRecord, dialectName) {
-    instantiateObject(sandboxInjektor, dialectRecord, 'DIALECT', injectedHandlers);
+    instantiateObject(sandboxInjektor, dialectRecord, 'DIALECT', injectedHandlers, injectedServices);
   });
 
   lodash.forOwn(serviceMap, function(serviceRecord, serviceName) {
-    instantiateObject(sandboxInjektor, serviceRecord, 'SERVICE', injectedHandlers);
+    instantiateObject(sandboxInjektor, serviceRecord, 'SERVICE', injectedHandlers, injectedServices);
   });
 
   lodash.forOwn(triggerMap, function(triggerRecord, triggerName) {
-    instantiateObject(sandboxInjektor, triggerRecord, 'TRIGGER');
+    instantiateObject(sandboxInjektor, triggerRecord, 'TRIGGER', injectedServices);
   });
 
   let runhookInjektor = new Injektor(chores.injektorOptions);
@@ -173,6 +175,7 @@ function SandboxManager(params) {
   runhookInjektor.registerObject('sandboxName', sandboxName, chores.injektorContext);
   runhookInjektor.registerObject('profileName', profileName, chores.injektorContext);
   runhookInjektor.registerObject('injectedHandlers', injectedHandlers, chores.injektorContext);
+  runhookInjektor.registerObject('injectedServices', injectedServices, chores.injektorContext);
 
   lodash.forOwn(managerMap, function(managerConstructor, managerName) {
     runhookInjektor.defineService(managerName, managerConstructor, chores.injektorContext);
