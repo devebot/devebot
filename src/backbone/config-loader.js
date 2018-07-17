@@ -101,12 +101,17 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   };
 
   let config = {};
-  let defaultConfigDir = appRootDir ? path.join(appRootDir, CONFIG_SUBDIR) : null;
-  let externalConfigDir = resolveConfigDir(ctx, appName, appRootDir, customDir, customEnv);
 
-  LX.has('silly') && LX.log('silly', LT.add({ defaultConfigDir, externalConfigDir }).toMessage({
-    tags: [ blockRef, 'config-dir' ],
-    text: ' - configDir: ${externalConfigDir}'
+  let defaultConfigDir = appRootDir ? path.join(appRootDir, CONFIG_SUBDIR) : null;
+  LX.has('silly') && LX.log('silly', LT.add({ configDir: defaultConfigDir }).toMessage({
+    tags: [ blockRef, 'config-dir', 'internal-config-dir' ],
+    text: ' - internal configDir: ${configDir}'
+  }));
+
+  let externalConfigDir = resolveConfigDir(ctx, appName, appRootDir, customDir, customEnv);
+  LX.has('silly') && LX.log('silly', LT.add({ configDir: externalConfigDir }).toMessage({
+    tags: [ blockRef, 'config-dir', 'external-config-dir' ],
+    text: ' - external configDir: ${configDir}'
   }));
 
   let includedNames = {};
@@ -123,27 +128,27 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
 
   function loadApplicationConfig(configType, configDir) {
     if (configDir) {
+      LX.has('conlog') && LX.log('conlog', LT.add({ configType, configDir }).toMessage({
+        text: ' + load the "${configType}" configuration in "${configDir}"'
+      }));
       let configFiles = chores.filterFiles(configDir, '.*\.js');
       let configInfos = lodash.map(configFiles, function(file) {
         return file.replace('.js', '').split(/[_]/);
       });
 
-      let defaultFile = path.join(configDir, configType + '.js');
-      LX.has('conlog') && LX.log('conlog', LT.add({ defaultFile }).toMessage({
-        text: ' + load the default application config: ${defaultFile}'
+      LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
+        text: ' - load the application default config of "${configType}"'
       }));
+      let defaultFile = path.join(configDir, configType + '.js');
       config[configType]['expanse'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
       config[configType]['default'] = lodash.defaultsDeep({}, config[configType]['expanse'], config[configType]['default']);
 
       LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
-        text: ' + load the custom config of ${configType}'
+        text: ' - load the application customized config of "${configType}"'
       }));
       let expanseNames = filterConfigBy(ctx, configInfos, includedNames, configType);
       config[configType]['expanse'] = lodash.reduce(expanseNames, function(accum, expanseItem) {
         let configFile = path.join(configDir, expanseItem.join('_') + '.js');
-        LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
-          text: ' - load the environment config: ${configFile}'
-        }));
         let configObj = lodash.defaultsDeep(transformConfig(transCTX, configType, loadConfigFile(ctx, configFile), 'application'), accum);
         if (configObj.disabled) return accum;
         config[configType]['names'].push(expanseItem[1]);
@@ -202,10 +207,13 @@ let loadConfigFile = function(ctx, configFile) {
   let opStatus = { type: 'CONFIG', file: configFile };
   let content;
   try {
+    LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
+      text: ' - load config file: "${configFile}"'
+    }));
     content = loader(configFile, { stopWhenError: true });
     opStatus.hasError = false;
     LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
-      text: ' - config file ${configFile} loading has done.'
+      text: ' - loading config file: "${configFile}" has done.'
     }));
   } catch(err) {
     if (err.code != 'MODULE_NOT_FOUND') {
