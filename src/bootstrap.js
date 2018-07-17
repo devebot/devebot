@@ -115,7 +115,7 @@ function registerLayerware(presets, pluginNames, bridgeNames) {
     presets = { layerRootPath: presets };
   }
 
-  let initialize = function(presets, pluginNames, bridgeNames, context) {
+  function initialize(presets, pluginNames, bridgeNames, context) {
     presets = presets || {};
     context = context || {};
     if (typeof(presets.layerRootPath) === 'string' && presets.layerRootPath.length > 0) {
@@ -145,7 +145,7 @@ function launchApplication(context, pluginNames, bridgeNames) {
   return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS), pluginNames, bridgeNames)));
 }
 
-let expandExtensions = function (context, pluginNames, bridgeNames) {
+function expandExtensions(context, pluginNames, bridgeNames) {
   context = context || {};
   context = lodash.pick(context, ATTRS);
 
@@ -234,10 +234,12 @@ let expandExtensions = function (context, pluginNames, bridgeNames) {
   }, context);
 };
 
-appLoader.registerLayerware = registerLayerware;
-appLoader.launchApplication = launchApplication;
+let bootstrap = {};
 
-appLoader.parseArguments = function(active) {
+bootstrap.registerLayerware = registerLayerware;
+bootstrap.launchApplication = launchApplication;
+
+bootstrap.parseArguments = function(active) {
   if (active !== false) {
     let argv = minimist(process.argv.slice(2));
     let tasks = argv.task || argv.tasks || argv.mode;
@@ -254,13 +256,13 @@ appLoader.parseArguments = function(active) {
       }
     }
   }
-  return appLoader;
+  return bootstrap;
 }
 
 const builtinPackages = ['bluebird', 'lodash', 'injektor', 'logolite', 'schemato'];
 const internalModules = ['chores', 'loader', 'pinbug'];
 
-appLoader.require = function(packageName) {
+bootstrap.require = function(packageName) {
   if (builtinPackages.indexOf(packageName) >= 0) return require(packageName);
   if (internalModules.indexOf(packageName) >= 0) return require('./utils/' + packageName);
   if (packageName == 'debug') return require('./utils/pinbug');
@@ -282,4 +284,4 @@ let touchPackage = function(pkgInfo, pkgType, action) {
   return null;
 }
 
-module.exports = global.devebot = global.Devebot = appLoader;
+module.exports = global.devebot = global.Devebot = bootstrap;
