@@ -239,7 +239,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
       newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', bridgeCode], {});
     }
 
-    if (newFeatures.logoliteEnabled) {
+    if (newFeatures.logoliteEnabled !== false) {
       let loggingFactory = kwargs.loggingFactory.branch(sectorRef);
       this.logger = loggingFactory.getLogger();
       this.tracer = loggingFactory.getTracer();
@@ -254,7 +254,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
 
     let opStatus = { stage: 'instantiating', type: 'DIALECT', name: dialectName, code: bridgeCode };
     try {
-      if (newFeatures.logoliteEnabled) {
+      if (newFeatures.logoliteEnabled !== false) {
         LX.has('silly') && LX.log('silly', LT.toMessage({
           tags: [ sectorRef, 'constructor-begin' ],
           text: ' + constructor start ...'
@@ -263,7 +263,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
 
       bridgeConstructor.call(this, lodash.get(kwargs, configPath, {}));
 
-      if (newFeatures.logoliteEnabled) {
+      if (newFeatures.logoliteEnabled !== false) {
         LX.has('silly') && LX.log('silly', LT.toMessage({
           tags: [ sectorRef, 'constructor-end' ],
           text: ' - constructor has finished'
