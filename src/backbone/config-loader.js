@@ -126,6 +126,10 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   includedNames[CONFIG_SANDBOX_NAME] = lodash.concat(
     lodash.difference(includedNames[CONFIG_SANDBOX_NAME], appSandboxes), appSandboxes);
 
+  LX.has('conlog') && LX.log('conlog', LT.add({ includedNames }).toMessage({
+    text: ' + included names: ${includedNames}'
+  }));
+
   function loadApplicationConfig(configType, configDir) {
     if (configDir) {
       LX.has('conlog') && LX.log('conlog', LT.add({ configType, configDir }).toMessage({
@@ -154,7 +158,8 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
         config[configType]['names'].push(expanseItem[1]);
         return configObj;
       }, config[configType]['expanse']);
-      config[configType]['mixture'] = lodash.defaultsDeep({}, config[configType]['expanse'], config[configType]['default']);
+      config[configType]['mixture'] = config[configType]['mixture'] || {};
+      config[configType]['mixture'] = lodash.defaultsDeep(config[configType]['expanse'], config[configType]['default'], config[configType]['mixture']);
     }
   }
 
