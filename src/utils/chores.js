@@ -10,7 +10,7 @@ const uuidv4 = require('logolite/uuidv4');
 const constx = require('./constx');
 const loader = require('./loader');
 const envbox = require('./envbox').instance;
-const DEFAULT_SCOPE = envbox.getEnv('DEVEBOT_DEFAULT_SCOPE', 'devebot');
+const DEFAULT_SCOPE = process.env['DEVEBOT_DEFAULT_SCOPE'] || 'devebot';
 const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:chores');
 
 let store = {
@@ -226,20 +226,20 @@ chores.injektorOptions = store.injektorOptions;
 chores.injektorContext = store.injektorContext;
 
 chores.fatalErrorReaction = function() {
-  return envbox.getEnv('DEVEBOT_FATAL_ERROR_REACTION');
+  return envbox.getEnv('FATAL_ERROR_REACTION');
 }
 
 chores.skipProcessExit = function() {
-  return envbox.getEnv('DEVEBOT_SKIP_PROCESS_EXIT') === 'true';
+  return envbox.getEnv('SKIP_PROCESS_EXIT') === 'true';
 }
 
 chores.isSilentForced = function(moduleId, cfg) {
-  let fsm = envbox.getEnv('DEVEBOT_FORCING_SILENT');
+  let fsm = envbox.getEnv('FORCING_SILENT');
   return (fsm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose === false);
 }
 
 chores.isVerboseForced = function(moduleId, cfg) {
-  let fvm = envbox.getEnv('DEVEBOT_FORCING_VERBOSE');
+  let fvm = envbox.getEnv('FORCING_VERBOSE');
   return (fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
 }
 
@@ -261,10 +261,10 @@ chores.isFeatureSupported = function(label) {
     store.featureEnabled = null;
   }
   if (!store.featureDisabled) {
-    store.featureDisabled = envbox.getEnv('DEVEBOT_FEATURE_DISABLED');
+    store.featureDisabled = envbox.getEnv('FEATURE_DISABLED');
   }
   if (!store.featureEnabled) {
-    store.featureEnabled = envbox.getEnv('DEVEBOT_FEATURE_ENABLED');
+    store.featureEnabled = envbox.getEnv('FEATURE_ENABLED');
   }
   label = chores.isArray(label) ? label : [label];
   let ok = true;

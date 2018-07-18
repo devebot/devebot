@@ -12,8 +12,8 @@ const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
 const CONFIG_SUBDIR = '/config';
-const CONFIG_PROFILE_NAME = envbox.getEnv('DEVEBOT_CONFIG_PROFILE_NAME', 'profile');
-const CONFIG_SANDBOX_NAME = envbox.getEnv('DEVEBOT_CONFIG_SANDBOX_NAME', 'sandbox');
+const CONFIG_PROFILE_NAME = envbox.getEnv('CONFIG_PROFILE_NAME', 'profile');
+const CONFIG_SANDBOX_NAME = envbox.getEnv('CONFIG_SANDBOX_NAME', 'sandbox');
 const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 const RELOADING_FORCED = true;

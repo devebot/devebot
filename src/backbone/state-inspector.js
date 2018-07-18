@@ -23,7 +23,7 @@ function StateInspector(params) {
   }));
 
   let options = {
-    mode: filterTask(envbox.getEnv('DEVEBOT_TASKS'))
+    mode: filterTask(envbox.getEnv('TASKS'))
   };
   let services = {};
   let stateMap = {};

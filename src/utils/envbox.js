@@ -6,87 +6,80 @@ const Chalk = require('./chalk');
 
 const ENV_DEF_DEFAULT = [
   {
-    name: "DEVEBOT_PROFILE",
+    name: "PROFILE",
     type: "string",
     description: "Customized profile names, merged from right to left"
   },
   {
-    name: "DEVEBOT_SANDBOX",
+    name: "SANDBOX",
     type: "string",
     description: "Customized sandbox names, merged from right to left"
   },
   {
-    name: "DEVEBOT_CONFIG_DIR",
+    name: "CONFIG_DIR",
     type: "string",
     description: "The home directory of configuration"
   },
   {
-    name: "DEVEBOT_CONFIG_ENV",
+    name: "CONFIG_ENV",
     type: "string",
     description: "Staging name for configuration"
   },
   {
-    name: "DEVEBOT_CONFIG_PROFILE_NAME",
+    name: "CONFIG_PROFILE_NAME",
     type: "string",
     defaultValue: "profile",
     description: "File name (without extension) of 'profile' configuration"
   },
   {
-    name: "DEVEBOT_CONFIG_SANDBOX_NAME",
+    name: "CONFIG_SANDBOX_NAME",
     type: "string",
     defaultValue: "sandbox",
     description: "File name (without extension) of 'sandbox' configuration"
   },
   {
-    name: "DEVEBOT_DEFAULT_SCOPE",
-    type: "string",
-    defaultValue: "devebot",
-    scope: "test",
-    description: "Default scope that used as npm debug's namespace name"
-  },
-  {
-    name: "DEVEBOT_FEATURE_DISABLED",
+    name: "FEATURE_DISABLED",
     type: "array",
     scope: "test",
     description: "List of features that should be disabled"
   },
   {
-    name: "DEVEBOT_FEATURE_ENABLED",
+    name: "FEATURE_ENABLED",
     type: "array",
-    aliases: ["DEVEBOT_FEATURE_LABELS"],
+    aliases: ["FEATURE_LABELS"],
     scope: "test",
     description: "List of features that should be enabled"
   },
   {
-    name: "DEVEBOT_FORCING_SILENT",
+    name: "FORCING_SILENT",
     type: "array",
     scope: "test",
     description: "List of package names that should be muted (server start/stop messages)"
   },
   {
-    name: "DEVEBOT_FORCING_VERBOSE",
+    name: "FORCING_VERBOSE",
     type: "array",
     scope: "test",
     description: "List of package names that should be verbose (server start/stop messages)"
   },
   {
-    name: "DEVEBOT_FATAL_ERROR_REACTION",
+    name: "FATAL_ERROR_REACTION",
     type: "string",
     enum: ["exit", "exception"],
     scope: "test",
     description: "The action that should do if application encounter a fatal error"
   },
   {
-    name: "DEVEBOT_SKIP_PROCESS_EXIT",
+    name: "SKIP_PROCESS_EXIT",
     type: "boolean",
     defaultValue: "false",
     scope: "test",
     description: "Skipping execute process.exit (used in testing environment only)"
   },
   {
-    name: "DEVEBOT_TASKS",
+    name: "TASKS",
     type: "array",
-    aliases: ["DEVEBOT_TASK", "DEVEBOT_VERIFICATION_TASK", "DEVEBOT_VERIFICATION_MODE"],
+    aliases: ["TASK", "VERIFICATION_TASK", "VERIFICATION_MODE"],
     description: "The action(s) that will be executed instead of start the server"
   }
 ]
@@ -98,31 +91,44 @@ function EnvironmentCollection(params) {
   let namespace = params.namespace || 'DEVEBOT';
   let store = { env: {} };
 
+  function getLabel(name) {
+    let ns = namespace || 'DEVEBOT';
+    return ns + '_' + name;
+  }
+
+  function getValue(name) {
+    if (namespace) {
+      let longname = namespace + '_' + name;
+      if (longname in process.env) {
+        return process.env[longname];
+      }
+    }
+    return process.env['DEVEBOT' + '_' + name];
+  }
+
   this.getEnv = function(label, defaultValue) {
     if (!lodash.isString(label)) return undefined;
-    if (!lodash.startsWith(label, namespace)) {
-      return process.env[label];
+    if (!(label in definition)) {
+      return process.env[label] || defaultValue;
     }
     if (process.env.NODE_ENV === 'test') {
       delete store.env[label];
     }
     if (!(label in store.env)) {
-      store.env[label] = process.env[label];
+      store.env[label] = getValue(label);
       if (definition[label]) {
         if (lodash.isUndefined(defaultValue)) {
           defaultValue = definition[label].defaultValue;
         }
         if (lodash.isArray(definition[label].aliases)) {
           lodash.forEach(definition[label].aliases, function(alias) {
-            store.env[label] = store.env[label] || process.env[alias];
+            store.env[label] = store.env[label] || getValue(alias);
           });
         }
         store.env[label] = store.env[label] || defaultValue;
         if (definition[label].type === 'array') {
           store.env[label] = stringToArray(store.env[label]);
         }
-      } else {
-        store.env[label] = store.env[label] || defaultValue;
       }
     }
     return store.env[label];
@@ -149,7 +155,7 @@ function EnvironmentCollection(params) {
     console.log(chalk.heading1('[+] Display environment variables:'));
     lodash.forOwn(definition, function(info, label) {
       if (info && info.scope && excl.indexOf(info.scope) >= 0) return;
-      let envMsg = util.format(' |> %s: %s', chalk.envName(label), info.description);
+      let envMsg = util.format(' |> %s: %s', chalk.envName(getLabel(label)), info.description);
       if (info && info.defaultValue != null) {
         envMsg += util.format(' (default: %s)', chalk.defaultValue(JSON.stringify(info.defaultValue)));
       }

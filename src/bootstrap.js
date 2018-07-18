@@ -4,8 +4,8 @@ const path = require('path');
 const lodash = require('lodash');
 const minimist = require('minimist');
 const appinfoLoader = require('./backbone/appinfo-loader');
-const errorCollector = require('./backbone/error-collector').instance;
-const stateInspector = require('./backbone/state-inspector').instance;
+const ErrorCollector = require('./backbone/error-collector');
+const StateInspector = require('./backbone/state-inspector');
 const ConfigLoader = require('./backbone/config-loader');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const NameResolver = require('./backbone/name-resolver');
@@ -13,6 +13,8 @@ const chores = require('./utils/chores');
 const Runner = require('./runner');
 const Server = require('./server');
 const blockRef = chores.getBlockRef(__filename);
+const errorCollector = ErrorCollector.instance;
+const stateInspector = StateInspector.instance;
 
 function appLoader(params) {
   params = params || {};
