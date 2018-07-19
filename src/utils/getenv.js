@@ -1,8 +1,17 @@
 'use strict';
 
 module.exports = function(envName, defaultValue) {
-  if (!envName in process.env) {
-    return defaultValue;
+  if (typeof envName === 'string') {
+    if (envName in process.env) {
+      return process.env[envName];
+    }
   }
-  return process.env[envName] || defaultValue;
+  if (envName instanceof Array) {
+    for(let i in envName) {
+      if (envName[i] in process.env) {
+        return process.env[envName[i]];
+      }
+    }
+  }
+  return defaultValue;
 }

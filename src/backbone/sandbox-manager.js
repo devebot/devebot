@@ -56,7 +56,7 @@ function SandboxManager(params) {
   let sandboxInjektor = new Injektor(chores.injektorOptions);
   let COPIED_DEPENDENCIES = [ 'appName', 'appInfo',
     'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
-    'schemaValidator', 'loggingFactory'
+    'schemaValidator', 'loggingFactory', 'processManager'
   ];
   COPIED_DEPENDENCIES.forEach(function(refName) {
     sandboxInjektor.registerObject(refName, params[refName], chores.injektorContext);
@@ -334,6 +334,9 @@ SandboxManager.argumentSchema = {
       "type": "object"
     },
     "loggingFactory": {
+      "type": "object"
+    },
+    "processManager": {
       "type": "object"
     },
     "schemaValidator": {
