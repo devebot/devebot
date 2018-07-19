@@ -161,7 +161,7 @@ function EnvironmentCollection(params) {
     excl = lodash.isArray(excl) ? excl : [excl];
     // print to console or muted?
     let lines = [], muted = (opts.muted === true);
-    let chalk = muted ? new Chalk({ blanked: true }) : defaultChalk;
+    let chalk = muted ? new Chalk({ blanked: true, themes: DEFAULT_THEMES }) : DEFAULT_CHALK;
     let printInfo = function() {
       if (muted) {
         lines.push(util.format.apply(util, arguments));
@@ -206,16 +206,18 @@ EnvironmentCollection.prototype.stringToArray = stringToArray;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
 
-let defaultChalk = new Chalk({
-  themes: {
-    heading1: ['cyan', 'bold'],
-    heading2: 'cyan',
-    envName: ['green', 'bold'],
-    envAttrName: ['grey', 'bold'],
-    envAttrValue: [ 'grey' ],
-    currentValue: ['blue'],
-    defaultValue: ['magenta']
-  }
+const DEFAULT_THEMES = {
+  heading1: ['cyan', 'bold'],
+  heading2: 'cyan',
+  envName: ['green', 'bold'],
+  envAttrName: ['grey', 'bold'],
+  envAttrValue: [ 'grey' ],
+  currentValue: ['blue'],
+  defaultValue: ['magenta']
+};
+
+const DEFAULT_CHALK = new Chalk({
+  themes: DEFAULT_THEMES
 });
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance
