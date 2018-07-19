@@ -1,6 +1,6 @@
 module.exports = {
   devebot: {
-    mode: 'command', // 'silent', 'heartbeat', 'command'
+    mode: 'server', // 'server', 'silent', 'tictac'
     host: '0.0.0.0',
     port: '17779',
     authen: {

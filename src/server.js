@@ -68,7 +68,7 @@ function Server(params) {
     }
   });
 
-  let mode = ['silent', 'heartbeat', 'command'].indexOf(devebotCfg.mode);
+  let mode = ['silent', 'tictac', 'server'].indexOf(getDevebotMode(devebotCfg.mode));
 
   this.start = function() {
     LX.has('silly') && LX.log('silly', LT.toMessage({
@@ -82,11 +82,11 @@ function Server(params) {
         let serverHost = lodash.get(devebotCfg, ['host'], '0.0.0.0');
         let serverPort = lodash.get(devebotCfg, ['port'], 17779);
         let serverInstance = server.listen(serverPort, serverHost, function () {
+          let proto = sslEnabled ? 'wss' : 'ws';
           let host = serverInstance.address().address;
           let port = serverInstance.address().port;
           chores.isVerboseForced('devebot', devebotCfg) &&
-              console.log(appName + ' is listening on %s://%s:%s%s', 
-                  sslEnabled?'wss':'ws', host, port, appRootUrl);
+              console.log('%s is listening on %s://%s:%s%s', appName, proto, host, port, appRootUrl);
           onResolved(serverInstance);
         });
       });
@@ -145,7 +145,7 @@ function Server(params) {
         text: 'webserver has stopped'
       }));
       chores.isVerboseForced('devebot', devebotCfg) &&
-          console.log(appName + ' has been closed');
+          console.log('%s has been closed', appName);
       return Promise.resolve();
     });
   }
@@ -198,3 +198,12 @@ function Server(params) {
 util.inherits(Server, Kernel);
 
 module.exports = Server;
+
+const MODE_MAP = {
+  "command": "server",
+  "heartbeat": "tictac"
+}
+
+function getDevebotMode(mode) {
+  return MODE_MAP[mode] || mode;
+}
