@@ -5,9 +5,6 @@ let constx = {
   APPINFO: {
     FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license']
   },
-  CONFIG: {
-    MUST_SPECIFY_IN_ENV: true
-  },
   LOGGER: {
     LABELS: {
       silly: {

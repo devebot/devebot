@@ -61,18 +61,12 @@ let readVariable = function(ctx, appLabel, varName) {
   let value, varLabel;
   for(const varLabel of varLabels) {
     value = envbox.getEnv(varLabel);
-    LX.has('conlog') && LX.log('conlog', LT.add({
-      label: varLabel,
-      value: value
-    }).toMessage({
+    LX.has('conlog') && LX.log('conlog', LT.add({ label: varLabel, value }).toMessage({
       text: ' - Get value of ${label}: ${value}'
     }));
     if (value) break;
   }
-  LX.has('conlog') && LX.log('conlog', LT.add({
-    label: varLabels[0],
-    value: value
-  }).toMessage({
+  LX.has('conlog') && LX.log('conlog', LT.add({ label: varLabels[0], value }).toMessage({
     text: ' - Final value of ${label}: ${value}'
   }));
   return value;

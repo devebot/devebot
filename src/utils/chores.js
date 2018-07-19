@@ -10,7 +10,7 @@ const uuidv4 = require('logolite/uuidv4');
 const constx = require('./constx');
 const loader = require('./loader');
 const envbox = require('./envbox').instance;
-const DEFAULT_SCOPE = process.env['DEVEBOT_DEFAULT_SCOPE'] || 'devebot';
+const DEFAULT_SCOPE = require('./getenv')('DEVEBOT_DEFAULT_SCOPE', 'devebot');
 const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:chores');
 
 let store = {
