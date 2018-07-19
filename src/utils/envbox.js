@@ -156,27 +156,40 @@ function EnvironmentCollection(params) {
   this.printEnvList = function(opts) {
     let self = this;
     opts = opts || {};
+    // get the excluded scopes
     let excl = opts.excludes || [ 'test' ];
     excl = lodash.isArray(excl) ? excl : [excl];
-    console.log(chalk.heading1('[+] Display environment variables:'));
+    // print to console or muted?
+    let lines = [], muted = (opts.muted === true);
+    let chalk = muted ? new Chalk({ blanked: true }) : defaultChalk;
+    let printInfo = function() {
+      if (muted) {
+        lines.push(util.format.apply(util, arguments));
+      } else {
+        console.log.apply(console, arguments);
+      }
+    }
+    // printing
+    printInfo(chalk.heading1('[+] Display environment variables:'));
     lodash.forOwn(definition, function(info, label) {
       if (info && info.scope && excl.indexOf(info.scope) >= 0) return;
       let envMsg = util.format(' |> %s: %s', chalk.envName(getLabel(label)), info.description);
       if (info && info.defaultValue != null) {
         envMsg += util.format(' (default: %s)', chalk.defaultValue(JSON.stringify(info.defaultValue)));
       }
-      console.log(envMsg);
+      printInfo(envMsg);
       if (info && info.scope) {
-        console.log('    - %s: %s', chalk.envAttrName('scope'), chalk.envAttrValue(info.scope));
+        printInfo('    - %s: %s', chalk.envAttrName('scope'), chalk.envAttrValue(info.scope));
       }
       if (info && info.type === 'array') {
-        console.log('    - %s: (%s)', chalk.envAttrName('format'), chalk.envAttrValue('comma-separated-string'));
+        printInfo('    - %s: (%s)', chalk.envAttrName('format'), chalk.envAttrValue('comma-separated-string'));
       }
       if (info && info.type === 'boolean') {
-        console.log('    - %s: (%s)', chalk.envAttrName('format'), chalk.envAttrValue('true/false'));
+        printInfo('    - %s: (%s)', chalk.envAttrName('format'), chalk.envAttrValue('true/false'));
       }
-      console.log('    - %s: %s', chalk.envAttrName('current value'), chalk.currentValue(JSON.stringify(self.getEnv(label))));
+      printInfo('    - %s: %s', chalk.envAttrName('current value'), chalk.currentValue(JSON.stringify(self.getEnv(label))));
     });
+    return lines;
   }
 }
 
@@ -193,7 +206,7 @@ EnvironmentCollection.prototype.stringToArray = stringToArray;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
 
-let chalk = new Chalk({
+let defaultChalk = new Chalk({
   themes: {
     heading1: ['cyan', 'bold'],
     heading2: 'cyan',

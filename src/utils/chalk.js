@@ -6,7 +6,7 @@ function Chalk(params) {
   params = params || {};
   let themes = params.themes || {};
 
-  if (toolset.has('colors')) {
+  if (params.blanked !== true && toolset.has('colors')) {
     let colors = toolset.get('colors');
     colors.setTheme(themes);
     return colors;
