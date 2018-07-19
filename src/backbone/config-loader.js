@@ -12,7 +12,7 @@ const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
 const CONFIG_SUBDIR = '/config';
-const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
+const CONFIG_VAR_NAMES = [ 'PROFILE',  'SANDBOX', 'CONFIG_DIR', 'CONFIG_ENV' ];
 const RELOADING_FORCED = true;
 
 function ConfigLoader(params={}) {
@@ -33,9 +33,7 @@ function ConfigLoader(params={}) {
 
   let config = loadConfig
       .bind(null, CTX, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs)
-      .apply(null, Object.keys(CONFIG_VAR_NAMES).map(function(varName) {
-        return readVariable(CTX, label, CONFIG_VAR_NAMES[varName]);
-      }));
+      .apply(null, CONFIG_VAR_NAMES.map(readVariable.bind(null, CTX, label)));
 
   Object.defineProperty(this, 'config', {
     get: function() { return config },
