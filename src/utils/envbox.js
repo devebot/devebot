@@ -106,6 +106,11 @@ function EnvironmentCollection(params) {
     return process.env['DEVEBOT' + '_' + name];
   }
 
+  this.setNamespace = function(ns) {
+    namespace = ns;
+    return this;
+  }
+
   this.getEnv = function(label, defaultValue) {
     if (!lodash.isString(label)) return undefined;
     if (!(label in definition)) {
@@ -149,6 +154,7 @@ function EnvironmentCollection(params) {
   }
 
   this.printEnvList = function(opts) {
+    let self = this;
     opts = opts || {};
     let excl = opts.excludes || [ 'test' ];
     excl = lodash.isArray(excl) ? excl : [excl];
@@ -169,7 +175,7 @@ function EnvironmentCollection(params) {
       if (info && info.type === 'boolean') {
         console.log('    - %s: (%s)', chalk.envAttrName('format'), chalk.envAttrValue('true/false'));
       }
-      console.log('    - %s: %s', chalk.envAttrName('current value'), chalk.currentValue(JSON.stringify(store.env[label])));
+      console.log('    - %s: %s', chalk.envAttrName('current value'), chalk.currentValue(JSON.stringify(self.getEnv(label))));
     });
   }
 }

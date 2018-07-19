@@ -10,6 +10,7 @@ const ConfigLoader = require('./backbone/config-loader');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const NameResolver = require('./backbone/name-resolver');
 const chores = require('./utils/chores');
+const envbox = require('./utils/envbox').instance;
 const Runner = require('./runner');
 const Server = require('./server');
 const blockRef = chores.getBlockRef(__filename);
@@ -58,6 +59,8 @@ function appLoader(params) {
   if (lodash.isObject(params.presets)) {
     appRef.presets = lodash.cloneDeep(params.presets);
   }
+
+  envbox.setNamespace(chores.stringLabelCase(appName));
 
   let devebotRef = {
     type: 'framework',

@@ -22,11 +22,14 @@ function StateInspector(params) {
     text: ' + constructor start ...'
   }));
 
-  let options = {
-    mode: filterTask(envbox.getEnv('TASKS'))
-  };
+  let options = {};
   let services = {};
   let stateMap = {};
+
+  function getOptions() {
+    options.mode = options.mode || filterTask(envbox.getEnv('TASKS'));
+    return options;
+  }
 
   this.init = function(opts) {
     if (opts && opts.tasks) {
@@ -37,6 +40,7 @@ function StateInspector(params) {
   }
 
   this.register = function(bean) {
+    let options = getOptions();
     if (isEnabled(options)) {
       lodash.assign(services, bean);
     }
@@ -44,6 +48,7 @@ function StateInspector(params) {
   }
 
   this.collect = function(info) {
+    let options = getOptions();
     if (isEnabled(options)) {
       if (info instanceof Array) {
         lodash.assign.apply(lodash, lodash.concat([stateMap], info));
@@ -142,6 +147,7 @@ function StateInspector(params) {
   }
 
   this.conclude = function(opts) {
+    let options = getOptions();
     if (isEnabled(options)) {
       let label = getModeLabel(options);
       try {

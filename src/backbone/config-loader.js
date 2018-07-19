@@ -12,9 +12,6 @@ const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
 const CONFIG_SUBDIR = '/config';
-const CONFIG_PROFILE_NAME = envbox.getEnv('CONFIG_PROFILE_NAME', 'profile');
-const CONFIG_SANDBOX_NAME = envbox.getEnv('CONFIG_SANDBOX_NAME', 'sandbox');
-const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 const CONFIG_VAR_NAMES = { ctxName: 'PROFILE', boxName: 'SANDBOX', cfgDir: 'CONFIG_DIR', cfgEnv: 'CONFIG_ENV' };
 const RELOADING_FORCED = true;
 
@@ -84,11 +81,15 @@ let readVariable = function(ctx, appLabel, varName) {
 }
 
 let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, profileName, sandboxName, customDir, customEnv) {
+  const CONFIG_PROFILE_NAME = envbox.getEnv('CONFIG_PROFILE_NAME', 'profile');
+  const CONFIG_SANDBOX_NAME = envbox.getEnv('CONFIG_SANDBOX_NAME', 'sandbox');
+  const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
+  
   let { LX, LT, errorCollector, stateInspector, nameResolver } = ctx || this;
   appOptions = appOptions || {};
 
   let {plugin: pluginAliasMap, bridge: bridgeAliasMap} = nameResolver.getAbsoluteAliasMap();
-  let transCTX = { LX, LT, pluginAliasMap, bridgeAliasMap };
+  let transCTX = { LX, LT, pluginAliasMap, bridgeAliasMap, CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME };
 
   let libRefs = lodash.values(pluginRefs);
   if (devebotRef) {
@@ -284,7 +285,7 @@ let standardizeNames = function(ctx, cfgLabels) {
 }
 
 let transformConfig = function(ctx, configType, configData, moduleType, moduleName, modulePresets) {
-  let { LX, LT, pluginAliasMap, bridgeAliasMap } = ctx || this;
+  let { LX, LT, pluginAliasMap, bridgeAliasMap, CONFIG_SANDBOX_NAME } = ctx || this;
   if (configType === CONFIG_SANDBOX_NAME) {
     configData = convertSandboxConfig(ctx, configData, moduleType, moduleName, modulePresets);
     configData = doAliasMap(ctx, configData, pluginAliasMap, bridgeAliasMap);
