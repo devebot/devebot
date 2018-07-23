@@ -38,6 +38,14 @@ function ProcessManager(params) {
     set: function(value) {}
   });
 
+  Object.defineProperty(this, 'isMaster', {
+    get: function() {
+      if (!this.available || pm_id < 0 || pm_total <= 0) return false;
+      return (pm_id % pm_total) == 0;
+    },
+    set: function(value) {}
+  });
+
   Object.defineProperty(this, 'id', {
     get: function() {
       return typeof(pm_id) === 'number' && !isNaN(pm_id) ? pm_id : undefined;
@@ -68,12 +76,6 @@ ProcessManager.argumentSchema = {
   "$id": "processManager",
   "type": "object",
   "properties": {
-    "profileNames": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
     "profileConfig": {
       "type": "object"
     },

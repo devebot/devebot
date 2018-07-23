@@ -23,6 +23,7 @@ let store = {
 };
 let chores = {};
 
+// @Deprecated
 let CustomError = function(message, payload) {
   Error.call(this, message);
   Error.captureStackTrace(this, this.constructor);

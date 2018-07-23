@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const Injektor = require('injektor');
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
+const errors = require('../utils/errors');
 const RunhookManager = require('./runhook-manager');
 const blockRef = chores.getBlockRef(__filename);
 
@@ -401,7 +402,7 @@ function SandboxRegistry(params) {
     context = context || {};
     let info = injektor.parseName(name, context);
     if (info.scope === 'devebot') {
-      let RestrictedError = chores.buildError('RestrictedDevebotError');
+      let RestrictedError = errors.createConstructor('RestrictedDevebotError');
       throw new RestrictedError('dependency scope [devebot] is restricted');
     }
     let exceptions = [];
@@ -410,7 +411,7 @@ function SandboxRegistry(params) {
       exceptions: exceptions
     });
     if (fullname != null) {
-      let DuplicatedError = chores.buildError('DuplicatedDevebotError');
+      let DuplicatedError = errors.createConstructor('DuplicatedDevebotError');
       throw new DuplicatedError('dependency item is duplicated');
     }
     injektor.defineService(name, construktor, context);

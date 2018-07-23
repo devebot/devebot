@@ -87,7 +87,7 @@ const ENV_DEF_DEFAULT = [
 function EnvironmentCollection(params) {
   params = params || {};
 
-  let definition = lodash.keyBy(params.definition || [], 'name');
+  let definition = {};
   let namespace = params.namespace || 'DEVEBOT';
   let store = { env: {} };
 
@@ -105,6 +105,16 @@ function EnvironmentCollection(params) {
     }
     return process.env['DEVEBOT' + '_' + name];
   }
+
+  this.define = function(descriptors) {
+    if (lodash.isArray(descriptors)) {
+      let defs = lodash.keyBy(descriptors, 'name');
+      definition = lodash.defaults(definition, defs);
+    }
+    return this;
+  }
+
+  this.define(params.definition);
 
   this.setNamespace = function(ns) {
     namespace = ns;
