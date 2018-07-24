@@ -87,6 +87,7 @@ function appLoader(params) {
   config.pluginRefs = [].concat(appRef || [], pluginRefList, devebotRef);
 
   let contextManager = new ContextManager({ errorCollector });
+  contextManager.addDefaultFeatures(appRef && appRef.presets && appRef.presets.defaultFeatures);
 
   let args = { configObject: config, contextManager, errorCollector, stateInspector, nameResolver };
   let app = { config: config };

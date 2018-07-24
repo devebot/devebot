@@ -6,6 +6,12 @@ const Chalk = require('./chalk');
 
 const ENV_DEF_DEFAULT = [
   {
+    name: "TASKS",
+    type: "array",
+    aliases: ["TASK", "ACTIONS", "ACTION"],
+    description: "The action(s) that will be executed instead of start the server"
+  },
+  {
     name: "PROFILE",
     type: "string",
     description: "Customized profile names, merged from right to left"
@@ -40,14 +46,12 @@ const ENV_DEF_DEFAULT = [
   {
     name: "FEATURE_DISABLED",
     type: "array",
-    scope: "test",
     description: "List of features that should be disabled"
   },
   {
     name: "FEATURE_ENABLED",
     type: "array",
     aliases: ["FEATURE_LABELS"],
-    scope: "test",
     description: "List of features that should be enabled"
   },
   {
@@ -75,12 +79,6 @@ const ENV_DEF_DEFAULT = [
     defaultValue: "false",
     scope: "test",
     description: "Skipping execute process.exit (used in testing environment only)"
-  },
-  {
-    name: "TASKS",
-    type: "array",
-    aliases: ["TASK", "VERIFICATION_TASK", "VERIFICATION_MODE"],
-    description: "The action(s) that will be executed instead of start the server"
   },
   {
     name: "UPGRADE_DISABLED",
@@ -184,7 +182,7 @@ function EnvironmentCollection(params) {
     let self = this;
     opts = opts || {};
     // get the excluded scopes
-    let excl = opts.excludes || [ 'test' ];
+    let excl = opts.excludes || [ 'framework', 'test' ];
     excl = lodash.isArray(excl) ? excl : [excl];
     // print to console or muted?
     let lines = [], muted = (opts.muted === true);

@@ -222,6 +222,40 @@ chores.getFullname = function(parts, separator) {
       .join(separator || chores.getSeparator());
 }
 
+chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxRegistry) {
+  let ref = {};
+  let commander = sandboxRegistry.lookupService(proxyName);
+  if (commander && lodash.isFunction(commander.lookupService)) {
+    ref.isDirected = false;
+    ref.isRemote = true;
+    ref.service = commander.lookupService(serviceName);
+    if (ref.service) {
+      ref.method = ref.service[methodName];
+    }
+  }
+  if (!ref.method) {
+    ref.isDirected = true;
+    ref.isRemote = false;
+    ref.service = sandboxRegistry.lookupService(serviceName);
+    if (ref.service) {
+      ref.method = ref.service[methodName];
+    }
+  }
+  return ref;
+}
+
+chores.printError = function(err) {
+  [
+    '',
+    '========== FATAL ERROR ==========',
+    err,
+    '---------------------------------',
+    ''
+  ].forEach(function(item) {
+    debugx.enabled && debugx(item);
+  });
+}
+
 chores.injektorOptions = store.injektorOptions;
 
 chores.injektorContext = store.injektorContext;
@@ -242,18 +276,6 @@ chores.isSilentForced = function(moduleId, cfg) {
 chores.isVerboseForced = function(moduleId, cfg) {
   let fvm = envbox.getEnv('FORCING_VERBOSE');
   return (fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
-}
-
-chores.printError = function(err) {
-  [
-    '',
-    '========== FATAL ERROR ==========',
-    err,
-    '---------------------------------',
-    ''
-  ].forEach(function(item) {
-    debugx.enabled && debugx(item);
-  });
 }
 
 chores.isUpgradeSupported = function(label) {
@@ -279,28 +301,6 @@ let checkUpgradeSupported = function(label) {
   if (store.upgradeDisabled.indexOf(label) >= 0) return false;
   if (constx.UPGRADE_ENABLED.indexOf(label) >= 0) return true;
   return (store.upgradeEnabled.indexOf(label) >= 0);
-}
-
-chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxRegistry) {
-  let ref = {};
-  let commander = sandboxRegistry.lookupService(proxyName);
-  if (commander && lodash.isFunction(commander.lookupService)) {
-    ref.isDirected = false;
-    ref.isRemote = true;
-    ref.service = commander.lookupService(serviceName);
-    if (ref.service) {
-      ref.method = ref.service[methodName];
-    }
-  }
-  if (!ref.method) {
-    ref.isDirected = true;
-    ref.isRemote = false;
-    ref.service = sandboxRegistry.lookupService(serviceName);
-    if (ref.service) {
-      ref.method = ref.service[methodName];
-    }
-  }
-  return ref;
 }
 
 module.exports = chores;
