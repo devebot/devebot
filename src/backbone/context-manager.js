@@ -27,7 +27,7 @@ function ContextManager(params) {
 
   this.addDefaultFeatures = function(features) {
     if (features) {
-      features = lodash.isArray(features) ? features : [features];
+      features = chores.arrayify(features);
       let newFeatures = lodash.union(defaultFeatures, features);
       Array.prototype.splice.call(defaultFeatures, 0);
       Array.prototype.push.apply(defaultFeatures, newFeatures);
@@ -35,7 +35,7 @@ function ContextManager(params) {
     return this;
   }
 
-  this.isFeatureSupported = function(label) {
+  this.isFeatureSupported = function(labels) {
     if (process.env.NODE_ENV === 'test') {
       featureDisabled = null;
       featureEnabled = null;
@@ -46,10 +46,10 @@ function ContextManager(params) {
     if (!featureEnabled) {
       featureEnabled = envbox.getEnv('FEATURE_ENABLED');
     }
-    label = chores.isArray(label) ? label : [label];
+    labels = chores.arrayify(labels);
     let ok = true;
-    for(let k in label) {
-      if (!checkFeatureSupported(label[k])) return false;
+    for(let k in labels) {
+      if (!checkFeatureSupported(labels[k])) return false;
     }
     return true;
   }

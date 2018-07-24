@@ -163,11 +163,8 @@ function expandExtensions(context, pluginNames, bridgeNames) {
   context.bridgeRefs = context.bridgeRefs || {};
   context.pluginRefs = context.pluginRefs || {};
 
-  bridgeNames = bridgeNames || [];
-  pluginNames = pluginNames || [];
-
-  bridgeNames = lodash.isArray(bridgeNames) ? bridgeNames : [bridgeNames];
-  pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
+  bridgeNames = chores.arrayify(bridgeNames || []);
+  pluginNames = chores.arrayify(pluginNames || []);
 
   let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
     if (chores.isUpgradeSupported('presets')) {

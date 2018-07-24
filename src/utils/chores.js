@@ -89,8 +89,7 @@ chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
   
   debugx.enabled && debugx(' - load services by names: %s', JSON.stringify(serviceNames));
   
-  serviceNames = (lodash.isArray(serviceNames)) ? serviceNames : [serviceNames];
-  
+  serviceNames = chores.arrayify(serviceNames);
   serviceNames.forEach(function(serviceName) {
     let filepath = path.join(serviceFolder, serviceName + '.js');
     let serviceConstructor = loader(filepath);
@@ -110,6 +109,11 @@ chores.isArray = function(a) {
 
 chores.isString = function(s) {
   return typeof(s) === 'string';
+}
+
+chores.arrayify = function (val) {
+  if (val === null || val === undefined) return [];
+  return Array.isArray(val) ? val : [val];
 }
 
 chores.stringKebabCase = function kebabCase(str) {

@@ -269,7 +269,7 @@ let standardizeNames = function(ctx, cfgLabels) {
   if (lodash.isString(cfgLabels) && cfgLabels.length > 0) {
     cfgLabels = cfgLabels.split(',');
   }
-  cfgLabels = lodash.isArray(cfgLabels) ? cfgLabels : [cfgLabels];
+  cfgLabels = chores.arrayify(cfgLabels);
   cfgLabels = lodash.filter(cfgLabels, lodash.isString);
   cfgLabels = lodash.map(cfgLabels, lodash.trim);
   cfgLabels = lodash.filter(cfgLabels, lodash.negate(lodash.isEmpty));
@@ -292,8 +292,7 @@ let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, 
   }
   // convert old bridge structures
   if (chores.isUpgradeSupported(['bridge-full-ref','presets'])) {
-    let tags = lodash.get(modulePresets, ['configTags'], []);
-    tags = lodash.isArray(tags) ? tags : [tags];
+    let tags = chores.arrayify(lodash.get(modulePresets, ['configTags'], []));
     let cfgBridges = sandboxConfig.bridges;
     let loadable = RELOADING_FORCED || !(cfgBridges && cfgBridges.__status__);
     if (lodash.isObject(cfgBridges) && tags.indexOf('bridge[dialect-bridge]') >= 0 && loadable) {

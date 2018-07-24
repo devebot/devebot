@@ -150,8 +150,7 @@ ScriptRenderer.argumentSchema = {
 module.exports = ScriptRenderer;
 
 let standardizeOutput = function(schemaValidator, output, isError) {
-  let outputArray = lodash.isArray(output) ? output : [output];
-  outputArray = lodash.filter(outputArray, function(outputObject) {
+  let outputArray = lodash.filter(chores.arrayify(output), function(outputObject) {
     return lodash.isObject(outputObject) && !lodash.isEmpty(outputObject);
   });
   let result = schemaValidator.validate(outputArray, constx.WEBSOCKET.DETAILS.SCHEMA);
