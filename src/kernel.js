@@ -24,7 +24,7 @@ function Kernel(params) {
   }));
 
   // init the default parameters
-  let { configObject, errorCollector, stateInspector, nameResolver } = params || {};
+  let { configObject, contextManager, errorCollector, stateInspector, nameResolver } = params || {};
 
   // create injektor instance
   let injektor = new Injektor(chores.injektorOptions);
@@ -38,6 +38,7 @@ function Kernel(params) {
     .registerObject('sandboxConfig', configObject['sandbox']['mixture'], chores.injektorContext)
     .registerObject('profileNames', configObject['profile']['names'], chores.injektorContext)
     .registerObject('profileConfig', configObject['profile']['mixture'], chores.injektorContext)
+    .registerObject('contextManager', contextManager, chores.injektorContext)
     .registerObject('errorCollector', errorCollector, chores.injektorContext)
     .registerObject('nameResolver', nameResolver, chores.injektorContext);
 

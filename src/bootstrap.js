@@ -7,6 +7,7 @@ const appinfoLoader = require('./backbone/appinfo-loader');
 const ErrorCollector = require('./backbone/error-collector');
 const StateInspector = require('./backbone/state-inspector');
 const ConfigLoader = require('./backbone/config-loader');
+const ContextManager = require('./backbone/context-manager');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const NameResolver = require('./backbone/name-resolver');
 const chores = require('./utils/chores');
@@ -85,7 +86,9 @@ function appLoader(params) {
   config.bridgeRefs = bridgeRefList;
   config.pluginRefs = [].concat(appRef || [], pluginRefList, devebotRef);
 
-  let args = { configObject: config, errorCollector, stateInspector, nameResolver };
+  let contextManager = new ContextManager({ errorCollector });
+
+  let args = { configObject: config, contextManager, errorCollector, stateInspector, nameResolver };
   let app = { config: config };
 
   let _runner;

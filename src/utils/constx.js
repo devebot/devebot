@@ -1,7 +1,6 @@
 'use strict';
 
-let constx = {
-  MIME_JSON: 'application/json',
+module.exports = {
   APPINFO: {
     FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license']
   },
@@ -192,5 +191,3 @@ let constx = {
   },
   FEATURE_ENABLED: [ 'presets', 'bridge-full-ref', 'standardizing-config', 'gadget-around-log' ]
 };
-
-module.exports = constx;
