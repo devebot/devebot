@@ -189,5 +189,5 @@ module.exports = {
       }
     }
   },
-  FEATURE_ENABLED: [ 'presets', 'bridge-full-ref', 'standardizing-config', 'gadget-around-log' ]
+  UPGRADE_ENABLED: [ 'presets', 'bridge-full-ref', 'standardizing-config', 'gadget-around-log' ]
 };

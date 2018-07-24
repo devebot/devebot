@@ -131,7 +131,7 @@ function registerLayerware(presets, pluginNames, bridgeNames) {
       context.libRootPaths = context.libRootPaths || [];
       context.libRootPaths.push(presets.layerRootPath);
     }
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       if (context.libRootPath) {
         let _presets = lodash.get(context, ['pluginRefs', context.libRootPath, 'presets'], null);
         if (_presets) {
@@ -169,7 +169,7 @@ function expandExtensions(context, pluginNames, bridgeNames) {
   pluginNames = lodash.isArray(pluginNames) ? pluginNames : [pluginNames];
 
   let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       let item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
       item.path = touchPackage(item, 'bridge', require.resolve);
       return item;
@@ -177,7 +177,7 @@ function expandExtensions(context, pluginNames, bridgeNames) {
     return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
   });
   let pluginInfos = lodash.map(pluginNames, function(pluginName) {
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       let item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
       item.path = touchPackage(item, 'plugin', require.resolve);
       return item;
@@ -186,20 +186,20 @@ function expandExtensions(context, pluginNames, bridgeNames) {
   });
 
   let bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       return (bridgeInfo.path == bridgeKey);
     }
     return (bridgeInfo.name == bridgeKey);
   });
   let pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       return (pluginInfo.path == pluginKey);
     }
     return (pluginInfo.name == pluginKey);
   });
 
   bridgeDiffs.forEach(function(bridgeInfo) {
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       let inc = lodash.pick(bridgeInfo, ['name', 'path', 'presets']);
       context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], inc);
       return;
@@ -211,7 +211,7 @@ function expandExtensions(context, pluginNames, bridgeNames) {
   });
 
   pluginDiffs.forEach(function(pluginInfo) {
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       let inc = lodash.pick(pluginInfo, ['name', 'path', 'presets']);
       context.pluginRefs[pluginInfo.path] = lodash.assign(context.pluginRefs[pluginInfo.path], inc);
       return;
@@ -225,7 +225,7 @@ function expandExtensions(context, pluginNames, bridgeNames) {
   errorCollector.barrier({ invoker: blockRef, footmark: 'package-touching' });
 
   let pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       return {
         path: require.resolve(pluginInfo.path),
         initializer: require(pluginInfo.path)
@@ -235,7 +235,7 @@ function expandExtensions(context, pluginNames, bridgeNames) {
   });
 
   return pluginInitializers.reduce(function(params, pluginInitializer) {
-    if (chores.isFeatureSupported('presets')) {
+    if (chores.isUpgradeSupported('presets')) {
       params.libRootPath = pluginInitializer.path;
       return pluginInitializer.initializer(params);
     }
@@ -271,13 +271,6 @@ bootstrap.initialize = function(action, options) {
           process.exit(0);
         }
       }
-    }
-  }
-  if (['features'].indexOf(action) >= 0) {
-    if (lodash.isArray(options.defaultFeatures)) {
-      let newFeatures = lodash.union(constx.FEATURE_ENABLED, options.defaultFeatures);
-      Array.prototype.splice.call(constx.FEATURE_ENABLED, 0);
-      Array.prototype.push.apply(constx.FEATURE_ENABLED, newFeatures);
     }
   }
   return this;

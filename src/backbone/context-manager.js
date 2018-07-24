@@ -3,7 +3,7 @@
 const Promise = require('bluebird');
 const lodash = require('lodash');
 const chores = require('../utils/chores');
-const getenv = require('../utils/getenv');
+const envbox = require('../utils/envbox').instance;
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
@@ -21,8 +21,43 @@ function ContextManager(params) {
     text: ' + constructor start ...'
   }));
 
-  this.isFeatureSupported = function(features) {
-    return chores.isFeatureSupported(features);
+  let defaultFeatures = [];
+  let featureDisabled;
+  let featureEnabled;
+
+  this.addDefaultFeatures = function(features) {
+    if (features) {
+      features = lodash.isArray(features) ? features : [features];
+      let newFeatures = lodash.union(defaultFeatures, features);
+      Array.prototype.splice.call(defaultFeatures, 0);
+      Array.prototype.push.apply(defaultFeatures, newFeatures);
+    }
+    return this;
+  }
+
+  this.isFeatureSupported = function(label) {
+    if (process.env.NODE_ENV === 'test') {
+      featureDisabled = null;
+      featureEnabled = null;
+    }
+    if (!featureDisabled) {
+      featureDisabled = envbox.getEnv('FEATURE_DISABLED');
+    }
+    if (!featureEnabled) {
+      featureEnabled = envbox.getEnv('FEATURE_ENABLED');
+    }
+    label = chores.isArray(label) ? label : [label];
+    let ok = true;
+    for(let k in label) {
+      if (!checkFeatureSupported(label[k])) return false;
+    }
+    return true;
+  }
+
+  let checkFeatureSupported = function(label) {
+    if (featureDisabled.indexOf(label) >= 0) return false;
+    if (defaultFeatures.indexOf(label) >= 0) return true;
+    return (featureEnabled.indexOf(label) >= 0);
   }
 
   LX.has('silly') && LX.log('silly', LT.toMessage({

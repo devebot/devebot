@@ -256,29 +256,29 @@ chores.printError = function(err) {
   });
 }
 
-chores.isFeatureSupported = function(label) {
+chores.isUpgradeSupported = function(label) {
   if (process.env.NODE_ENV === 'test') {
-    store.featureDisabled = null;
-    store.featureEnabled = null;
+    store.upgradeDisabled = null;
+    store.upgradeEnabled = null;
   }
-  if (!store.featureDisabled) {
-    store.featureDisabled = envbox.getEnv('FEATURE_DISABLED');
+  if (!store.upgradeDisabled) {
+    store.upgradeDisabled = envbox.getEnv('UPGRADE_DISABLED');
   }
-  if (!store.featureEnabled) {
-    store.featureEnabled = envbox.getEnv('FEATURE_ENABLED');
+  if (!store.upgradeEnabled) {
+    store.upgradeEnabled = envbox.getEnv('UPGRADE_ENABLED');
   }
   label = chores.isArray(label) ? label : [label];
   let ok = true;
   for(let k in label) {
-    if (!checkFeatureSupported(label[k])) return false;
+    if (!checkUpgradeSupported(label[k])) return false;
   }
   return true;
 }
 
-let checkFeatureSupported = function(label) {
-  if (store.featureDisabled.indexOf(label) >= 0) return false;
-  if (constx.FEATURE_ENABLED.indexOf(label) >= 0) return true;
-  return (store.featureEnabled.indexOf(label) >= 0);
+let checkUpgradeSupported = function(label) {
+  if (store.upgradeDisabled.indexOf(label) >= 0) return false;
+  if (constx.UPGRADE_ENABLED.indexOf(label) >= 0) return true;
+  return (store.upgradeEnabled.indexOf(label) >= 0);
 }
 
 chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxRegistry) {

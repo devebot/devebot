@@ -115,7 +115,7 @@ function StateInspector(params) {
     // examine configuration of bridges
     let bridgeMixtureInDeep = lodash.get(stateMap, 'config.sandbox.mixture.bridges', {});
     let bridgeExpanseInDeep = lodash.get(stateMap, 'config.sandbox.expanse.bridges', {});
-    if (chores.isFeatureSupported(['presets', 'bridge-full-ref', 'standardizing-config'])) {
+    if (chores.isUpgradeSupported(['presets', 'bridge-full-ref', 'standardizing-config'])) {
       let bridgeMixture = flattenBridgeConfig(bridgeMixtureInDeep);
       let bridgeExpanse = flattenBridgeConfig(bridgeExpanseInDeep);
       lodash.forOwn(bridgeMixture, function(bridgeInfo, bridgeName) {

@@ -81,6 +81,19 @@ const ENV_DEF_DEFAULT = [
     type: "array",
     aliases: ["TASK", "VERIFICATION_TASK", "VERIFICATION_MODE"],
     description: "The action(s) that will be executed instead of start the server"
+  },
+  {
+    name: "UPGRADE_DISABLED",
+    type: "array",
+    scope: "framework",
+    description: "The upgrades that should be disabled"
+  },
+  {
+    name: "UPGRADE_ENABLED",
+    type: "array",
+    aliases: ["UPGRADE_LABELS"],
+    scope: "framework",
+    description: "The upgrades that should be enabled"
   }
 ]
 
@@ -91,13 +104,16 @@ function EnvironmentCollection(params) {
   let namespace = params.namespace || 'DEVEBOT';
   let store = { env: {} };
 
-  function getLabel(name) {
-    let ns = namespace || 'DEVEBOT';
+  function getLabel(name, scope) {
+    let ns = 'DEVEBOT';
+    if (scope !== 'framework') {
+      ns = namespace || 'DEVEBOT';
+    }
     return ns + '_' + name;
   }
 
-  function getValue(name) {
-    if (namespace) {
+  function getValue(name, scope) {
+    if (scope !== 'framework' && namespace) {
       let longname = namespace + '_' + name;
       if (longname in process.env) {
         return process.env[longname];
@@ -130,20 +146,21 @@ function EnvironmentCollection(params) {
       delete store.env[label];
     }
     if (!(label in store.env)) {
-      store.env[label] = getValue(label);
-      if (definition[label]) {
+      let def = definition[label] || {};
+      store.env[label] = getValue(label, def.scope);
+      if (!store.env[label]) {
         if (lodash.isUndefined(defaultValue)) {
-          defaultValue = definition[label].defaultValue;
+          defaultValue = def.defaultValue;
         }
-        if (lodash.isArray(definition[label].aliases)) {
-          lodash.forEach(definition[label].aliases, function(alias) {
-            store.env[label] = store.env[label] || getValue(alias);
+        if (lodash.isArray(def.aliases)) {
+          lodash.forEach(def.aliases, function(alias) {
+            store.env[label] = store.env[label] || getValue(alias, def.scope);
           });
         }
         store.env[label] = store.env[label] || defaultValue;
-        if (definition[label].type === 'array') {
-          store.env[label] = stringToArray(store.env[label]);
-        }
+      }
+      if (def.type === 'array') {
+        store.env[label] = stringToArray(store.env[label]);
       }
     }
     return store.env[label];
@@ -183,7 +200,7 @@ function EnvironmentCollection(params) {
     printInfo(chalk.heading1('[+] Display environment variables:'));
     lodash.forOwn(definition, function(info, label) {
       if (info && info.scope && excl.indexOf(info.scope) >= 0) return;
-      let envMsg = util.format(' |> %s: %s', chalk.envName(getLabel(label)), info.description);
+      let envMsg = util.format(' |> %s: %s', chalk.envName(getLabel(label, info.scope)), info.description);
       if (info && info.defaultValue != null) {
         envMsg += util.format(' (default: %s)', chalk.defaultValue(JSON.stringify(info.defaultValue)));
       }

@@ -184,7 +184,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
   let crateName = [bridgeCode, dialectName].join('#');
   let sectorRef = [crateScope, crateName].join(chores.getSeparator());
   let uniqueName = [pluginName, bridgeRecord.name, dialectName].join(chores.getSeparator());
-  if (!chores.isFeatureSupported('bridge-full-ref')) {
+  if (!chores.isUpgradeSupported('bridge-full-ref')) {
     crateScope = bridgeRecord.name;
     crateName = dialectName;
     sectorRef = [crateScope, crateName].join(chores.getSeparator());
@@ -200,7 +200,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
   }
 
   let configPath;
-  if (!chores.isFeatureSupported('bridge-full-ref')) {
+  if (!chores.isUpgradeSupported('bridge-full-ref')) {
     switch(optType) {
       case 0:
         configPath = ['sandboxConfig', 'bridges', dialectName, bridgeCode];
@@ -213,7 +213,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
     }
   } else {
     let pluginAlias = pluginName;
-    if (chores.isFeatureSupported('standardizing-config')) {
+    if (chores.isUpgradeSupported('standardizing-config')) {
       pluginAlias = nameResolver.getDefaultAliasOf(pluginName, 'plugin');
     }
     configPath = ['sandboxConfig', 'bridges', bridgeCode, pluginAlias, dialectName];
@@ -339,7 +339,7 @@ let buildBridgeDialects = function(ctx, bridgeRefs, dialectOptions, optType) {
   }
 
   let bridgeDialects = {};
-  if (!chores.isFeatureSupported('bridge-full-ref')) {
+  if (!chores.isUpgradeSupported('bridge-full-ref')) {
     switch(optType) {
       case 0:
         lodash.forOwn(dialectOptions, function(dialectConfig, dialectName) {

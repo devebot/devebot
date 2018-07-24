@@ -163,7 +163,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       text: ' + load the default config from plugins & framework'
     }));
     lodash.forEach(libRefs, function(libRef) {
-      if (libRef.presets && chores.isFeatureSupported('presets')) {
+      if (libRef.presets && chores.isUpgradeSupported('presets')) {
         LX.has('conlog') && LX.log('conlog', LT.add(libRef).toMessage({
           text: ' - Presets of ${type}[${name}]: ${presets}'
         }));
@@ -187,7 +187,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     LX.has('conlog') && LX.log('conlog', ' - Final config object: %s', util.inspect(config[configType], {depth: 8}));
   });
 
-  if (chores.isFeatureSupported('standardizing-config')) {
+  if (chores.isUpgradeSupported('standardizing-config')) {
     let {plugin: pluginReverseMap, bridge: bridgeReverseMap} = nameResolver.getRelativeAliasMap();
     doAliasMap(ctx, config.sandbox.default, pluginReverseMap, bridgeReverseMap);
     doAliasMap(ctx, config.sandbox.expanse, pluginReverseMap, bridgeReverseMap);
@@ -291,7 +291,7 @@ let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, 
     return sandboxConfig;
   }
   // convert old bridge structures
-  if (chores.isFeatureSupported(['bridge-full-ref','presets'])) {
+  if (chores.isUpgradeSupported(['bridge-full-ref','presets'])) {
     let tags = lodash.get(modulePresets, ['configTags'], []);
     tags = lodash.isArray(tags) ? tags : [tags];
     let cfgBridges = sandboxConfig.bridges;
@@ -329,7 +329,7 @@ let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, 
 
 let doAliasMap = function(ctx, sandboxConfig, pluginAliasMap, bridgeAliasMap) {
   let { LX, LT } = ctx || this;
-  if (chores.isFeatureSupported(['standardizing-config'])) {
+  if (chores.isUpgradeSupported(['standardizing-config'])) {
     if (sandboxConfig && lodash.isObject(sandboxConfig.plugins)) {
       let oldPlugins = sandboxConfig.plugins;
       let newPlugins = {};
@@ -340,7 +340,7 @@ let doAliasMap = function(ctx, sandboxConfig, pluginAliasMap, bridgeAliasMap) {
       sandboxConfig.plugins = newPlugins;
     }
   }
-  if (chores.isFeatureSupported(['standardizing-config', 'bridge-full-ref'])) {
+  if (chores.isUpgradeSupported(['standardizing-config', 'bridge-full-ref'])) {
     if (sandboxConfig && lodash.isObject(sandboxConfig.bridges)) {
       let oldBridges = sandboxConfig.bridges;
       let newBridges = {};

@@ -457,7 +457,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     }
     // write around-log begin
     let _LX, _TR;
-    if (newFeatures.logoliteEnabled !== false && chores.isFeatureSupported('gadget-around-log')) {
+    if (newFeatures.logoliteEnabled !== false && chores.isUpgradeSupported('gadget-around-log')) {
       _LX = kwargs.loggingFactory.getLogger();
       _TR = kwargs.loggingFactory.getTracer();
       _LX.has('silly') && _LX.log('silly', _TR.toMessage({
@@ -468,7 +468,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     // invoke original constructor
     gadgetConstructor.call(this, kwargs);
     // write around-log end
-    if (newFeatures.logoliteEnabled !== false && chores.isFeatureSupported('gadget-around-log')) {
+    if (newFeatures.logoliteEnabled !== false && chores.isUpgradeSupported('gadget-around-log')) {
       _LX.has('silly') && _LX.log('silly', _TR.toMessage({
         tags: [ uniqueName, 'constructor-end' ],
         text: ' - constructor has finished'
