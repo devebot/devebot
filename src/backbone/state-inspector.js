@@ -216,12 +216,14 @@ let chalk = new Chalk({
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
-let modeMap = {
+const TASK_MAP = {
   'list-env-vars': null,
   'list-all-env-vars': null,
   'print-config': null,
   'check-config': null
 };
+
+envbox.setAcceptedValues("TASKS", lodash.keys(TASK_MAP));
 
 let getModeLabel = function(options) {
   return JSON.stringify(options.mode);
@@ -234,7 +236,7 @@ let isEnabled = function(options) {
 let filterTask = function(tasks) {
   if (lodash.isArray(tasks)) {
     return lodash.filter(tasks, function(task) {
-      return task in modeMap;
+      return task in TASK_MAP;
     })
   }
   return [];

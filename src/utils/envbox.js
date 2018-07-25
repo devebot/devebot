@@ -92,6 +92,26 @@ const ENV_DEF_DEFAULT = [
     aliases: ["UPGRADE_LABELS"],
     scope: "framework",
     description: "The upgrades that should be enabled"
+  },
+  {
+    name: "DEFAULT_SCOPE",
+    type: "string",
+    defaultValue: "devebot",
+    scope: "framework",
+    description: "Default scope as debug's namespace"
+  },
+  {
+    name: "STACK_TRACE_LIMIT",
+    type: "number",
+    defaultValue: Error.stackTraceLimit,
+    scope: "framework",
+    description: "The number of stack frames collected by a stack trace"
+  },
+  {
+    name: "NODE_ENV",
+    type: "string",
+    scope: "framework",
+    description: "An alternative to NODE_ENV for npm scripts"
   }
 ]
 
@@ -164,9 +184,25 @@ function EnvironmentCollection(params) {
     return store.env[label];
   }
 
-  this.setEnv = function(label, value) {
-    if (lodash.isString(label)) {
-      store.env[label] = value;
+  this.setEnv = function(envName, value) {
+    if (lodash.isString(envName)) {
+      store.env[envName] = value;
+    }
+    return this;
+  }
+
+  this.getAcceptedValues = function(envName) {
+    let def = definition[envName];
+    if (lodash.isObject(def)) {
+      return def.enum || null;
+    }
+    return undefined;
+  }
+
+  this.setAcceptedValues = function(envName, acceptedValues) {
+    let def = definition[envName];
+    if (lodash.isObject(def)) {
+      def.enum = acceptedValues;
     }
     return this;
   }
@@ -195,7 +231,7 @@ function EnvironmentCollection(params) {
       }
     }
     // printing
-    printInfo(chalk.heading1('[+] Display environment variables:'));
+    printInfo(chalk.heading1('[+] Environment variables:'));
     lodash.forOwn(definition, function(info, label) {
       if (info && info.scope && excl.indexOf(info.scope) >= 0) return;
       let envMsg = util.format(' |> %s: %s', chalk.envName(getLabel(label, info.scope)), info.description);
@@ -212,6 +248,9 @@ function EnvironmentCollection(params) {
       if (info && info.type === 'boolean') {
         printInfo('    - %s: (%s)', chalk.envAttrName('format'), chalk.envAttrValue('true/false'));
       }
+      if (info && info.enum) {
+        printInfo('    - %s: %s', chalk.envAttrName('accepted values'), chalk.envAttrValue(JSON.stringify(info.enum)));
+      }
       printInfo('    - %s: %s', chalk.envAttrName('current value'), chalk.currentValue(JSON.stringify(self.getEnv(label))));
     });
     return lines;
@@ -220,11 +259,14 @@ function EnvironmentCollection(params) {
 
 function stringToArray(labels) {
   labels = labels || '';
-  return labels.split(',').map(function(item) {
-    return item.trim();
-  }).filter(function(item) {
-    return item.length > 0;
-  });
+  if (lodash.isString(labels)) {
+    return labels.split(',').map(function(item) {
+      return item.trim();
+    }).filter(function(item) {
+      return item.length > 0;
+    });
+  }
+  return labels;
 }
 
 EnvironmentCollection.prototype.stringToArray = stringToArray;
