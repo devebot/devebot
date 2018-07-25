@@ -245,7 +245,7 @@ const DEFAULT_CHALK = new Chalk({
   themes: DEFAULT_THEMES
 });
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default constructor & instance property
 
 let privateEnvbox;
 
@@ -258,4 +258,22 @@ Object.defineProperty(EnvironmentCollection, 'instance', {
   set: function(value) {}
 });
 
-module.exports = EnvironmentCollection;
+// Deprecated
+// module.exports = EnvironmentCollection;
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance
+
+const defaultInstance = new EnvironmentCollection({
+  definition: ENV_DEF_DEFAULT
+});
+
+Object.defineProperty(defaultInstance, 'new', {
+  get: function() {
+    return function(kwargs) {
+      return new EnvironmentCollection(kwargs);
+    };
+  },
+  set: function(value) {}
+});
+
+module.exports = defaultInstance;

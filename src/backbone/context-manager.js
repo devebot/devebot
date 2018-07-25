@@ -3,7 +3,7 @@
 const Promise = require('bluebird');
 const lodash = require('lodash');
 const chores = require('../utils/chores');
-const envbox = require('../utils/envbox').instance;
+const envbox = require('../utils/envbox');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 

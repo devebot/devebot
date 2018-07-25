@@ -9,7 +9,7 @@ const util = require('util');
 const uuidv4 = require('logolite/uuidv4');
 const constx = require('./constx');
 const loader = require('./loader');
-const envbox = require('./envbox').instance;
+const envbox = require('./envbox');
 const DEFAULT_SCOPE = require('./getenv')('DEVEBOT_DEFAULT_SCOPE', 'devebot');
 const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:chores');
 

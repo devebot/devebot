@@ -4,8 +4,8 @@ const assert = require('assert');
 const lodash = require('lodash');
 const Chalk = require('../utils/chalk');
 const chores = require('../utils/chores');
+const envbox = require('../utils/envbox');
 const toolset = require('../utils/toolset');
-const envbox = require('../utils/envbox').instance;
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
