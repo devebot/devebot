@@ -1,8 +1,9 @@
 'use strict';
 
-var util = require('util');
+const util = require('util');
+const getenv = require('./getenv');
 
-var errors = {};
+const errors = {};
 
 errors.createConstructor = function(errorName) {
   let ErrorConstructor = function() {
@@ -63,9 +64,9 @@ Object.defineProperty(errors, 'stackTraceLimit', {
   }
 });
 
-var stackTraceLimit = parseInt(process.env.ERROR_STACK_TRACE_LIMIT) || Error.stackTraceLimit;
+let stackTraceLimit = parseInt(getenv('DEVEBOT_STACK_TRACE_LIMIT')) || Error.stackTraceLimit;
 
-var AbstractError = function(message, code, payload) {
+function AbstractError(message, code, payload) {
   Error.call(this, message);
   this.message = message;
   this.code = code;
