@@ -3,79 +3,79 @@
 const util = require('util');
 const getenv = require('./getenv');
 
-const errors = {};
-
-errors.createConstructor = function(errorName) {
-  let ErrorConstructor = function() {
-    let message = undefined, code = undefined, payload = undefined;
-    Array.prototype.forEach.call(arguments, function(arg) {
-      if (arg) {
-        let type = typeof(arg);
-        switch(type) {
-          case 'string': {
-            if (message !== undefined) {
-              throw new TypeError(util.format('%s has already initialized', 'message'));
+function ErrorCollection() {
+  this.createConstructor = function(errorName) {
+    let ErrorConstructor = function() {
+      let message = undefined, code = undefined, payload = undefined;
+      Array.prototype.forEach.call(arguments, function(arg) {
+        if (arg) {
+          let type = typeof(arg);
+          switch(type) {
+            case 'string': {
+              if (message !== undefined) {
+                throw new TypeError(util.format('%s has already initialized', 'message'));
+              }
+              message = arg;
+              break;
             }
-            message = arg;
-            break;
-          }
-          case 'number': {
-            if (code !== undefined) {
-              throw new TypeError(util.format('%s has already initialized', 'code'));
+            case 'number': {
+              if (code !== undefined) {
+                throw new TypeError(util.format('%s has already initialized', 'code'));
+              }
+              code = arg;
+              break;
             }
-            code = arg;
-            break;
-          }
-          case 'object': {
-            if (payload !== undefined) {
-              throw new TypeError(util.format('%s has already initialized', 'payload'));
+            case 'object': {
+              if (payload !== undefined) {
+                throw new TypeError(util.format('%s has already initialized', 'payload'));
+              }
+              payload = arg;
+              break;
             }
-            payload = arg;
-            break;
-          }
-          default: {
-            throw new TypeError(util.format('invalid type: [%s]/%s', arg, type));
+            default: {
+              throw new TypeError(util.format('invalid type: [%s]/%s', arg, type));
+            }
           }
         }
-      }
-    });
-    AbstractError.call(this, message, code, payload);
-    this.name = errorName;
-  }
-  util.inherits(ErrorConstructor, AbstractError);
-  return ErrorConstructor;
-}
-
-errors.isDerivative = function(ErrorConstructor) {
-  return typeof ErrorConstructor === 'function' &&
-      ErrorConstructor.prototype instanceof AbstractError;
-}
-
-errors.isDescendant = function(error) {
-  return error instanceof AbstractError;
-}
-
-Object.defineProperty(errors, 'stackTraceLimit', {
-  get: function() { return stackTraceLimit },
-  set: function(val) {
-    if (typeof val === 'number') {
-      stackTraceLimit = val;
+      });
+      AbstractError.call(this, message, code, payload);
+      this.name = errorName;
     }
+    util.inherits(ErrorConstructor, AbstractError);
+    return ErrorConstructor;
   }
-});
 
-let stackTraceLimit = parseInt(getenv('DEVEBOT_STACK_TRACE_LIMIT')) || Error.stackTraceLimit;
+  this.isDerivative = function(ErrorConstructor) {
+    return typeof ErrorConstructor === 'function' &&
+        ErrorConstructor.prototype instanceof AbstractError;
+  }
 
-function AbstractError(message, code, payload) {
-  Error.call(this, message);
-  this.message = message;
-  this.code = code;
-  this.payload = payload;
-  var oldLimit = Error.stackTraceLimit;
-  Error.stackTraceLimit = stackTraceLimit;
-  Error.captureStackTrace(this, this.constructor);
-  Error.stackTraceLimit = oldLimit;
+  this.isDescendant = function(error) {
+    return error instanceof AbstractError;
+  }
+
+  Object.defineProperty(this, 'stackTraceLimit', {
+    get: function() { return stackTraceLimit },
+    set: function(val) {
+      if (typeof val === 'number') {
+        stackTraceLimit = val;
+      }
+    }
+  });
+
+  let stackTraceLimit = parseInt(getenv('DEVEBOT_STACK_TRACE_LIMIT')) || Error.stackTraceLimit;
+
+  function AbstractError(message, code, payload) {
+    Error.call(this, message);
+    this.message = message;
+    this.code = code;
+    this.payload = payload;
+    let oldLimit = Error.stackTraceLimit;
+    Error.stackTraceLimit = stackTraceLimit;
+    Error.captureStackTrace(this, this.constructor);
+    Error.stackTraceLimit = oldLimit;
+  }
+  util.inherits(AbstractError, Error);
 }
-util.inherits(AbstractError, Error);
 
-module.exports = errors;
+module.exports = new ErrorCollection();
