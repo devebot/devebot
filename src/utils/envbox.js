@@ -55,6 +55,11 @@ const ENV_DEF_DEFAULT = [
     description: "List of features that should be enabled"
   },
   {
+    name: "ENV",
+    type: "string",
+    description: "An alternative to NODE_ENV for application"
+  },
+  {
     name: "FORCING_SILENT",
     type: "array",
     scope: "test",

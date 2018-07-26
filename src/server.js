@@ -50,8 +50,18 @@ function Server(params) {
   let sslEnabled = tunnelCfg.enabled && tunnelCfg.key_file && tunnelCfg.crt_file;
 
   let processRequest = function(req, res) {
-    res.writeHead(200);
-    res.end("Devebot WebSockets!\n");
+    if (chores.isDevelopmentMode() || devebotCfg.appInfoLevel === 'all') {
+      let appInfo = injektor.lookup('appInfo', chores.injektorContext);
+      let appInfoBody = JSON.stringify(appInfo, null, 2);
+      res.writeHead(200, 'OK', {
+        'Content-Length': Buffer.byteLength(appInfoBody, 'utf8'),
+        'Content-Type': 'application/json'
+      });
+      res.end(appInfoBody);
+    } else {
+      res.writeHead(200, 'OK');
+      res.end();
+    }
   };
 
   // creates a HttpServer instance

@@ -264,6 +264,10 @@ chores.injektorOptions = store.injektorOptions;
 
 chores.injektorContext = store.injektorContext;
 
+chores.isDevelopmentMode = function() {
+  return ['test', 'dev', 'development'].indexOf(envbox.getEnv('ENV')) >= 0;
+}
+
 chores.fatalErrorReaction = function() {
   return envbox.getEnv('FATAL_ERROR_REACTION');
 }
