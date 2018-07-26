@@ -25,6 +25,12 @@ function ContextManager(params) {
   let featureDisabled;
   let featureEnabled;
 
+  this.clearCache = function() {
+    featureDisabled = null;
+    featureEnabled = null;
+    return this;
+  }
+
   this.addDefaultFeatures = function(features) {
     if (features) {
       features = chores.arrayify(features);
@@ -36,10 +42,6 @@ function ContextManager(params) {
   }
 
   this.isFeatureSupported = function(labels) {
-    if (process.env.NODE_ENV === 'test') {
-      featureDisabled = null;
-      featureEnabled = null;
-    }
     if (!featureDisabled) {
       featureDisabled = envbox.getEnv('FEATURE_DISABLED');
     }

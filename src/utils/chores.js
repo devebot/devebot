@@ -286,11 +286,13 @@ chores.isVerboseForced = function(moduleId, cfg) {
   return (fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
 }
 
+chores.clearCache = function() {
+  store.upgradeDisabled = null;
+  store.upgradeEnabled = null;
+  return this;
+}
+
 chores.isUpgradeSupported = function(label) {
-  if (process.env.NODE_ENV === 'test') {
-    store.upgradeDisabled = null;
-    store.upgradeEnabled = null;
-  }
   if (!store.upgradeDisabled) {
     store.upgradeDisabled = envbox.getEnv('UPGRADE_DISABLED');
   }

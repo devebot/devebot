@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+const util = require('util');
 const lodash = require('lodash');
 const minimist = require('minimist');
 const appinfoLoader = require('./backbone/appinfo-loader');
@@ -62,7 +63,10 @@ function appLoader(params) {
     appRef.presets = lodash.cloneDeep(params.presets);
   }
 
-  envbox.setNamespace(chores.stringLabelCase(appName));
+  envbox.setNamespace(chores.stringLabelCase(appName), {
+    occupyValues: appRef && appRef.presets && appRef.presets.occupySystemVariables,
+    ownershipLabel: util.format('<owned-by-%s>', appName)
+  });
 
   let devebotRef = {
     type: 'framework',

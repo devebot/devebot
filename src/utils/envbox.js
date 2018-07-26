@@ -155,8 +155,23 @@ function EnvironmentCollection(params) {
 
   this.define(params.definition);
 
-  this.setNamespace = function(ns) {
+  this.setNamespace = function(ns, opts) {
     namespace = ns;
+    opts = opts || {};
+    if (opts.occupyValues) {
+      for(let envKey in definition) {
+        let info = definition[envKey];
+        this.getEnv(envKey);
+        let envName = getLabel(envKey);
+        if (envName in process.env) {
+          if (opts.ownershipLabel) {
+            process.env[envName] = opts.ownershipLabel;
+          } else {
+            delete process.env[envName];
+          }
+        }
+      }
+    }
     return this;
   }
 
@@ -164,9 +179,6 @@ function EnvironmentCollection(params) {
     if (!lodash.isString(label)) return undefined;
     if (!(label in definition)) {
       return process.env[label] || defaultValue;
-    }
-    if (process.env.NODE_ENV === 'test') {
-      delete store.env[label];
     }
     if (!(label in store.env)) {
       let def = definition[label] || {};
@@ -212,9 +224,12 @@ function EnvironmentCollection(params) {
     return this;
   }
 
-  this.reset = function() {
+  this.clearCache = function(keys) {
+    keys = arrayify(keys);
     for(let key in store.env) {
-      delete store.env[key];
+      if (keys.length === 0 || keys.indexOf(key) >= 0) {
+        delete store.env[key];
+      }
     }
     return this;
   }
@@ -223,8 +238,7 @@ function EnvironmentCollection(params) {
     let self = this;
     opts = opts || {};
     // get the excluded scopes
-    let excl = opts.excludes || [ 'framework', 'test' ];
-    excl = lodash.isArray(excl) ? excl : [excl];
+    let excl = arrayify(opts.excludes || [ 'framework', 'test' ]);
     // print to console or muted?
     let lines = [], muted = (opts.muted === true);
     let chalk = muted ? new Chalk({ blanked: true, themes: DEFAULT_THEMES }) : DEFAULT_CHALK;
@@ -260,6 +274,11 @@ function EnvironmentCollection(params) {
     });
     return lines;
   }
+}
+
+function arrayify(val) {
+  if (val === null || val === undefined) return [];
+  return Array.isArray(val) ? val : [val];
 }
 
 function stringToArray(labels) {
