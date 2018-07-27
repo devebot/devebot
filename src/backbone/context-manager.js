@@ -74,9 +74,6 @@ ContextManager.argumentSchema = {
   "properties": {
     "errorCollector": {
       "type": "object"
-    },
-    "loggingFactory": {
-      "type": "object"
     }
   }
 };

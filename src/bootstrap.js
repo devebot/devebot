@@ -60,19 +60,21 @@ function appLoader(params) {
     path: path.join(appRootPath, 'index.js')
   };
   if (lodash.isObject(params.presets)) {
+    appRef = appRef || {};
     appRef.presets = lodash.cloneDeep(params.presets);
   }
-
-  envbox.setNamespace(chores.stringLabelCase(appName), {
-    occupyValues: appRef && appRef.presets && appRef.presets.occupySystemVariables,
-    ownershipLabel: util.format('<owned-by-%s>', appName)
-  });
 
   let devebotRef = {
     type: 'framework',
     name: 'devebot',
     path: path.join(topRootPath, 'index.js')
   };
+
+  // freeze occupied environment variables
+  envbox.setNamespace(chores.stringLabelCase(appName), {
+    occupyValues: appRef && appRef.presets && appRef.presets.occupySystemVariables,
+    ownershipLabel: util.format('<owned-by-%s>', appName)
+  });
 
   let pluginRefList = lodash.values(params.pluginRefs);
   let bridgeRefList = lodash.values(params.bridgeRefs);
