@@ -6,9 +6,7 @@ const loader = require('../utils/loader');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 
-function BridgeLoader(params) {
-  params = params || {};
-
+function BridgeLoader(params={}) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();

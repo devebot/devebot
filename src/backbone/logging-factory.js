@@ -9,9 +9,7 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
 
-function LoggingService(params) {
-  params = params || {};
-
+function LoggingService(params={}) {
   let more = {};
   let logFactory = new LogFactory(transformLoggingConfig(params.profileConfig, more));
 
@@ -28,9 +26,7 @@ function LoggingService(params) {
   });
 };
 
-let LoggingFactory = function(args) {
-  args = args || {};
-
+let LoggingFactory = function(args={}) {
   args.root = args.root || {};
   if (!lodash.isFunction(args.root.getLogger)) {
     if (lodash.isEmpty(args.originalLogger)) {

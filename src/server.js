@@ -15,7 +15,7 @@ const LoggingWrapper = require('./backbone/logging-wrapper');
 const RepeatedTimer = require('./backbone/repeated-timer');
 const blockRef = chores.getBlockRef(__filename);
 
-function Server(params) {
+function Server(params={}) {
   Kernel.call(this, params);
 
   // init the default parameters

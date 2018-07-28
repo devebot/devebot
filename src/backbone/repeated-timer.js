@@ -9,10 +9,8 @@ const blockRef = chores.getBlockRef(__filename);
 const MIN_PERIOD = 10;
 const MIN_OFFSET = 0;
 
-function RepeatedTimer(kwargs) {
+function RepeatedTimer(kwargs={}) {
   events.EventEmitter.call(this);
-
-  kwargs = kwargs || {};
 
   let loggingFactory = kwargs.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();

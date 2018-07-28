@@ -120,9 +120,7 @@ const ENV_DEF_DEFAULT = [
   }
 ]
 
-function EnvironmentCollection(params) {
-  params = params || {};
-
+function EnvironmentCollection(params={}) {
   let definition = {};
   let namespace = params.namespace || 'DEVEBOT';
   let store = { env: {} };

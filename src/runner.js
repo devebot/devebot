@@ -10,7 +10,7 @@ const chores = require('./utils/chores');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
-function Runner(params) {
+function Runner(params={}) {
   Kernel.call(this, params);
 
   let loggingWrapper = new LoggingWrapper(blockRef);

@@ -13,7 +13,7 @@ chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), [
   'security-manager', 'bridge-loader', 'plugin-loader', 'logging-factory', 'process-manager'
 ]);
 
-function Kernel(params) {
+function Kernel(params={}) {
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();

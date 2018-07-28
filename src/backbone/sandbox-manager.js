@@ -12,9 +12,7 @@ const blockRef = chores.getBlockRef(__filename);
 
 const DEFAULT_SERVICES = [ 'jobqueue-binder' ];
 
-function SandboxManager(params) {
-  params = params || {};
-
+function SandboxManager(params={}) {
   let self = this;
   let errorCollector = params.errorCollector;
   let loggingFactory = params.loggingFactory.branch(blockRef);

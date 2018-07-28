@@ -7,9 +7,7 @@ const envbox = require('../utils/envbox');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
-function ContextManager(params) {
-  params = params || {};
-
+function ContextManager(params={}) {
   let self = this;
   let errorCollector = params.errorCollector;
   let loggingWrapper = new LoggingWrapper(blockRef);

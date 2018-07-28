@@ -6,9 +6,7 @@ const LoggingWrapper = require('./logging-wrapper');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 
-function NameResolver(params) {
-  params = params || {};
-
+function NameResolver(params={}) {
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();

@@ -20,9 +20,7 @@ const blockRef = chores.getBlockRef(__filename);
 const errorCollector = ErrorCollector.instance;
 const stateInspector = StateInspector.instance;
 
-function appLoader(params) {
-  params = params || {};
-
+function appLoader(params={}) {
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
@@ -313,7 +311,7 @@ bootstrap.require = function(packageName) {
   return null;
 };
 
-let touchPackage = function(ctx, pkgInfo, pkgType, action) {
+function touchPackage(ctx, pkgInfo, pkgType, action) {
   try {
     return action(pkgInfo.path);
   } catch (err) {

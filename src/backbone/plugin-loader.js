@@ -8,9 +8,7 @@ const constx = require('../utils/constx');
 const loader = require('../utils/loader');
 const blockRef = chores.getBlockRef(__filename);
 
-function PluginLoader(params) {
-  params = params || {};
-
+function PluginLoader(params={}) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();

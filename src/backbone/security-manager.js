@@ -8,9 +8,7 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const blockRef = chores.getBlockRef(__filename);
 
-function SecurityManager(params) {
-  params = params || {};
-
+function SecurityManager(params={}) {
   let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();

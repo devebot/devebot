@@ -6,9 +6,7 @@ const chores = require('../utils/chores');
 const getenv = require('../utils/getenv');
 const blockRef = chores.getBlockRef(__filename);
 
-function ProcessManager(params) {
-  params = params || {};
-
+function ProcessManager(params={}) {
   let self = this;
   let errorCollector = params.errorCollector;
   let loggingFactory = params.loggingFactory.branch(blockRef);
