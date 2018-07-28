@@ -67,6 +67,9 @@ function ErrorCollector(params) {
           if (fsv.stage === 'bootstrap') {
             switch(fsv.type) {
               case 'application':
+              console.error(chalk.errorMessage("--> [%s:%s] bootstrap has failed, reasons:"), fsv.type, fsv.name);
+              console.error(chalk.errorStack("  " + fsv.stack));
+              return;
               case 'plugin':
               case 'devebot':
               console.error(chalk.errorMessage('--> [%s:%s] loading plugin is failed, reasons:'), fsv.type, fsv.name);

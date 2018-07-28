@@ -70,9 +70,30 @@ function appLoader(params) {
     path: path.join(topRootPath, 'index.js')
   };
 
+  // declare user-defined environment variables
+  let currentEnvNames = envbox.getEnvNames();
+  let evDescriptors = lodash.get(appRef, ['presets', 'environmentVarDescriptors'], []);
+  let duplicated = lodash.filter(evDescriptors, function(ev) {
+    return currentEnvNames.indexOf(ev.name) >= 0;
+  });
+  if (duplicated.length > 0) {
+    errorCollector.collect({
+      hasError: true,
+      stage: 'bootstrap',
+      type: 'application',
+      name: appName,
+      stack: duplicated.map(function(ev) {
+        let evName = chores.stringLabelCase(appName) + '_' + ev.name;
+        return util.format('- Environment Variable "%s" has already been defined', evName)
+      }).join('\n')
+    });
+  } else {
+    envbox.define(appRef && appRef.presets && appRef.presets.environmentVarDescriptors);
+  }
+
   // freeze occupied environment variables
   envbox.setNamespace(chores.stringLabelCase(appName), {
-    occupyValues: appRef && appRef.presets && appRef.presets.occupySystemVariables,
+    occupyValues: appRef && appRef.presets && appRef.presets.environmentVarOccupied,
     ownershipLabel: util.format('<owned-by-%s>', appName)
   });
 
@@ -161,9 +182,9 @@ function launchApplication(context, pluginNames, bridgeNames) {
   return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS), pluginNames, bridgeNames)));
 }
 
-function expandExtensions(context, pluginNames, bridgeNames) {
-  context = context || {};
-  context = lodash.pick(context, ATTRS);
+function expandExtensions(accumulator, pluginNames, bridgeNames) {
+  accumulator = accumulator || {};
+  let context = lodash.pick(accumulator, ATTRS);
 
   context.libRootPaths = context.libRootPaths || [];
   context.bridgeRefs = context.bridgeRefs || {};
@@ -172,10 +193,12 @@ function expandExtensions(context, pluginNames, bridgeNames) {
   bridgeNames = chores.arrayify(bridgeNames || []);
   pluginNames = chores.arrayify(pluginNames || []);
 
+  const CTX = { errorCollector };
+
   let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
     if (chores.isUpgradeSupported('presets')) {
       let item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
-      item.path = touchPackage(item, 'bridge', require.resolve);
+      item.path = touchPackage(CTX, item, 'bridge', require.resolve);
       return item;
     }
     return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
@@ -183,7 +206,7 @@ function expandExtensions(context, pluginNames, bridgeNames) {
   let pluginInfos = lodash.map(pluginNames, function(pluginName) {
     if (chores.isUpgradeSupported('presets')) {
       let item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
-      item.path = touchPackage(item, 'plugin', require.resolve);
+      item.path = touchPackage(CTX, item, 'plugin', require.resolve);
       return item;
     }
     return lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
@@ -210,7 +233,7 @@ function expandExtensions(context, pluginNames, bridgeNames) {
     }
     context.bridgeRefs[bridgeInfo.name] = {
       name: bridgeInfo.name,
-      path: touchPackage(bridgeInfo, 'bridge', require.resolve)
+      path: touchPackage(CTX, bridgeInfo, 'bridge', require.resolve)
     }
   });
 
@@ -222,7 +245,7 @@ function expandExtensions(context, pluginNames, bridgeNames) {
     }
     context.pluginRefs[pluginInfo.name] = {
       name: pluginInfo.name,
-      path: touchPackage(pluginInfo, 'plugin', require.resolve)
+      path: touchPackage(CTX, pluginInfo, 'plugin', require.resolve)
     }
   });
 
@@ -290,11 +313,11 @@ bootstrap.require = function(packageName) {
   return null;
 };
 
-let touchPackage = function(pkgInfo, pkgType, action) {
+let touchPackage = function(ctx, pkgInfo, pkgType, action) {
   try {
     return action(pkgInfo.path);
   } catch (err) {
-    errorCollector.collect({
+    ctx.errorCollector.collect({
       stage: 'bootstrap',
       type: pkgType,
       name: pkgInfo.name,

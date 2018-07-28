@@ -175,6 +175,10 @@ function EnvironmentCollection(params) {
     return this;
   }
 
+  this.getEnvNames = function() {
+    return lodash.keys(definition);
+  }
+
   this.getEnv = function(label, defaultValue) {
     if (!lodash.isString(label)) return undefined;
     if (!(label in definition)) {

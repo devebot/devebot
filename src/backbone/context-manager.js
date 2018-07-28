@@ -31,6 +31,15 @@ function ContextManager(params) {
     return this;
   }
 
+  this.getSystemVariable = function(envName, defaultValue) {
+    return envbox.getEnv(envName, defaultValue);
+  }
+
+  this.setSystemVariable = function(envName, newValue) {
+    envbox.setEnv(envName, newValue);
+    return this;
+  }
+
   this.addDefaultFeatures = function(features) {
     if (features) {
       features = chores.arrayify(features);
