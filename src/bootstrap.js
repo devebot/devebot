@@ -104,28 +104,42 @@ function appLoader(params={}) {
   let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
     pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, errorCollector, stateInspector, nameResolver
   });
-  let config = configLoader.config;
-
-  config.appName = appName;
-  config.appInfo = appInfo;
-  config.bridgeRefs = bridgeRefList;
-  config.pluginRefs = [].concat(appRef || [], pluginRefList, devebotRef);
 
   let contextManager = new ContextManager({ errorCollector });
   contextManager.addDefaultFeatures(appRef && appRef.presets && appRef.presets.defaultFeatures);
 
-  let args = { configObject: config, contextManager, errorCollector, stateInspector, nameResolver };
-  let app = { config: config };
+  let app = {};
+
+  let _config;
+  Object.defineProperty(app, 'config', {
+    get: function() {
+      if (_config == undefined || _config == null) {
+        _config = configLoader.load();
+        _config.appName = appName;
+        _config.appInfo = appInfo;
+        _config.bridgeRefs = bridgeRefList;
+        _config.pluginRefs = [].concat(appRef || [], pluginRefList, devebotRef);
+      }
+      return _config;
+    },
+    set: function(value) {}
+  });
 
   let _runner;
   Object.defineProperty(app, 'runner', {
-    get: function() { return _runner = _runner || new Runner(args) },
+    get: function() {
+      let args = { configObject: this.config, contextManager, errorCollector, stateInspector, nameResolver };
+      return _runner = _runner || new Runner(args);
+    },
     set: function(value) {}
   });
 
   let _server;
   Object.defineProperty(app, 'server', {
-    get: function() { return _server = _server || new Server(args) },
+    get: function() {
+      let args = { configObject: this.config, contextManager, errorCollector, stateInspector, nameResolver };
+      return _server = _server || new Server(args);
+    },
     set: function(value) {}
   });
 

@@ -31,14 +31,10 @@ function ConfigLoader(params={}) {
 
   appOptions = appOptions || {};
 
-  let config = loadConfig
-      .bind(null, CTX, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs)
-      .apply(null, CONFIG_VAR_NAMES.map(readVariable.bind(null, CTX, label)));
-
-  Object.defineProperty(this, 'config', {
-    get: function() { return config },
-    set: function(value) {}
-  });
+  this.load = function() {
+    return loadConfig.bind(null, CTX, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs)
+        .apply(null, CONFIG_VAR_NAMES.map(readVariable.bind(null, CTX, label)));
+  }
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-end' ],
