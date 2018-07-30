@@ -2,7 +2,7 @@
 
 module.exports = {
   APPINFO: {
-    FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license']
+    FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license', 'main']
   },
   LOGGER: {
     LABELS: {

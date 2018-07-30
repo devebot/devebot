@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const lodash = require('lodash');
@@ -37,7 +38,7 @@ function appLoader(params={}) {
 
   let appRootPath = params.appRootPath;
   let libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
-    return path.dirname(pluginRef.path);
+    return pluginRef.path;
   });
   let topRootPath = path.join(__dirname, '/..');
 
@@ -55,7 +56,7 @@ function appLoader(params={}) {
   let appRef = lodash.isEmpty(appRootPath) ? null : {
     type: 'application',
     name: appName,
-    path: path.join(appRootPath, 'index.js')
+    path: appRootPath
   };
   if (lodash.isObject(params.presets)) {
     appRef = appRef || {};
@@ -65,7 +66,7 @@ function appLoader(params={}) {
   let devebotRef = {
     type: 'framework',
     name: 'devebot',
-    path: path.join(topRootPath, 'index.js')
+    path: topRootPath
   };
 
   // declare user-defined environment variables
@@ -210,7 +211,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
     if (chores.isUpgradeSupported('presets')) {
       let item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
-      item.path = touchPackage(CTX, item, 'bridge', require.resolve);
+      item.path = locatePackage(CTX, item, 'bridge');
       return item;
     }
     return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
@@ -218,7 +219,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   let pluginInfos = lodash.map(pluginNames, function(pluginName) {
     if (chores.isUpgradeSupported('presets')) {
       let item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
-      item.path = touchPackage(CTX, item, 'plugin', require.resolve);
+      item.path = locatePackage(CTX, item, 'plugin');
       return item;
     }
     return lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
@@ -245,7 +246,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
     }
     context.bridgeRefs[bridgeInfo.name] = {
       name: bridgeInfo.name,
-      path: touchPackage(CTX, bridgeInfo, 'bridge', require.resolve)
+      path: locatePackage(CTX, bridgeInfo, 'bridge')
     }
   });
 
@@ -257,7 +258,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
     }
     context.pluginRefs[pluginInfo.name] = {
       name: pluginInfo.name,
-      path: touchPackage(CTX, pluginInfo, 'plugin', require.resolve)
+      path: locatePackage(CTX, pluginInfo, 'plugin')
     }
   });
 
@@ -266,7 +267,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   let pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
     if (chores.isUpgradeSupported('presets')) {
       return {
-        path: require.resolve(pluginInfo.path),
+        path: pluginInfo.path,
         initializer: require(pluginInfo.path)
       }
     }
@@ -325,9 +326,33 @@ bootstrap.require = function(packageName) {
   return null;
 };
 
-function touchPackage(ctx, pkgInfo, pkgType, action) {
+function locatePackage(ctx, pkgInfo, pkgType) {
   try {
-    return action(pkgInfo.path);
+    const entrypoint = require.resolve(pkgInfo.path);
+    let absolutePath = path.dirname(entrypoint);
+    let pkg = loadPackageJson(absolutePath);
+    while (pkg === null) {
+      let parentPath = path.dirname(absolutePath);
+      if (parentPath === absolutePath) break;
+      absolutePath = parentPath;
+      pkg = loadPackageJson(absolutePath);
+    }
+    if (pkg && typeof pkg === 'object') {
+      if (typeof pkg.main === 'string') {
+        let verifiedPath = require.resolve(path.join(absolutePath, pkg.main));
+        if (verifiedPath !== entrypoint) {
+          throw new Error("package.json file's [main] attribute is mismatched");
+        }
+      }
+      if (typeof pkgInfo.name === 'string') {
+        if (pkgInfo.name !== pkg.name) {
+          throw new Error('package name is different with provided name');
+        }
+      }
+    } else {
+      throw new Error('package.json file is not found or has invalid format');
+    }
+    return absolutePath;
   } catch (err) {
     ctx.errorCollector.collect({
       stage: 'bootstrap',
@@ -336,8 +361,16 @@ function touchPackage(ctx, pkgInfo, pkgType, action) {
       hasError: true,
       stack: err.stack
     });
+    return null;
   }
-  return null;
+}
+
+function loadPackageJson(pkgRootPath) {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(pkgRootPath, '/package.json'), 'utf8'));
+  } catch(err) {
+    return null;
+  }
 }
 
 module.exports = global.devebot = global.Devebot = bootstrap;

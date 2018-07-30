@@ -86,7 +86,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
 
   let appRootDir = null;
   if (appRef && lodash.isString(appRef.path)) {
-    appRootDir = path.dirname(appRef.path);
+    appRootDir = appRef.path;
   };
 
   let config = {};
@@ -164,7 +164,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
           text: ' - Presets of ${type}[${name}]: ${presets}'
         }));
       }
-      let libRootDir = path.dirname(libRef.path);
+      let libRootDir = libRef.path;
       let libType = libRef.type || 'plugin';
       let libName = libRef.name;
       let defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');

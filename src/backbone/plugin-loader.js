@@ -21,7 +21,7 @@ function PluginLoader(params={}) {
   }));
 
   lodash.forEach(params.pluginRefs, function(pluginRef) {
-    pluginRef.pathDir = path.dirname(pluginRef.path);
+    pluginRef.pathDir = pluginRef.path;
     return pluginRef;
   });
 
