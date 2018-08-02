@@ -64,6 +64,10 @@ chores.pickProperty = function(propName, containers, propDefault) {
   return propDefault;
 };
 
+chores.fileExists = function(filepath) {
+  return fs.existsSync(filepath);
+}
+
 chores.filterFiles = function(dir, filter, filenames) {
   filenames = filenames || [];
   let regex = (filter) ? new RegExp(filter) : null;

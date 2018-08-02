@@ -13,6 +13,8 @@ const blockRef = chores.getBlockRef(__filename);
 
 const CONFIG_SUBDIR = '/config';
 const CONFIG_VAR_NAMES = [ 'PROFILE',  'SANDBOX', 'CONFIG_DIR', 'CONFIG_ENV' ];
+const CONFIG_PROFILE_NAME = 'profile';
+const CONFIG_SANDBOX_NAME = 'sandbox';
 const RELOADING_FORCED = true;
 
 function ConfigLoader(params={}) {
@@ -69,12 +71,19 @@ let readVariable = function(ctx, appLabel, varName) {
 }
 
 let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, profileName, sandboxName, customDir, customEnv) {
-  const CONFIG_PROFILE_NAME = envbox.getEnv('CONFIG_PROFILE_NAME', 'profile');
-  const CONFIG_SANDBOX_NAME = envbox.getEnv('CONFIG_SANDBOX_NAME', 'sandbox');
-  const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
-  
   let { LX, LT, errorCollector, stateInspector, nameResolver } = ctx || this;
   appOptions = appOptions || {};
+
+  const ALIASES_OF = {};
+  ALIASES_OF[CONFIG_PROFILE_NAME] = lodash.clone(envbox.getEnv('CONFIG_PROFILE_ALIASES'));
+  ALIASES_OF[CONFIG_PROFILE_NAME].unshift(CONFIG_PROFILE_NAME);
+  ALIASES_OF[CONFIG_SANDBOX_NAME] = lodash.clone(envbox.getEnv('CONFIG_SANDBOX_ALIASES'));
+  ALIASES_OF[CONFIG_SANDBOX_NAME].unshift(CONFIG_SANDBOX_NAME);
+  LX.has('silly') && LX.log('silly', LT.add({ aliasesOf: ALIASES_OF }).toMessage({
+    tags: [ blockRef, 'config-dir', 'aliases-of' ],
+    text: ' - configType aliases mapping: ${aliasesOf}'
+  }));
+  const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 
   let {plugin: pluginAliasMap, bridge: bridgeAliasMap} = nameResolver.getAbsoluteAliasMap();
   let transCTX = { LX, LT, pluginAliasMap, bridgeAliasMap, CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME };
@@ -126,20 +135,33 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       }));
       let configFiles = chores.filterFiles(configDir, '.*\.js');
       let configInfos = lodash.map(configFiles, function(file) {
-        return file.replace('.js', '').split(/[_]/);
+        if (false) {
+          return file.replace('.js', '').split(/_(.+)/).filter(function(sub) {
+            return sub.length > 0;
+          });
+        }
+        return file.replace('.js', '').replace(/[_]/,'&').split('&');
       });
+      LX.has('conlog') && LX.log('conlog', LT.add({ configInfos }).toMessage({
+        text: ' - parsing configFiles result: ${configInfos}'
+      }));
 
       LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
         text: ' - load the application default config of "${configType}"'
       }));
-      let defaultFile = path.join(configDir, configType + '.js');
-      config[configType]['expanse'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
+      for(let i in ALIASES_OF[configType]) {
+        let defaultFile = path.join(configDir, ALIASES_OF[configType][i] + '.js');
+        if (chores.fileExists(defaultFile)) {
+          config[configType]['expanse'] = transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), 'application');
+          break;
+        }
+      }
       config[configType]['default'] = lodash.defaultsDeep({}, config[configType]['expanse'], config[configType]['default']);
 
       LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
         text: ' - load the application customized config of "${configType}"'
       }));
-      let expanseNames = filterConfigBy(ctx, configInfos, includedNames, configType);
+      let expanseNames = filterConfigBy(ctx, configInfos, includedNames, configType, ALIASES_OF);
       config[configType]['expanse'] = lodash.reduce(expanseNames, function(accum, expanseItem) {
         let configFile = path.join(configDir, expanseItem.join('_') + '.js');
         let configObj = lodash.defaultsDeep(transformConfig(transCTX, configType, loadConfigFile(ctx, configFile), 'application'), accum);
@@ -167,9 +189,14 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       let libRootDir = libRef.path;
       let libType = libRef.type || 'plugin';
       let libName = libRef.name;
-      let defaultFile = path.join(libRootDir, CONFIG_SUBDIR, configType + '.js');
-      config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
-          transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), libType, libName, libRef.presets));
+      for(let i in ALIASES_OF[configType]) {
+        let defaultFile = path.join(libRootDir, CONFIG_SUBDIR, ALIASES_OF[configType][i] + '.js');
+        if (chores.fileExists(defaultFile)) {
+          config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
+              transformConfig(transCTX, configType, loadConfigFile(ctx, defaultFile), libType, libName, libRef.presets));
+          break;
+        }
+      }
     });
 
     config[configType]['names'] = ['default'];
@@ -222,14 +249,14 @@ let loadConfigFile = function(ctx, configFile) {
   return RELOADING_FORCED ? lodash.cloneDeep(content) : content;
 }
 
-let filterConfigBy = function(ctx, configInfos, selectedNames, configType) {
+let filterConfigBy = function(ctx, configInfos, selectedNames, configType, aliasesOf) {
   let arr = {};
   let idx = {};
   selectedNames[configType].forEach(function(name, index) {
     idx[name] = index;
   });
   lodash.forEach(configInfos, function(item) {
-    let found = (item.length == 2) && (item[0] == configType) && (item[1].length > 0);
+    let found = (item.length == 2) && (aliasesOf[configType].indexOf(item[0]) >= 0) && (item[1].length > 0);
     if (found && idx[item[1]] != null) {
       arr[idx[item[1]]] = item;
     }

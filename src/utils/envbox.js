@@ -32,16 +32,16 @@ const ENV_DEF_DEFAULT = [
     description: "Staging name for configuration"
   },
   {
-    name: "CONFIG_PROFILE_NAME",
-    type: "string",
-    defaultValue: "profile",
-    description: "File name (without extension) of 'profile' configuration"
+    name: "CONFIG_PROFILE_ALIASES",
+    type: "array",
+    defaultValue: [],
+    description: "Aliases of the file name prefix of the [profile] configuration"
   },
   {
-    name: "CONFIG_SANDBOX_NAME",
-    type: "string",
-    defaultValue: "sandbox",
-    description: "File name (without extension) of 'sandbox' configuration"
+    name: "CONFIG_SANDBOX_ALIASES",
+    type: "array",
+    defaultValue: [],
+    description: "Aliases of the file name prefix of the [sandbox] configuration"
   },
   {
     name: "FEATURE_DISABLED",
