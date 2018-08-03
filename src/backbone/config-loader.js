@@ -162,6 +162,10 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
         text: ' - load the application customized config of "${configType}"'
       }));
       let expanseNames = filterConfigBy(ctx, configInfos, includedNames, configType, ALIASES_OF);
+      LX.has('conlog') && LX.log('conlog', LT.add({ expanseNames }).toMessage({
+        text: ' + expanded names: ${expanseNames}'
+      }));
+      config[configType]['expanse'] = config[configType]['expanse'] || {};
       config[configType]['expanse'] = lodash.reduce(expanseNames, function(accum, expanseItem) {
         let configFile = path.join(configDir, expanseItem.join('_') + '.js');
         let configObj = lodash.defaultsDeep(transformConfig(transCTX, configType, loadConfigFile(ctx, configFile), 'application'), accum);
@@ -170,7 +174,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
         return configObj;
       }, config[configType]['expanse']);
       config[configType]['mixture'] = config[configType]['mixture'] || {};
-      config[configType]['mixture'] = lodash.defaultsDeep(config[configType]['expanse'], config[configType]['default'], config[configType]['mixture']);
+      config[configType]['mixture'] = lodash.defaultsDeep(config[configType]['expanse'], config[configType]['mixture'], config[configType]['default']);
     }
   }
 

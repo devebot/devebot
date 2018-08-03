@@ -113,10 +113,10 @@ const ENV_DEF_DEFAULT = [
     description: "The number of stack frames collected by a stack trace"
   },
   {
-    name: "NODE_ENV",
+    name: "BABEL_ENV",
     type: "string",
     scope: "framework",
-    description: "An alternative to NODE_ENV for npm scripts"
+    description: "An alternative to BABEL_ENV for npm build scripts"
   }
 ]
 

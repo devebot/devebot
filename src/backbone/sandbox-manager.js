@@ -99,9 +99,15 @@ function SandboxManager(params={}) {
   let sandboxName = params['sandboxNames'].join(',');
   let profileName = params['profileNames'].join(',');
   let miscObjects = {
-    bridgeDialectNames: lodash.keys(dialectMap),
-    pluginServiceNames: lodash.keys(serviceMap),
-    pluginTriggerNames:lodash.keys(triggerMap),
+    bridgeDialectNames: lodash.map(lodash.values(dialectMap), function(handlerRecord) {
+      return [handlerRecord.crateScope, handlerRecord.name].join(sandboxInjektor.separator);
+    }),
+    pluginServiceNames: lodash.map(lodash.values(serviceMap), function(handlerRecord) {
+      return [handlerRecord.crateScope, handlerRecord.name].join(sandboxInjektor.separator);
+    }),
+    pluginTriggerNames:lodash.map(lodash.values(triggerMap), function(handlerRecord) {
+      return [handlerRecord.crateScope, handlerRecord.name].join(sandboxInjektor.separator);
+    }),
     sandboxName: sandboxName,
     profileName: profileName
   }
@@ -187,10 +193,6 @@ function SandboxManager(params={}) {
   self.getRunhookManager = function() {
     return runhookManager;
   }
-
-  self.getSandboxNames = function() {
-    return sandboxNames;
-  };
 
   self.getSandboxService = function(serviceName, context) {
     return sandboxInjektor.lookup(serviceName, context);
