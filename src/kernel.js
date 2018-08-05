@@ -171,7 +171,7 @@ let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
   let customizeResult = function(result, bridgeCode, pluginName, dialectName) {
     let output = {};
     output.stage = 'config/schema';
-    output.name = pluginName + '/' + bridgeCode + '#' + dialectName;
+    output.name = [pluginName, chores.getSeparator(), bridgeCode, '#', dialectName].join('');
     output.type = 'bridge';
     output.hasError = result.ok !== true;
     if (!result.ok && result.errors) {

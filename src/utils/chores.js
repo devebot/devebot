@@ -230,6 +230,10 @@ chores.getFullname = function(parts, separator) {
       .join(separator || chores.getSeparator());
 }
 
+chores.toFullname = function() {
+  return lodash.filter(arguments, lodash.negate(lodash.isEmpty)).join(this.getSeparator());
+}
+
 chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxRegistry) {
   let ref = {};
   let commander = sandboxRegistry.lookupService(proxyName);

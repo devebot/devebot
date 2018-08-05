@@ -94,20 +94,18 @@ function SandboxManager(params={}) {
     excludedServices: REGISTRY_EXCLUDED_SERVICES
   }), chores.injektorContext);
 
+  function getCrateName(handlerRecord) {
+    return [handlerRecord.crateScope, handlerRecord.name].join(sandboxInjektor.separator);
+  }
+
   let injectedHandlers = {};
   let injectedServices = {};
   let sandboxName = params['sandboxNames'].join(',');
   let profileName = params['profileNames'].join(',');
   let miscObjects = {
-    bridgeDialectNames: lodash.map(lodash.values(dialectMap), function(handlerRecord) {
-      return [handlerRecord.crateScope, handlerRecord.name].join(sandboxInjektor.separator);
-    }),
-    pluginServiceNames: lodash.map(lodash.values(serviceMap), function(handlerRecord) {
-      return [handlerRecord.crateScope, handlerRecord.name].join(sandboxInjektor.separator);
-    }),
-    pluginTriggerNames:lodash.map(lodash.values(triggerMap), function(handlerRecord) {
-      return [handlerRecord.crateScope, handlerRecord.name].join(sandboxInjektor.separator);
-    }),
+    bridgeDialectNames: lodash.map(lodash.values(dialectMap), getCrateName),
+    pluginServiceNames: lodash.map(lodash.values(serviceMap), getCrateName),
+    pluginTriggerNames: lodash.map(lodash.values(triggerMap), getCrateName),
     sandboxName: sandboxName,
     profileName: profileName
   }
@@ -217,7 +215,7 @@ function SandboxManager(params={}) {
     }));
     return self.eachTriggers(function(trigger) {
       return trigger.start();
-    }, triggerNames, 'start');
+    }, triggerNames, { actionName: 'start' });
   };
 
   self.stopTriggers = function(triggerNames) {
@@ -227,22 +225,21 @@ function SandboxManager(params={}) {
     }));
     return self.eachTriggers(function(trigger) {
       return trigger.stop();
-    }, triggerNames, 'stop');
+    }, triggerNames, { actionName: 'stop' });
   };
 
-  self.eachTriggers = function(iteratee, triggerNames, actionName) {
+  self.eachTriggers = function(iteratee, triggerNames, options) {
     if (!lodash.isFunction(iteratee)) return;
-
     if (lodash.isString(triggerNames)) triggerNames = [triggerNames];
     if (triggerNames && !lodash.isArray(triggerNames)) return;
     LX.has('silly') && LX.log('silly', LT.add({ triggerNames: triggerNames || 'all' }).toMessage({
       tags: [ blockRef, 'trigger', 'loop' ],
       text: ' - Loop triggers: ${triggerNames}'
     }));
-
+    let actionName = options && options.actionName;
     let triggers = [];
     lodash.forOwn(triggerMap, function(triggerRecord, triggerId) {
-      let triggerName = [triggerRecord.crateScope, triggerRecord.name].join(sandboxInjektor.separator);
+      let triggerName = getCrateName(triggerRecord);
       if (!triggerNames || triggerNames.indexOf(triggerName) >= 0) {
         LX.has('silly') && LX.log('silly', LT.add({ actionName, triggerName }).toMessage({
           tags: [ blockRef, 'trigger', 'action' ],
@@ -255,9 +252,7 @@ function SandboxManager(params={}) {
       }
     });
 
-    return Promise.mapSeries(triggers, function(trigger) {
-      return iteratee(trigger);
-    });
+    return Promise.mapSeries(triggers, iteratee);
   };
 
   self.getServiceInfo = function() {

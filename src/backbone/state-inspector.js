@@ -302,7 +302,7 @@ let flattenBridgeConfig = function(bridgeConfig, flatBridgeCfgs) {
   lodash.forOwn(bridgeConfig, function(bridgeInfo, bridgeName) {
     lodash.forOwn(bridgeInfo, function(pluginInfo, pluginName) {
       lodash.forOwn(pluginInfo, function(dialectInfo, dialectName) {
-        let fullname = [pluginName, '/', bridgeName, '#', dialectName].join('');
+        let fullname = [pluginName, chores.getSeparator(), bridgeName, '#', dialectName].join('');
         flatBridgeCfgs[fullname] = dialectInfo;
       });
     });
