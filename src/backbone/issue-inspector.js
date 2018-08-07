@@ -64,6 +64,7 @@ function IssueInspector(params={}) {
         lodash.forEach(summary.failedServices, function(fsv) {
           if (fsv.stage === 'bootstrap') {
             switch(fsv.type) {
+              case 'appbox':
               case 'application':
               console.error(chalk.errorMessage("--> [%s:%s] bootstrap has failed, reasons:"), fsv.type, fsv.name);
               console.error(chalk.errorStack("  " + fsv.stack));

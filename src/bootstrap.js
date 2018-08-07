@@ -71,7 +71,7 @@ function appLoader(params={}) {
 
   // declare user-defined environment variables
   let currentEnvNames = envbox.getEnvNames();
-  let evDescriptors = lodash.get(appRef, ['presets', 'environmentVarDescriptors'], []);
+  let evDescriptors = lodash.get(params, ['environmentVarDescriptors'], []);
   let duplicated = lodash.filter(evDescriptors, function(ev) {
     return currentEnvNames.indexOf(ev.name) >= 0;
   });
@@ -87,12 +87,12 @@ function appLoader(params={}) {
       }).join('\n')
     });
   } else {
-    envbox.define(appRef && appRef.presets && appRef.presets.environmentVarDescriptors);
+    envbox.define(evDescriptors);
   }
 
   // freeze occupied environment variables
   envbox.setNamespace(chores.stringLabelCase(appName), {
-    occupyValues: appRef && appRef.presets && appRef.presets.environmentVarOccupied,
+    occupyValues: params.environmentVarOccupied,
     ownershipLabel: util.format('<owned-by-%s>', appName)
   });
 
@@ -107,7 +107,7 @@ function appLoader(params={}) {
   });
 
   let contextManager = new ContextManager({ issueInspector });
-  contextManager.addDefaultFeatures(appRef && appRef.presets && appRef.presets.defaultFeatures);
+  contextManager.addDefaultFeatures(params.defaultFeatures);
 
   let app = {};
 
@@ -191,6 +191,18 @@ function registerLayerware(presets, pluginNames, bridgeNames) {
 function launchApplication(context, pluginNames, bridgeNames) {
   if (lodash.isString(context)) {
     context = { appRootPath: context };
+  }
+  let result = chores.validate(context, constx.BOOTSTRAP.appbox.schema);
+  if (!lodash.isEmpty(context)) {
+    if (!result.ok) {
+      issueInspector.collect({
+        stage: 'bootstrap',
+        type: 'appbox',
+        name: 'launchApplication',
+        hasError: true,
+        stack: JSON.stringify(result.errors, null, 4)
+      });
+    }
   }
   return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS), pluginNames, bridgeNames)));
 }

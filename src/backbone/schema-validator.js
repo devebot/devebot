@@ -2,8 +2,6 @@
 
 const lodash = require('lodash');
 const chores = require('../utils/chores');
-const Validator = require('schemato').Validator;
-const validator = new Validator({ schemaVersion: 4 });
 const blockRef = chores.getBlockRef(__filename);
 
 function SchemaValidator(params={}) {
@@ -11,6 +9,7 @@ function SchemaValidator(params={}) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
+  let validator;
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -18,6 +17,7 @@ function SchemaValidator(params={}) {
   }));
 
   self.validate = function(object, schema) {
+    validator = validator || chores.getValidator();
     let result = validator.validate(object, schema);
     if (typeof result.ok === 'boolean') {
       result.valid = result.ok;

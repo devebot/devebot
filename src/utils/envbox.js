@@ -81,7 +81,7 @@ const ENV_DEF_DEFAULT = [
   {
     name: "SKIP_PROCESS_EXIT",
     type: "boolean",
-    defaultValue: "false",
+    defaultValue: false,
     scope: "test",
     description: "Skipping execute process.exit (used in testing environment only)"
   },

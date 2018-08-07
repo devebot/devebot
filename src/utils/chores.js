@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const util = require('util');
 const uuidv4 = require('logolite/uuidv4');
+const Validator = require('schemato').Validator;
 const constx = require('./constx');
 const loader = require('./loader');
 const envbox = require('./envbox');
@@ -19,7 +20,8 @@ let store = {
     namePatternTemplate: '^[a-zA-Z]{1}[a-zA-Z0-9&#\\-_%s]*$',
     separator: '/'
   },
-  injektorContext: { scope: 'devebot' }
+  injektorContext: { scope: 'devebot' },
+  validatorOptions: { schemaVersion: 4 }
 };
 let chores = {};
 
@@ -319,6 +321,22 @@ chores.isUpgradeSupported = function(label) {
     if (!checkUpgradeSupported(label[k])) return false;
   }
   return true;
+}
+
+chores.dateToString = function(d) {
+  return d.toISOString().replace(/[:-]/g, '').replace(/[T.]/g, '-');
+}
+
+chores.getValidator = function() {
+  return store.validator = store.validator || new Validator(store.validatorOptions);
+}
+
+chores.validate = function(object, schema) {
+  let result = this.getValidator().validate(object, schema);
+  if (typeof result.ok === 'boolean') {
+    result.valid = result.ok;
+  }
+  return result;
 }
 
 let checkUpgradeSupported = function(label) {

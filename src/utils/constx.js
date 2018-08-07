@@ -4,6 +4,150 @@ module.exports = {
   APPINFO: {
     FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license', 'main']
   },
+  BOOTSTRAP: {
+    appbox: {
+      schema: {
+        "type": "object",
+        "properties": {
+          "appName": {
+            "type": "string"
+          },
+          "appRootPath": {
+            "type": "string"
+          },
+          "privateProfile": {
+            "$ref": "#/definitions/contextConfigSchema"
+          },
+          "privateProfiles": {
+            "$ref": "#/definitions/contextConfigSchema"
+          },
+          "privateSandbox": {
+            "$ref": "#/definitions/contextConfigSchema"
+          },
+          "privateSandboxes": {
+            "$ref": "#/definitions/contextConfigSchema"
+          },
+          "defaultFeatures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "environmentVarDescriptors": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "aliases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "scope": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [ "array" ]
+                        },
+                        "defaultValue": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [ "string" ]
+                        },
+                        "defaultValue": {
+                          "type": "string"
+                        },
+                        "enum": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [ "boolean" ]
+                        },
+                        "defaultValue": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [ "number" ]
+                        },
+                        "defaultValue": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "environmentVarOccupied": {
+            "type": "boolean"
+          },
+          "presets": {
+            "type": "object"
+          }
+        },
+        "required": [ "appRootPath" ],
+        "additionalProperties": false,
+        "definitions": {
+          "contextConfigSchema": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
   LOGGER: {
     LABELS: {
       silly: {
