@@ -8,7 +8,7 @@ const blockRef = chores.getBlockRef(__filename);
 
 function ProcessManager(params={}) {
   let self = this;
-  let errorCollector = params.errorCollector;
+  let issueInspector = params.issueInspector;
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
@@ -77,7 +77,7 @@ ProcessManager.argumentSchema = {
     "profileConfig": {
       "type": "object"
     },
-    "errorCollector": {
+    "issueInspector": {
       "type": "object"
     },
     "loggingFactory": {

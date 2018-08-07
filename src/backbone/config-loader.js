@@ -18,11 +18,11 @@ const CONFIG_SANDBOX_NAME = 'sandbox';
 const RELOADING_FORCED = true;
 
 function ConfigLoader(params={}) {
-  let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, errorCollector, stateInspector, nameResolver} = params;
+  let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, issueInspector, stateInspector, nameResolver} = params;
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
-  let CTX = { LX, LT, errorCollector, stateInspector, nameResolver };
+  let CTX = { LX, LT, issueInspector, stateInspector, nameResolver };
 
   let label = chores.stringLabelCase(appName);
 
@@ -71,7 +71,7 @@ let readVariable = function(ctx, appLabel, varName) {
 }
 
 let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, profileName, sandboxName, customDir, customEnv) {
-  let { LX, LT, errorCollector, stateInspector, nameResolver } = ctx || this;
+  let { LX, LT, issueInspector, stateInspector, nameResolver } = ctx || this;
   appOptions = appOptions || {};
 
   const ALIASES_OF = {};
@@ -222,13 +222,13 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
     stateInspector.collect({config});
   }
 
-  errorCollector.barrier({ invoker: blockRef, footmark: 'config-file-loading' });
+  issueInspector.barrier({ invoker: blockRef, footmark: 'config-file-loading' });
 
   return config;
 }
 
 let loadConfigFile = function(ctx, configFile) {
-  let { LX, LT, errorCollector } = ctx || this;
+  let { LX, LT, issueInspector } = ctx || this;
   let opStatus = { type: 'CONFIG', file: configFile };
   let content;
   try {
@@ -249,7 +249,7 @@ let loadConfigFile = function(ctx, configFile) {
       opStatus.stack = err.stack;
     }
   }
-  errorCollector.collect(opStatus);
+  issueInspector.collect(opStatus);
   return RELOADING_FORCED ? lodash.cloneDeep(content) : content;
 }
 
@@ -269,7 +269,7 @@ let filterConfigBy = function(ctx, configInfos, selectedNames, configType, alias
 }
 
 let resolveConfigDir = function(ctx, appName, appRootDir, configDir, configEnv) {
-  let { LX, LT, errorCollector } = ctx || this;
+  let { LX, LT, issueInspector } = ctx || this;
   let dirPath = configDir;
   if (lodash.isEmpty(dirPath)) {
     if (['production'].indexOf(process.env.NODE_ENV) >= 0) {
@@ -278,7 +278,7 @@ let resolveConfigDir = function(ctx, appName, appRootDir, configDir, configEnv) 
         LX.has('conlog') && LX.log('conlog', LT.toMessage({
           text: 'Run in production mode, but config directory not found'
         }));
-        errorCollector.exit(1);
+        issueInspector.exit(1);
       }
     } else {
       if (!lodash.isEmpty(appRootDir)) {

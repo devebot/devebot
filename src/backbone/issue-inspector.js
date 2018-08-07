@@ -6,7 +6,7 @@ const chores = require('../utils/chores');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
-function ErrorCollector(params={}) {
+function IssueInspector(params={}) {
   let self = this;
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
@@ -56,7 +56,7 @@ function ErrorCollector(params={}) {
 
   this.barrier = function(options) {
     options = options || {};
-    let silent = chores.isSilentForced('error-collector', options);
+    let silent = chores.isSilentForced('issue-inspector', options);
     let summary = this.examine(options);
     if (summary.numberOfErrors > 0) {
       if (!silent) {
@@ -204,13 +204,13 @@ function ErrorCollector(params={}) {
   }));
 }
 
-ErrorCollector.argumentSchema = {
-  "$id": "errorHandler",
+IssueInspector.argumentSchema = {
+  "$id": "issueInspector",
   "type": "object",
   "properties": {}
 };
 
-module.exports = ErrorCollector;
+module.exports = IssueInspector;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
 
@@ -226,11 +226,11 @@ let chalk = new Chalk({
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance
 
-let globalErrorCollector;
+let singleton;
 
-Object.defineProperty(ErrorCollector, 'instance', {
+Object.defineProperty(IssueInspector, 'instance', {
   get: function() {
-    return (globalErrorCollector = globalErrorCollector || new ErrorCollector());
+    return (singleton = singleton || new IssueInspector());
   },
   set: function(value) {}
 });

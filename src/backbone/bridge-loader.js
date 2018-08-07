@@ -10,7 +10,7 @@ function BridgeLoader(params={}) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
-  let CTX = {LX, LT, errorCollector: params.errorCollector, nameResolver: params.nameResolver};
+  let CTX = {LX, LT, issueInspector: params.issueInspector, nameResolver: params.nameResolver};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -65,7 +65,7 @@ BridgeLoader.argumentSchema = {
         "required": ["name", "path"]
       }
     },
-    "errorCollector": {
+    "issueInspector": {
       "type": "object"
     },
     "nameResolver": {
@@ -82,7 +82,7 @@ module.exports = BridgeLoader;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
 let loadBridgeContructor = function(ctx, bridgeRef) {
-  let {LX, LT, errorCollector, nameResolver} = ctx;
+  let {LX, LT, issueInspector, nameResolver} = ctx;
 
   bridgeRef = bridgeRef || {};
 
@@ -125,7 +125,7 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
     opStatus.stack = err.stack;
   }
 
-  errorCollector.collect(opStatus);
+  issueInspector.collect(opStatus);
 
   return result;
 };
@@ -158,7 +158,7 @@ let loadBridgeConstructors = function(ctx, bridgeRefs) {
 };
 
 let buildBridgeDialect = function(ctx, dialectOpts) {
-  let {LX, LT, errorCollector, nameResolver} = ctx;
+  let {LX, LT, issueInspector, nameResolver} = ctx;
   let {pluginName, bridgeCode, bridgeRecord, dialectName, optType} = dialectOpts;
   let result = {};
 
@@ -275,7 +275,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
       opStatus.hasError = true;
       opStatus.stack = err.stack;
     }
-    errorCollector.collect(opStatus);
+    issueInspector.collect(opStatus);
   }
 
   dialectConstructor.prototype = Object.create(bridgeConstructor.prototype);

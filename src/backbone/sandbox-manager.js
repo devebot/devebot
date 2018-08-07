@@ -14,7 +14,7 @@ const DEFAULT_SERVICES = [ 'jobqueue-binder' ];
 
 function SandboxManager(params={}) {
   let self = this;
-  let errorCollector = params.errorCollector;
+  let issueInspector = params.issueInspector;
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
@@ -137,7 +137,7 @@ function SandboxManager(params={}) {
         return !lodash.isFunction(methods[name]);
       });
       if (!lodash.isEmpty(requiredMethods)) {
-        errorCollector.collect({
+        issueInspector.collect({
           stage: 'check-methods',
           type: handlerType,
           name: handlerName,
@@ -154,7 +154,7 @@ function SandboxManager(params={}) {
         hasError: true,
         stack: exception.stack
       };
-      errorCollector.collect(opStatus);
+      issueInspector.collect(opStatus);
     });
   }
 
@@ -329,7 +329,7 @@ SandboxManager.argumentSchema = {
     "contextManager": {
       "type": "object"
     },
-    "errorCollector": {
+    "issueInspector": {
       "type": "object"
     },
     "loggingFactory": {

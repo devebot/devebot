@@ -9,7 +9,7 @@ const blockRef = chores.getBlockRef(__filename);
 
 function ContextManager(params={}) {
   let self = this;
-  let errorCollector = params.errorCollector;
+  let issueInspector = params.issueInspector;
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
@@ -79,7 +79,7 @@ ContextManager.argumentSchema = {
   "$id": "contextManager",
   "type": "object",
   "properties": {
-    "errorCollector": {
+    "issueInspector": {
       "type": "object"
     }
   }

@@ -12,7 +12,7 @@ function PluginLoader(params={}) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let LX = loggingFactory.getLogger();
   let LT = loggingFactory.getTracer();
-  let CTX = {LX, LT, errorCollector: params.errorCollector, 
+  let CTX = {LX, LT, issueInspector: params.issueInspector, 
     nameResolver: params.nameResolver, schemaValidator: params.schemaValidator};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
@@ -70,7 +70,7 @@ PluginLoader.argumentSchema = {
         "required": ["name", "path"]
       }
     },
-    "errorCollector": {
+    "issueInspector": {
       "type": "object"
     },
     "nameResolver": {
@@ -136,7 +136,7 @@ let loadScriptEntries = function(CTX, scriptMap, scriptType, scriptContext, plug
 
 let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptFile, scriptContext, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, errorCollector, nameResolver, schemaValidator} = CTX;
+  let {LX, LT, issueInspector, nameResolver, schemaValidator} = CTX;
   let opStatus = lodash.assign({ type: scriptType, file: scriptFile, subDir: scriptSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, scriptSubDir, scriptFile);
   try {
@@ -189,7 +189,7 @@ let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptF
     opStatus.hasError = true;
     opStatus.stack = err.stack;
   }
-  errorCollector.collect(opStatus);
+  issueInspector.collect(opStatus);
 };
 
 let parseScriptTree = function(scriptFile, scriptInstance, isHierarchical) {
@@ -260,7 +260,7 @@ let loadMetainfEntries = function(CTX, metainfMap, pluginRootDir) {
 
 let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, errorCollector, nameResolver, schemaValidator} = CTX;
+  let {LX, LT, issueInspector, nameResolver, schemaValidator} = CTX;
   let metainfType = 'METAINF';
   let opStatus = lodash.assign({ type: 'METAINF', file: schemaFile, subDir: metainfSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, metainfSubDir, schemaFile);
@@ -307,7 +307,7 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
     opStatus.hasError = true;
     opStatus.stack = err.stack;
   }
-  errorCollector.collect(opStatus);
+  issueInspector.collect(opStatus);
 }
 
 let validateMetainf = function(CTX, metainfObject) {
@@ -358,7 +358,7 @@ let loadGadgetEntries = function(CTX, gadgetMap, gadgetType, pluginRootDir) {
 
 let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetFile, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, errorCollector, schemaValidator} = CTX;
+  let {LX, LT, issueInspector, schemaValidator} = CTX;
   let opStatus = lodash.assign({ type: gadgetType, file: gadgetFile, subDir: gadgetSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, gadgetSubDir, gadgetFile);
   try {
@@ -384,7 +384,7 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
     opStatus.hasError = true;
     opStatus.stack = err.stack;
   }
-  errorCollector.collect(opStatus);
+  issueInspector.collect(opStatus);
 };
 
 let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRootDir) {

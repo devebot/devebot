@@ -6,7 +6,7 @@ const util = require('util');
 const lodash = require('lodash');
 const minimist = require('minimist');
 const appinfoLoader = require('./backbone/appinfo-loader');
-const ErrorCollector = require('./backbone/error-collector');
+const IssueInspector = require('./backbone/issue-inspector');
 const StateInspector = require('./backbone/state-inspector');
 const ConfigLoader = require('./backbone/config-loader');
 const ContextManager = require('./backbone/context-manager');
@@ -18,7 +18,7 @@ const envbox = require('./utils/envbox');
 const Runner = require('./runner');
 const Server = require('./server');
 const blockRef = chores.getBlockRef(__filename);
-const errorCollector = ErrorCollector.instance;
+const issueInspector = IssueInspector.instance;
 const stateInspector = StateInspector.instance;
 
 function appLoader(params={}) {
@@ -76,7 +76,7 @@ function appLoader(params={}) {
     return currentEnvNames.indexOf(ev.name) >= 0;
   });
   if (duplicated.length > 0) {
-    errorCollector.collect({
+    issueInspector.collect({
       hasError: true,
       stage: 'bootstrap',
       type: 'application',
@@ -98,15 +98,15 @@ function appLoader(params={}) {
 
   let pluginRefList = lodash.values(params.pluginRefs);
   let bridgeRefList = lodash.values(params.bridgeRefs);
-  let nameResolver = new NameResolver({ errorCollector, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
+  let nameResolver = new NameResolver({ issueInspector, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
 
   stateInspector.register({ nameResolver, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
 
   let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
-    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, errorCollector, stateInspector, nameResolver
+    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, issueInspector, stateInspector, nameResolver
   });
 
-  let contextManager = new ContextManager({ errorCollector });
+  let contextManager = new ContextManager({ issueInspector });
   contextManager.addDefaultFeatures(appRef && appRef.presets && appRef.presets.defaultFeatures);
 
   let app = {};
@@ -129,7 +129,7 @@ function appLoader(params={}) {
   let _runner;
   Object.defineProperty(app, 'runner', {
     get: function() {
-      let args = { configObject: this.config, contextManager, errorCollector, stateInspector, nameResolver };
+      let args = { configObject: this.config, contextManager, issueInspector, stateInspector, nameResolver };
       return _runner = _runner || new Runner(args);
     },
     set: function(value) {}
@@ -138,7 +138,7 @@ function appLoader(params={}) {
   let _server;
   Object.defineProperty(app, 'server', {
     get: function() {
-      let args = { configObject: this.config, contextManager, errorCollector, stateInspector, nameResolver };
+      let args = { configObject: this.config, contextManager, issueInspector, stateInspector, nameResolver };
       return _server = _server || new Server(args);
     },
     set: function(value) {}
@@ -206,7 +206,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   bridgeNames = chores.arrayify(bridgeNames || []);
   pluginNames = chores.arrayify(pluginNames || []);
 
-  const CTX = { errorCollector };
+  const CTX = { issueInspector };
 
   let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
     if (chores.isUpgradeSupported('presets')) {
@@ -262,7 +262,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
     }
   });
 
-  errorCollector.barrier({ invoker: blockRef, footmark: 'package-touching' });
+  issueInspector.barrier({ invoker: blockRef, footmark: 'package-touching' });
 
   let pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
     if (chores.isUpgradeSupported('presets')) {
@@ -354,7 +354,7 @@ function locatePackage(ctx, pkgInfo, pkgType) {
     }
     return absolutePath;
   } catch (err) {
-    ctx.errorCollector.collect({
+    ctx.issueInspector.collect({
       stage: 'bootstrap',
       type: pkgType,
       name: pkgInfo.name,

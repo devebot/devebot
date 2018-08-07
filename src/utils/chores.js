@@ -226,12 +226,18 @@ chores.getSeparator = function() {
 };
 
 chores.getFullname = function(parts, separator) {
-  return lodash.filter(parts, lodash.negate(lodash.isEmpty))
-      .join(separator || chores.getSeparator());
+  return lodash.filter(parts, lodash.negate(lodash.isEmpty)).join(separator || chores.getSeparator());
 }
 
 chores.toFullname = function() {
-  return lodash.filter(arguments, lodash.negate(lodash.isEmpty)).join(this.getSeparator());
+  return lodash.filter(arguments, lodash.negate(lodash.isEmpty)).join(store.injektorOptions.separator);
+}
+
+chores.transformBeanName = function(name, opts) {
+  opts = opts || {};
+  if (typeof name !== 'string') return name;
+  let pattern = (opts.namePattern instanceof RegExp) ? opts.namePattern : /^(.+)\/([^:^\/]+)$/g;
+  return name.replace(pattern, "$1:$2");
 }
 
 chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxRegistry) {

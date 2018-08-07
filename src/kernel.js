@@ -24,7 +24,7 @@ function Kernel(params={}) {
   }));
 
   // init the default parameters
-  let { configObject, contextManager, errorCollector, stateInspector, nameResolver } = params || {};
+  let { configObject, contextManager, issueInspector, stateInspector, nameResolver } = params || {};
 
   // create injektor instance
   let injektor = new Injektor(chores.injektorOptions);
@@ -39,7 +39,7 @@ function Kernel(params={}) {
     .registerObject('profileNames', configObject['profile']['names'], chores.injektorContext)
     .registerObject('profileConfig', configObject['profile']['mixture'], chores.injektorContext)
     .registerObject('contextManager', contextManager, chores.injektorContext)
-    .registerObject('errorCollector', errorCollector, chores.injektorContext)
+    .registerObject('issueInspector', issueInspector, chores.injektorContext)
     .registerObject('nameResolver', nameResolver, chores.injektorContext);
 
   lodash.forOwn(CONSTRUCTORS, function(constructor, serviceName) {
@@ -130,14 +130,14 @@ function Kernel(params={}) {
     text: ' - Validating sandbox configuration using schemas'
   }));
 
-  errorCollector.collect(result).barrier({ invoker: blockRef, footmark: 'metadata-validating' });
+  issueInspector.collect(result).barrier({ invoker: blockRef, footmark: 'metadata-validating' });
 
   // initialize plugins, bridges, sandboxManager
   let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
 
   let devebotCfg = lodash.get(configObject, ['profile', 'mixture', 'devebot'], {});
   let inOpts = lodash.assign({ invoker: blockRef, footmark: 'sandbox-loading' }, devebotCfg);
-  errorCollector.barrier(inOpts);
+  issueInspector.barrier(inOpts);
   stateInspector.conclude(inOpts);
 
   this.invoke = function(block) {

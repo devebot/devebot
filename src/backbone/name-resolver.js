@@ -10,7 +10,7 @@ function NameResolver(params={}) {
   let loggingWrapper = new LoggingWrapper(blockRef);
   let LX = loggingWrapper.getLogger();
   let LT = loggingWrapper.getTracer();
-  let CTX = {LX, LT, errorCollector: params.errorCollector};
+  let CTX = {LX, LT, issueInspector: params.issueInspector};
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -78,7 +78,7 @@ NameResolver.argumentSchema = {
   "$id": "nameResolver",
   "type": "object",
   "properties": {
-    "errorCollector": {
+    "issueInspector": {
       "type": "object"
     },
     "pluginRefs": {
@@ -139,7 +139,7 @@ let extractAliasNames = function(ctx, type, myRefs) {
         myRef.nameInCamel = chores.stringCamelCase(myRef.name);
       }
     } else {
-      errorCollector.collect(lodash.assign({
+      issueInspector.collect(lodash.assign({
         stage: 'naming',
         type: type,
         hasError: true,
