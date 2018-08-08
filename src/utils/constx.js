@@ -1,150 +1,243 @@
 'use strict';
 
+const PRESETS_SCHEMA = {
+  "type": "object",
+  "properties": {
+    "componentDir": {
+      "type": "object",
+      "properties": {
+        "ROUTINE": {
+          "type": "string"
+        },
+        "SERVICE": {
+          "type": "string"
+        },
+        "TRIGGER": {
+          "type": "string"
+        }
+      }
+    },
+    "configTags": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "referenceAlias": {
+      "type": "object"
+    },
+    "schemaValidation": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}
+
+const DEPENDENCIES_SCHEMA = {
+  "type": "array",
+  "items": {
+    "oneOf": [
+      {
+        "type": "string"
+      },
+      {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "presets": PRESETS_SCHEMA
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    ]
+  }
+}
+
 module.exports = {
   APPINFO: {
     FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license', 'main']
   },
   BOOTSTRAP: {
-    appbox: {
-      schema: {
-        "type": "object",
-        "properties": {
-          "appName": {
-            "type": "string"
-          },
-          "appRootPath": {
-            "type": "string"
-          },
-          "privateProfile": {
-            "$ref": "#/definitions/contextConfigSchema"
-          },
-          "privateProfiles": {
-            "$ref": "#/definitions/contextConfigSchema"
-          },
-          "privateSandbox": {
-            "$ref": "#/definitions/contextConfigSchema"
-          },
-          "privateSandboxes": {
-            "$ref": "#/definitions/contextConfigSchema"
-          },
-          "defaultFeatures": {
-            "type": "array",
-            "items": {
+    launchApplication: {
+      context: {
+        schema: {
+          "type": "object",
+          "properties": {
+            "appName": {
               "type": "string"
-            }
-          },
-          "environmentVarDescriptors": {
-            "type": "array",
-            "items": {
-              "allOf": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "aliases": {
-                      "type": "array",
-                      "items": {
+            },
+            "appRootPath": {
+              "type": "string"
+            },
+            "privateProfile": {
+              "$ref": "#/definitions/contextConfigSchema"
+            },
+            "privateProfiles": {
+              "$ref": "#/definitions/contextConfigSchema"
+            },
+            "privateSandbox": {
+              "$ref": "#/definitions/contextConfigSchema"
+            },
+            "privateSandboxes": {
+              "$ref": "#/definitions/contextConfigSchema"
+            },
+            "defaultFeatures": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "environmentVarDescriptors": {
+              "type": "array",
+              "items": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "aliases": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "scope": {
+                        "type": "string"
+                      },
+                      "description": {
                         "type": "string"
                       }
-                    },
-                    "scope": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
                     }
+                  },
+                  {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [ "array" ]
+                          },
+                          "defaultValue": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [ "string" ]
+                          },
+                          "defaultValue": {
+                            "type": "string"
+                          },
+                          "enum": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [ "boolean" ]
+                          },
+                          "defaultValue": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [ "number" ]
+                          },
+                          "defaultValue": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    ]
                   }
+                ]
+              }
+            },
+            "environmentVarOccupied": {
+              "type": "boolean"
+            },
+            "presets": PRESETS_SCHEMA
+          },
+          "required": [ "appRootPath" ],
+          "additionalProperties": false,
+          "definitions": {
+            "contextConfigSchema": {
+              "oneOf": [
+                {
+                  "type": "string"
                 },
                 {
-                  "oneOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [ "array" ]
-                        },
-                        "defaultValue": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [ "string" ]
-                        },
-                        "defaultValue": {
-                          "type": "string"
-                        },
-                        "enum": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [ "boolean" ]
-                        },
-                        "defaultValue": {
-                          "type": "boolean"
-                        }
-                      }
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "enum": [ "number" ]
-                        },
-                        "defaultValue": {
-                          "type": "number"
-                        }
-                      }
-                    }
-                  ]
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
                 }
               ]
             }
-          },
-          "environmentVarOccupied": {
-            "type": "boolean"
-          },
-          "presets": {
-            "type": "object"
-          }
-        },
-        "required": [ "appRootPath" ],
-        "additionalProperties": false,
-        "definitions": {
-          "contextConfigSchema": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            ]
           }
         }
+      },
+      plugins: {
+        schema: DEPENDENCIES_SCHEMA
+      },
+      bridges: {
+        schema: DEPENDENCIES_SCHEMA
+      }
+    },
+    registerLayerware: {
+      context: {
+        schema: {
+          "type": "object",
+          "properties": {
+            "layerRootPath": {
+              "type": "string"
+            },
+            "presets": PRESETS_SCHEMA
+          },
+          "additionalProperties": false
+        }
+      },
+      plugins: {
+        schema: DEPENDENCIES_SCHEMA
+      },
+      bridges: {
+        schema: DEPENDENCIES_SCHEMA
       }
     }
   },

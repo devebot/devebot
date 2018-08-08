@@ -165,6 +165,45 @@ function registerLayerware(context, pluginNames, bridgeNames) {
     context = { layerRootPath: context };
   }
 
+  if (!lodash.isEmpty(context)) {
+    let result = chores.validate(context, constx.BOOTSTRAP.registerLayerware.context.schema);
+    if (!result.ok) {
+      issueInspector.collect({
+        stage: 'bootstrap',
+        type: 'application',
+        name: 'registerLayerware',
+        hasError: true,
+        stack: JSON.stringify(result.errors, null, 4)
+      });
+    }
+  }
+
+  if (!lodash.isEmpty(pluginNames)) {
+    let result = chores.validate(pluginNames, constx.BOOTSTRAP.registerLayerware.plugins.schema);
+    if (!result.ok) {
+      issueInspector.collect({
+        stage: 'bootstrap',
+        type: 'application',
+        name: 'registerLayerware',
+        hasError: true,
+        stack: JSON.stringify(result.errors, null, 4)
+      });
+    }
+  }
+
+  if (!lodash.isEmpty(bridgeNames)) {
+    let result = chores.validate(bridgeNames, constx.BOOTSTRAP.registerLayerware.bridges.schema);
+    if (!result.ok) {
+      issueInspector.collect({
+        stage: 'bootstrap',
+        type: 'application',
+        name: 'registerLayerware',
+        hasError: true,
+        stack: JSON.stringify(result.errors, null, 4)
+      });
+    }
+  }
+
   function initialize(context, pluginNames, bridgeNames, accumulator) {
     context = context || {};
     accumulator = accumulator || {};
@@ -174,11 +213,12 @@ function registerLayerware(context, pluginNames, bridgeNames) {
     }
     if (chores.isUpgradeSupported('presets')) {
       if (accumulator.libRootPath) {
-        let _presets = lodash.get(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], null);
-        if (_presets) {
-          lodash.defaultsDeep(_presets, context.presets || {});
+        let newPresets = context.presets || {};
+        let oldPresets = lodash.get(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], null);
+        if (oldPresets) {
+          lodash.defaultsDeep(oldPresets, newPresets);
         } else {
-          lodash.set(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], context.presets || {});
+          lodash.set(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], newPresets);
         }
       }
     }
@@ -193,17 +233,44 @@ function launchApplication(context, pluginNames, bridgeNames) {
     context = { appRootPath: context };
   }
   if (!lodash.isEmpty(context)) {
-    let result = chores.validate(context, constx.BOOTSTRAP.appbox.schema);
+    let result = chores.validate(context, constx.BOOTSTRAP.launchApplication.context.schema);
     if (!result.ok) {
       issueInspector.collect({
         stage: 'bootstrap',
-        type: 'appbox',
+        type: 'application',
         name: 'launchApplication',
         hasError: true,
         stack: JSON.stringify(result.errors, null, 4)
       });
     }
   }
+
+  if (!lodash.isEmpty(pluginNames)) {
+    let result = chores.validate(pluginNames, constx.BOOTSTRAP.launchApplication.plugins.schema);
+    if (!result.ok) {
+      issueInspector.collect({
+        stage: 'bootstrap',
+        type: 'application',
+        name: 'launchApplication',
+        hasError: true,
+        stack: JSON.stringify(result.errors, null, 4)
+      });
+    }
+  }
+
+  if (!lodash.isEmpty(bridgeNames)) {
+    let result = chores.validate(bridgeNames, constx.BOOTSTRAP.launchApplication.bridges.schema);
+    if (!result.ok) {
+      issueInspector.collect({
+        stage: 'bootstrap',
+        type: 'application',
+        name: 'launchApplication',
+        hasError: true,
+        stack: JSON.stringify(result.errors, null, 4)
+      });
+    }
+  }
+
   return appLoader(lodash.assign(context, expandExtensions(lodash.omit(context, ATTRS), pluginNames, bridgeNames)));
 }
 
@@ -221,77 +288,77 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   const CTX = { issueInspector };
 
   let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
-    if (chores.isUpgradeSupported('presets')) {
-      let item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
-      item.path = locatePackage(CTX, item, 'bridge');
-      return item;
+    if (!chores.isUpgradeSupported('presets')) {
+      return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
     }
-    return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
+    let item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
+    item.path = locatePackage(CTX, item, 'bridge');
+    return item;
   });
   let pluginInfos = lodash.map(pluginNames, function(pluginName) {
-    if (chores.isUpgradeSupported('presets')) {
-      let item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
-      item.path = locatePackage(CTX, item, 'plugin');
-      return item;
+    if (!chores.isUpgradeSupported('presets')) {
+      return lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
     }
-    return lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
+    let item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
+    item.path = locatePackage(CTX, item, 'plugin');
+    return item;
   });
 
   let bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
-    if (chores.isUpgradeSupported('presets')) {
-      return (bridgeInfo.path == bridgeKey);
+    if (!chores.isUpgradeSupported('presets')) {
+      return (bridgeInfo.name == bridgeKey);
     }
-    return (bridgeInfo.name == bridgeKey);
+    return (bridgeInfo.path == bridgeKey);
   });
   let pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
-    if (chores.isUpgradeSupported('presets')) {
-      return (pluginInfo.path == pluginKey);
+    if (!chores.isUpgradeSupported('presets')) {
+      return (pluginInfo.name == pluginKey);
     }
-    return (pluginInfo.name == pluginKey);
+    return (pluginInfo.path == pluginKey);
   });
 
   bridgeDiffs.forEach(function(bridgeInfo) {
-    if (chores.isUpgradeSupported('presets')) {
-      let inc = lodash.pick(bridgeInfo, ['name', 'path', 'presets']);
-      context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], inc);
+    if (!chores.isUpgradeSupported('presets')) {
+      context.bridgeRefs[bridgeInfo.name] = {
+        name: bridgeInfo.name,
+        path: locatePackage(CTX, bridgeInfo, 'bridge')
+      }
       return;
     }
-    context.bridgeRefs[bridgeInfo.name] = {
-      name: bridgeInfo.name,
-      path: locatePackage(CTX, bridgeInfo, 'bridge')
-    }
+    let inc = lodash.pick(bridgeInfo, ['name', 'path', 'presets']);
+    context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], inc);
   });
 
   pluginDiffs.forEach(function(pluginInfo) {
-    if (chores.isUpgradeSupported('presets')) {
-      let inc = lodash.pick(pluginInfo, ['name', 'path', 'presets']);
-      context.pluginRefs[pluginInfo.path] = lodash.assign(context.pluginRefs[pluginInfo.path], inc);
+    if (!chores.isUpgradeSupported('presets')) {
+      context.pluginRefs[pluginInfo.name] = {
+        name: pluginInfo.name,
+        path: locatePackage(CTX, pluginInfo, 'plugin')
+      }
       return;
     }
-    context.pluginRefs[pluginInfo.name] = {
-      name: pluginInfo.name,
-      path: locatePackage(CTX, pluginInfo, 'plugin')
-    }
+    let inc = lodash.pick(pluginInfo, ['name', 'path', 'presets']);
+    context.pluginRefs[pluginInfo.path] = lodash.assign(context.pluginRefs[pluginInfo.path], inc);
   });
 
   issueInspector.barrier({ invoker: blockRef, footmark: 'package-touching' });
 
   let pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
-    if (chores.isUpgradeSupported('presets')) {
-      return {
-        path: pluginInfo.path,
-        initializer: require(pluginInfo.path)
-      }
+    if (!chores.isUpgradeSupported('presets')) {
+      return require(pluginInfo.path);
     }
-    return require(pluginInfo.path);
+    return {
+      path: pluginInfo.path,
+      initializer: require(pluginInfo.path)
+    }
   });
 
   return pluginInitializers.reduce(function(params, pluginInitializer) {
-    if (chores.isUpgradeSupported('presets')) {
-      params.libRootPath = pluginInitializer.path;
-      return pluginInitializer.initializer(params);
+    if (!chores.isUpgradeSupported('presets')) {
+      return pluginInitializer(params);
     }
-    return pluginInitializer(params);
+    params.libRootPath = pluginInitializer.path;
+    return pluginInitializer.initializer(params);
   }, context);
 };
 
