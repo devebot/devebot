@@ -6,6 +6,7 @@ const lodash = require('lodash');
 const util = require('util');
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
+const nodash = require('../utils/nodash');
 const blockRef = chores.getBlockRef(__filename);
 
 function ScriptRenderer(params={}) {
@@ -148,7 +149,7 @@ ScriptRenderer.argumentSchema = {
 module.exports = ScriptRenderer;
 
 let standardizeOutput = function(schemaValidator, output, isError) {
-  let outputArray = lodash.filter(chores.arrayify(output), function(outputObject) {
+  let outputArray = lodash.filter(nodash.arrayify(output), function(outputObject) {
     return lodash.isObject(outputObject) && !lodash.isEmpty(outputObject);
   });
   let result = schemaValidator.validate(outputArray, constx.WEBSOCKET.DETAILS.SCHEMA);

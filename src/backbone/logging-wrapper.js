@@ -5,6 +5,7 @@ const LogAdapter = require('logolite').LogAdapter;
 const LogTracer = require('logolite').LogTracer;
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
+const CHECK = constx.LOGGER.INTERNAL_LEVEL;
 
 function LoggingWrapper(sectorName) {
   sectorName = sectorName || chores.getBlockRef(__filename);
@@ -33,7 +34,7 @@ function LoggingWrapper(sectorName) {
       blockInfo[constx.TRACER.SECTOR.NAME_FIELD] = sectorName;
 
       let rootLogger = this.getLogger();
-      rootLogger.has('info') && rootLogger.log('info', __tracer.add(blockInfo)
+      rootLogger.has(CHECK) && rootLogger.log(CHECK, __tracer.add(blockInfo)
           .toMessage({ tags: [ 'devebot-metadata' ] }));
     }
     return __tracer;

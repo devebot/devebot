@@ -15,6 +15,7 @@ const NameResolver = require('./backbone/name-resolver');
 const chores = require('./utils/chores');
 const constx = require('./utils/constx');
 const envbox = require('./utils/envbox');
+const nodash = require('./utils/nodash');
 const Runner = require('./runner');
 const Server = require('./server');
 const blockRef = chores.getBlockRef(__filename);
@@ -282,8 +283,8 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   context.bridgeRefs = context.bridgeRefs || {};
   context.pluginRefs = context.pluginRefs || {};
 
-  bridgeNames = chores.arrayify(bridgeNames || []);
-  pluginNames = chores.arrayify(pluginNames || []);
+  bridgeNames = nodash.arrayify(bridgeNames || []);
+  pluginNames = nodash.arrayify(pluginNames || []);
 
   const CTX = { issueInspector };
 

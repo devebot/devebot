@@ -11,6 +11,7 @@ const Validator = require('schemato').Validator;
 const constx = require('./constx');
 const loader = require('./loader');
 const envbox = require('./envbox');
+const nodash = require('./nodash');
 const DEFAULT_SCOPE = require('./getenv')('DEVEBOT_DEFAULT_SCOPE', 'devebot');
 const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:chores');
 
@@ -95,7 +96,7 @@ chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
   
   debugx.enabled && debugx(' - load services by names: %s', JSON.stringify(serviceNames));
   
-  serviceNames = chores.arrayify(serviceNames);
+  serviceNames = nodash.arrayify(serviceNames);
   serviceNames.forEach(function(serviceName) {
     let filepath = path.join(serviceFolder, serviceName + '.js');
     let serviceConstructor = loader(filepath);
@@ -109,31 +110,18 @@ chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
   return serviceMap;
 };
 
-chores.isArray = function(a) {
-  return a instanceof Array;
-}
-
-chores.isString = function(s) {
-  return typeof(s) === 'string';
-}
-
-chores.arrayify = function (val) {
-  if (val === null || val === undefined) return [];
-  return Array.isArray(val) ? val : [val];
-}
-
 chores.stringKebabCase = function kebabCase(str) {
-  if (!chores.isString(str)) return str;
+  if (!nodash.isString(str)) return str;
   return str.toLowerCase().replace(/\s{1,}/g, '-');
 };
 
 chores.stringLabelCase = function labelCase(str) {
-  if (!chores.isString(str)) return str;
+  if (!nodash.isString(str)) return str;
   return str.toUpperCase().replace(/\W{1,}/g, '_');
 };
 
 chores.stringCamelCase = function camelCase(str) {
-  if (!chores.isString(str)) return str;
+  if (!nodash.isString(str)) return str;
   return str
     .replace(/-([a-z])/g, function (m, w) { return w.toUpperCase(); })
     .replace(/-([0-9])/g, function (m, w) { return '_' + w; });
@@ -219,7 +207,7 @@ chores.getBlockRef = function(filename, blockScope) {
   if (filename == null) return null;
   let blockName = chores.stringCamelCase(path.basename(filename, '.js'));
   blockScope = blockScope || store.defaultScope;
-  if (!chores.isArray(blockScope)) blockScope = [blockScope];
+  if (!nodash.isArray(blockScope)) blockScope = [blockScope];
   return blockScope.concat(blockName).join(chores.getSeparator());
 }
 
@@ -315,7 +303,7 @@ chores.isUpgradeSupported = function(label) {
   if (!store.upgradeEnabled) {
     store.upgradeEnabled = envbox.getEnv('UPGRADE_ENABLED');
   }
-  label = chores.isArray(label) ? label : [label];
+  label = nodash.isArray(label) ? label : [label];
   let ok = true;
   for(let k in label) {
     if (!checkUpgradeSupported(label[k])) return false;

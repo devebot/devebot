@@ -5,6 +5,7 @@ const lodash = require('lodash');
 const Chalk = require('../utils/chalk');
 const chores = require('../utils/chores');
 const envbox = require('../utils/envbox');
+const nodash = require('../utils/nodash');
 const toolset = require('../utils/toolset');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
@@ -31,7 +32,7 @@ function StateInspector(params={}) {
 
   this.init = function(opts) {
     if (opts && opts.tasks) {
-      let tasks = lodash.isArray(opts.tasks) ? opts.tasks : envbox.stringToArray(opts.tasks);
+      let tasks = lodash.isArray(opts.tasks) ? opts.tasks : nodash.stringToArray(opts.tasks);
       options.mode = filterTask(tasks);
     }
     return lodash.clone(options.mode);

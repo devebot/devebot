@@ -7,7 +7,9 @@ const LogConfig = require('logolite').LogConfig;
 const LogTracer = require('logolite').LogTracer;
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
+const nodash = require('../utils/nodash');
 const DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
+const STAMP = constx.LOGGER.STARTING_POINT;
 
 function LoggingService(params={}) {
   let more = {};
@@ -26,16 +28,19 @@ function LoggingService(params={}) {
   });
 };
 
-let LoggingFactory = function(args={}) {
+function LoggingFactory(args={}) {
   args.root = args.root || {};
   if (!lodash.isFunction(args.root.getLogger)) {
     if (lodash.isEmpty(args.originalLogger)) {
       throw new Error('The root LoggingFactory must be provided the originalLogger');
     }
+    let originalLogger = args.originalLogger;
+    LogAdapter.connectTo(originalLogger, {
+      onLevel: STAMP,
+      mappings: args.mappings
+    });
 
     let logoliteLogger = {};
-    let originalLogger = args.originalLogger;
-    LogAdapter.connectTo(originalLogger);
 
     args.root.getLogger = function(opts) {
       let logger = null;
@@ -79,7 +84,10 @@ let LoggingFactory = function(args={}) {
   }
 
   this.getLogger = function(opts) {
-    return args.root.getLogger(lodash.defaults({ sector: args.sectorName }, opts));
+    return args.root.getLogger(lodash.defaults({
+      sector: args.sectorName,
+      mappings: args.mappings
+    }, opts));
   }
 
   let subTracer = null;
@@ -99,7 +107,7 @@ let LoggingFactory = function(args={}) {
         blockInfo[constx.TRACER.SECTOR.NAME_FIELD] = args.sectorName;
       }
       let rootLogger = args.root.getLogger();
-      rootLogger.has('info') && rootLogger.log('info', subTracer.add(blockInfo)
+      rootLogger.has(STAMP) && rootLogger.log(STAMP, subTracer.add(blockInfo)
           .toMessage({ tags: [ 'devebot-metadata' ] }));
     }
     return subTracer;
@@ -116,7 +124,7 @@ let transformLoggingConfig = function(profileConfig, derivative) {
   derivative = derivative || {};
   if (lodash.isObject(loggingConfig)) {
     let defaultLabels = transformLoggingLabels(constx.LOGGER.LABELS);
-    let labels = transformLoggingLabels(loggingConfig.labels);
+    let labels = transformLoggingLabels(loggingConfig.labels, loggingConfig.mappings);
 
     derivative.mappings = labels.mappings;
     loggingConfig.levels = lodash.isEmpty(labels.levels) ? defaultLabels.levels : labels.levels;
@@ -142,19 +150,34 @@ let transformLoggingConfig = function(profileConfig, derivative) {
   return profileConfig;
 };
 
-let transformLoggingLabels = function(loglabelConfig) {
-  if (lodash.isEmpty(loglabelConfig)) return {};
-  let result = { levels: {}, colors: {}, mappings: {} };
-  lodash.forOwn(loglabelConfig, function(info, label) {
-    result.levels[label] = info.level;
-    result.colors[label] = info.color;
-    let links = chores.arrayify(info.inflow);
-    lodash.forEach(links, function(link) {
-      if (lodash.isString(link) && !lodash.isEmpty(link)) {
-        result.mappings[link] = label;
-      }
+let transformLoggingLabels = function(loglabelConfig, loglabelMappings) {
+  let result = {};
+  if (!lodash.isEmpty(loglabelConfig)) {
+    result.levels = {};
+    result.colors = {};
+    result.mappings = {};
+    lodash.forOwn(loglabelConfig, function(info, label) {
+      result.levels[label] = info.level;
+      result.colors[label] = info.color;
+      let links = nodash.arrayify(info.admit || info.allow || info.inflow);
+      lodash.forEach(links, function(link) {
+        if (lodash.isString(link) && !lodash.isEmpty(link)) {
+          result.mappings[link] = label;
+        }
+      });
     });
-  });
+  }
+  if (!lodash.isEmpty(loglabelMappings)) {
+    result.mappings = result.mappings || {};
+    lodash.forOwn(loglabelMappings, function(sources, label) {
+      sources = nodash.stringToArray(sources);
+      lodash.forEach(sources, function(source) {
+        if (lodash.isString(source) && !lodash.isEmpty(source)) {
+          result.mappings[source] = label;
+        }
+      });
+    });
+  }
   return result;
 };
 

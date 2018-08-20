@@ -8,6 +8,7 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const loader = require('../utils/loader');
 const envbox = require('../utils/envbox');
+const nodash = require('../utils/nodash');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
@@ -296,7 +297,7 @@ let standardizeNames = function(ctx, cfgLabels) {
   if (lodash.isString(cfgLabels) && cfgLabels.length > 0) {
     cfgLabels = cfgLabels.split(',');
   }
-  cfgLabels = chores.arrayify(cfgLabels);
+  cfgLabels = nodash.arrayify(cfgLabels);
   cfgLabels = lodash.filter(cfgLabels, lodash.isString);
   cfgLabels = lodash.map(cfgLabels, lodash.trim);
   cfgLabels = lodash.filter(cfgLabels, lodash.negate(lodash.isEmpty));
@@ -319,7 +320,7 @@ let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, 
   }
   // convert old bridge structures
   if (chores.isUpgradeSupported(['bridge-full-ref','presets'])) {
-    let tags = chores.arrayify(lodash.get(modulePresets, ['configTags'], []));
+    let tags = nodash.arrayify(lodash.get(modulePresets, ['configTags'], []));
     let cfgBridges = sandboxConfig.bridges;
     let loadable = RELOADING_FORCED || !(cfgBridges && cfgBridges.__status__);
     if (lodash.isObject(cfgBridges) && tags.indexOf('bridge[dialect-bridge]') >= 0 && loadable) {

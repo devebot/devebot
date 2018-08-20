@@ -37,7 +37,7 @@ const PRESETS_SCHEMA = {
       "type": "boolean"
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }
 
 const DEPENDENCIES_SCHEMA = {
@@ -267,7 +267,9 @@ module.exports = {
         level: 0,
         color: 'red'
       }
-    }
+    },
+    STARTING_POINT: 'affix',
+    INTERNAL_LEVEL: 'check'
   },
   TRACER: {
     SECTOR: {

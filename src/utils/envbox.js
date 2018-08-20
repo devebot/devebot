@@ -3,6 +3,7 @@
 const lodash = require('lodash');
 const util = require('util');
 const Chalk = require('./chalk');
+const nodash = require('./nodash');
 
 const ENV_DEF_DEFAULT = [
   {
@@ -197,7 +198,7 @@ function EnvironmentCollection(params={}) {
         store.env[label] = store.env[label] || defaultValue;
       }
       if (def.type === 'array') {
-        store.env[label] = stringToArray(store.env[label]);
+        store.env[label] = nodash.stringToArray(store.env[label]);
       }
     }
     return store.env[label];
@@ -227,7 +228,7 @@ function EnvironmentCollection(params={}) {
   }
 
   this.clearCache = function(keys) {
-    keys = arrayify(keys);
+    keys = nodash.arrayify(keys);
     for(let key in store.env) {
       if (keys.length === 0 || keys.indexOf(key) >= 0) {
         delete store.env[key];
@@ -240,7 +241,7 @@ function EnvironmentCollection(params={}) {
     let self = this;
     opts = opts || {};
     // get the excluded scopes
-    let excl = arrayify(opts.excludes || [ 'framework', 'test' ]);
+    let excl = nodash.arrayify(opts.excludes || [ 'framework', 'test' ]);
     // print to console or muted?
     let lines = [], muted = (opts.muted === true);
     let chalk = muted ? new Chalk({ blanked: true, themes: DEFAULT_THEMES }) : DEFAULT_CHALK;
@@ -277,25 +278,6 @@ function EnvironmentCollection(params={}) {
     return lines;
   }
 }
-
-function arrayify(val) {
-  if (val === null || val === undefined) return [];
-  return Array.isArray(val) ? val : [val];
-}
-
-function stringToArray(labels) {
-  labels = labels || '';
-  if (lodash.isString(labels)) {
-    return labels.split(',').map(function(item) {
-      return item.trim();
-    }).filter(function(item) {
-      return item.length > 0;
-    });
-  }
-  return labels;
-}
-
-EnvironmentCollection.prototype.stringToArray = stringToArray;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
 
