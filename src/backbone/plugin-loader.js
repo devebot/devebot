@@ -10,12 +10,12 @@ const blockRef = chores.getBlockRef(__filename);
 
 function PluginLoader(params={}) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
-  let LX = loggingFactory.getLogger();
-  let LT = loggingFactory.getTracer();
-  let CTX = {LX, LT, issueInspector: params.issueInspector, 
+  let L = loggingFactory.getLogger();
+  let T = loggingFactory.getTracer();
+  let CTX = {L, T, issueInspector: params.issueInspector, 
     nameResolver: params.nameResolver, schemaValidator: params.schemaValidator};
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [blockRef, 'constructor-begin'],
     text: ' + constructor start ...'
   }));
@@ -25,7 +25,7 @@ function PluginLoader(params={}) {
     return pluginRef;
   });
 
-  LX.has('conlog') && LX.log('conlog', LT.add(params).toMessage({
+  L.has('conlog') && L.log('conlog', T.add(params).toMessage({
     text: ' - pluginRefs: ${pluginRefs}'
   }));
 
@@ -45,7 +45,7 @@ function PluginLoader(params={}) {
     return loadAllGadgets(CTX, triggerMap, 'TRIGGER', params.pluginRefs);
   };
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
@@ -117,11 +117,11 @@ let loadAllScripts = function(CTX, scriptMap, scriptType, scriptContext, pluginR
 
 let loadScriptEntries = function(CTX, scriptMap, scriptType, scriptContext, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, schemaValidator} = CTX;
+  let {L, T, schemaValidator} = CTX;
 
   let scriptSubDir = chores.getComponentDir(pluginRootDir, scriptType);
   let scriptFolder = path.join(pluginRootDir.pathDir, scriptSubDir);
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  L.has('conlog') && L.log('conlog', T.add({
     scriptKey: constx[scriptType].ROOT_KEY,
     scriptFolder: scriptFolder
   }).toMessage({
@@ -136,32 +136,32 @@ let loadScriptEntries = function(CTX, scriptMap, scriptType, scriptContext, plug
 
 let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptFile, scriptContext, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, issueInspector, nameResolver, schemaValidator} = CTX;
+  let {L, T, issueInspector, nameResolver, schemaValidator} = CTX;
   let opStatus = lodash.assign({ type: scriptType, file: scriptFile, subDir: scriptSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, scriptSubDir, scriptFile);
   try {
     let scriptInit = loader(filepath, { stopWhenError: true });
     if (lodash.isFunction(scriptInit)) {
-      LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
         text: ' - script file ${filepath} is ok'
       }));
       let scriptObject = scriptInit(scriptContext);
       let output = validateScript(CTX, scriptObject, scriptType);
       if (!output.valid) {
-        LX.has('conlog') && LX.log('conlog', LT.add({
+        L.has('conlog') && L.log('conlog', T.add({
           validationResult: output
         }).toMessage({
           text: ' - validating script fail: ${validationResult}'
         }));
         opStatus.hasError = true;
       } else if (scriptObject.enabled === false) {
-        LX.has('conlog') && LX.log('conlog', LT.toMessage({
+        L.has('conlog') && L.log('conlog', T.toMessage({
           text: ' - script is disabled'
         }));
         opStatus.hasError = false;
         opStatus.isSkipped = true;
       } else {
-        LX.has('conlog') && LX.log('conlog', LT.toMessage({
+        L.has('conlog') && L.log('conlog', T.toMessage({
           text: ' - script validation pass'
         }));
         opStatus.hasError = false;
@@ -177,13 +177,13 @@ let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptF
         lodash.defaultsDeep(scriptMap, entry);
       }
     } else {
-      LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
         text: ' - script file ${filepath} doesnot contain a function.'
       }));
       opStatus.hasError = true;
     }
   } catch (err) {
-    LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
       text: ' - script file ${filepath} loading has failed.'
     }));
     opStatus.hasError = true;
@@ -209,7 +209,7 @@ let parseScriptTree = function(scriptFile, scriptInstance, isHierarchical) {
 
 let validateScript = function(CTX, scriptObject, scriptType) {
   CTX = CTX || this;
-  let {LX, LT, schemaValidator} = CTX;
+  let {L, T, schemaValidator} = CTX;
   scriptObject = scriptObject || {};
   let results = [];
 
@@ -242,11 +242,11 @@ let loadAllMetainfs = function(CTX, metainfMap, pluginRootDirs) {
 
 let loadMetainfEntries = function(CTX, metainfMap, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, schemaValidator} = CTX;
+  let {L, T, schemaValidator} = CTX;
   let metainfType = 'METAINF';
   let metainfSubDir = chores.getComponentDir(pluginRootDir, metainfType);
   let metainfFolder = path.join(pluginRootDir.pathDir, metainfSubDir);
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  L.has('conlog') && L.log('conlog', T.add({
     metainfKey: constx[metainfType].ROOT_KEY,
     metainfFolder: metainfFolder
   }).toMessage({
@@ -260,7 +260,7 @@ let loadMetainfEntries = function(CTX, metainfMap, pluginRootDir) {
 
 let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, issueInspector, nameResolver, schemaValidator} = CTX;
+  let {L, T, issueInspector, nameResolver, schemaValidator} = CTX;
   let metainfType = 'METAINF';
   let opStatus = lodash.assign({ type: 'METAINF', file: schemaFile, subDir: metainfSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, metainfSubDir, schemaFile);
@@ -268,20 +268,20 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
     let metainfObject = loader(filepath, { stopWhenError: true });
     let output = validateMetainf(CTX, metainfObject, metainfType);
     if (!output.valid) {
-      LX.has('conlog') && LX.log('conlog', LT.add({
+      L.has('conlog') && L.log('conlog', T.add({
         validationResult: output
       }).toMessage({
         text: ' - validating schema fail: ${validationResult}'
       }));
       opStatus.hasError = true;
     } else if (metainfObject.enabled === false) {
-      LX.has('conlog') && LX.log('conlog', LT.toMessage({
+      L.has('conlog') && L.log('conlog', T.toMessage({
         text: ' - schema is disabled'
       }));
       opStatus.hasError = false;
       opStatus.isSkipped = true;
     } else {
-      LX.has('conlog') && LX.log('conlog', LT.toMessage({
+      L.has('conlog') && L.log('conlog', T.toMessage({
         text: ' - schema validation pass'
       }));
       opStatus.hasError = false;
@@ -300,10 +300,10 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
       lodash.defaultsDeep(metainfMap, entry);
     }
   } catch(err) {
-    LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
       text: ' - schema file ${filepath} loading has failed'
     }));
-    LX.has('conlog') && chores.printError(err);
+    L.has('conlog') && chores.printError(err);
     opStatus.hasError = true;
     opStatus.stack = err.stack;
   }
@@ -312,7 +312,7 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
 
 let validateMetainf = function(CTX, metainfObject) {
   CTX = CTX || this;
-  let {LX, LT, schemaValidator} = CTX;
+  let {L, T, schemaValidator} = CTX;
   let metainfType = 'METAINF';
   metainfObject = metainfObject || {};
   let results = [];
@@ -339,11 +339,11 @@ let loadAllGadgets = function(CTX, gadgetMap, gadgetType, pluginRootDirs) {
 
 let loadGadgetEntries = function(CTX, gadgetMap, gadgetType, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, schemaValidator} = CTX;
+  let {L, T, schemaValidator} = CTX;
 
   let gadgetSubDir = chores.getComponentDir(pluginRootDir, gadgetType);
   let gadgetFolder = path.join(pluginRootDir.pathDir, gadgetSubDir);
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  L.has('conlog') && L.log('conlog', T.add({
     gadgetKey: constx[gadgetType].ROOT_KEY,
     gadgetFolder: gadgetFolder
   }).toMessage({
@@ -358,12 +358,12 @@ let loadGadgetEntries = function(CTX, gadgetMap, gadgetType, pluginRootDir) {
 
 let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetFile, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, issueInspector, schemaValidator} = CTX;
+  let {L, T, issueInspector, schemaValidator} = CTX;
   let opStatus = lodash.assign({ type: gadgetType, file: gadgetFile, subDir: gadgetSubDir }, pluginRootDir);
   let filepath = path.join(pluginRootDir.pathDir, gadgetSubDir, gadgetFile);
   try {
     let gadgetConstructor = loader(filepath, { stopWhenError: true });
-    LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
       text: ' - gadget file ${filepath} loading has done'
     }));
     if (lodash.isFunction(gadgetConstructor)) {
@@ -371,16 +371,16 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
       lodash.defaults(gadgetMap, buildGadgetWrapper(CTX, gadgetConstructor, gadgetName, pluginRootDir));
       opStatus.hasError = false;
     } else {
-      LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
         text: ' - gadget file ${filepath} doesnot contain a function'
       }));
       opStatus.hasError = true;
     }
   } catch(err) {
-    LX.has('conlog') && LX.log('conlog', LT.add({ filepath }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
       text: ' - gadget file ${filepath} loading has failed'
     }));
-    LX.has('conlog') && chores.printError(err);
+    L.has('conlog') && chores.printError(err);
     opStatus.hasError = true;
     opStatus.stack = err.stack;
   }
@@ -389,11 +389,11 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
 
 let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRootDir) {
   CTX = CTX || this;
-  let {LX, LT, nameResolver, schemaValidator} = CTX;
+  let {L, T, nameResolver, schemaValidator} = CTX;
   let result = {};
 
   if (!lodash.isFunction(gadgetConstructor)) {
-    LX.has('conlog') && LX.log('conlog', LT.toMessage({
+    L.has('conlog') && L.log('conlog', T.toMessage({
       text: ' - gadgetConstructor is invalid'
     }));
     return result;
@@ -418,7 +418,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     kwargs.componentId = uniqueName;
     // resolve newFeatures
     let newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', pluginCode], {});
-    LX.has('conlog') && LX.log('conlog', LT.add({ pluginCode, newFeatures }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ pluginCode, newFeatures }).toMessage({
       text: ' - newFeatures[${pluginCode}]: ${newFeatures}'
     }));
     // resolve plugin configuration path
@@ -523,7 +523,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     wrapperConstructor.argumentSchema = wrappedArgumentSchema;
   }
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  L.has('conlog') && L.log('conlog', T.add({
     argumentSchema: wrapperConstructor.argumentSchema
   }).toMessage({
     text: ' - wrapperConstructor.argumentSchema: ${argumentSchema}'
@@ -535,7 +535,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     construktor: wrapperConstructor
   };
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  L.has('conlog') && L.log('conlog', T.add({
     uniqueName: uniqueName,
     crateScope: pluginName,
     name: wrapperName

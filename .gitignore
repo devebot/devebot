@@ -4,6 +4,7 @@ node_modules
 /doc
 /lib
 /log
+/tmp
 *.log
 *test.sh
 *removed

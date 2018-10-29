@@ -3,6 +3,7 @@
 const lodash = require('lodash');
 const util = require('util');
 const Chalk = require('./chalk');
+const constx = require('./constx');
 const nodash = require('./nodash');
 
 const ENV_DEF_DEFAULT = [
@@ -102,7 +103,7 @@ const ENV_DEF_DEFAULT = [
   {
     name: "DEFAULT_SCOPE",
     type: "string",
-    defaultValue: "devebot",
+    defaultValue: constx.FRAMEWORK.NAME,
     scope: "framework",
     description: "Default scope as debug's namespace"
   },

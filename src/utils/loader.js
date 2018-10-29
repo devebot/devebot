@@ -1,34 +1,38 @@
 'use strict';
 
-const DEFAULT_SCOPE = require('./getenv')('DEVEBOT_DEFAULT_SCOPE', 'devebot');
-const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:loader');
+const nodash = require('./nodash');
 
 const MAPPINGS = {
   'MODULE_NOT_FOUND': 'Module not found'
 }
 
+function _logit(L, level) {
+  L = nodash.isObject(L) && nodash.isFunction(L.has) && nodash.isFunction(L.log) && L || null;
+  L && L.has(level) && L.log.apply(Array.prototype.slice.call(arguments, 1));
+}
+
 let loader = function(name, opts) {
   opts = opts || {};
+  let modref = {};
   try {
-    let modref = require(name);
-    debugx.enabled && debugx(' - file %s is loading ... ok', name);
-    return modref;
+    modref = require(name);
+    _logit(opts.logger, 'debug', ' - file %s is loading ... ok', name);
   } catch(err) {
     if (err.code) {
       if (MAPPINGS[err.code]) {
-        debugx.enabled && debugx(' - file %s is loading ... failed. Reason: %s', name, MAPPINGS[err.code]);
+        _logit(opts.logger, 'debug', ' - file %s is loading ... failed. Reason: %s', name, MAPPINGS[err.code]);
       } else {
-        debugx.enabled && debugx(' - file %s is loading ... failed. ErrorCode: %s', name, err.code);
+        _logit(opts.logger, 'debug', ' - file %s is loading ... failed. Error code: %s', name, err.code);
       }
     } else {
-      debugx.enabled && debugx(' - file %s is loading ... failed. Error message: %s', name, err.message);
+      _logit(opts.logger, 'debug', ' - file %s is loading ... failed. Error message: %s', name, err.message);
     }
     if (opts.stopWhenError) {
-      debugx.enabled && debugx(' - loading module [%s] throw error.', name);
+      _logit(opts.logger, 'error', ' - loading module file [%s] throw error.', name);
       throw err;
     }
-    return {};
   }
+  return modref;
 };
 
 module.exports = loader;

@@ -4,15 +4,16 @@ const lodash = require('lodash');
 const LogTracer = require('logolite').LogTracer;
 const LoggingWrapper = require('./logging-wrapper');
 const chores = require('../utils/chores');
+const constx = require('../utils/constx');
 const blockRef = chores.getBlockRef(__filename);
 
 function NameResolver(params={}) {
   let loggingWrapper = new LoggingWrapper(blockRef);
-  let LX = loggingWrapper.getLogger();
-  let LT = loggingWrapper.getTracer();
-  let CTX = {LX, LT, issueInspector: params.issueInspector};
+  let L = loggingWrapper.getLogger();
+  let T = loggingWrapper.getTracer();
+  let CTX = {L, T, issueInspector: params.issueInspector};
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
@@ -68,7 +69,7 @@ function NameResolver(params={}) {
   extractAliasNames(CTX, 'plugin', params.pluginRefs);
   extractAliasNames(CTX, 'bridge', params.bridgeRefs);
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
@@ -118,11 +119,11 @@ module.exports = NameResolver;
 
 const LIB_NAME_PATTERNS = {
   bridge: [
-    /^devebot-co-([a-z][a-z0-9\-]*[a-z0-9])$/g,
+    new RegExp("^" + constx.FRAMEWORK.NAME + "-co-([a-z][a-z0-9\-]*[a-z0-9])$", "g"),
     /^([a-z][a-z0-9\-]*[a-z0-9])$/g
   ],
   plugin: [
-    /^devebot-dp-([a-z][a-z0-9\-]*[a-z0-9])$/g,
+    new RegExp("^" + constx.FRAMEWORK.NAME + "-dp-([a-z][a-z0-9\-]*[a-z0-9])$" ,"g"),
     /^([a-z][a-z0-9\-]*[a-z0-9])$/g
   ]
 }

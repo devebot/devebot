@@ -1,8 +1,8 @@
 {
-	"tokens": [
-		{
-			"key": "devebot",
-			"secret": "s3cr3tpa$$w0rd"
-		}
-	]
+  "tokens": [
+    {
+      "key": "devebot",
+      "secret": "s3cr3tpa$$w0rd"
+    }
+  ]
 }

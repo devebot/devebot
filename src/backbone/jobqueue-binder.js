@@ -9,16 +9,16 @@ const blockRef = chores.getBlockRef(__filename);
 function JobqueueBinder(params={}) {
   let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
-  let LX = loggingFactory.getLogger();
-  let LT = loggingFactory.getTracer();
+  let L = loggingFactory.getLogger();
+  let T = loggingFactory.getTracer();
   let sandboxName = params.sandboxName;
 
-  LX.has('silly') && LX.log('silly', LT.add({ sandboxName }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ sandboxName }).toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
-  let jqCfg = lodash.get(params, ['profileConfig', 'devebot', 'jobqueue'], {});
+  let jqCfg = lodash.get(params, ['profileConfig', constx.FRAMEWORK.NAME, 'jobqueue'], {});
 
   let jobqueueMasterName = null;
   let getJobqueueMasterName = function() {
@@ -36,7 +36,7 @@ function JobqueueBinder(params={}) {
     enabled: {
       get: function() {
         let enabled = jqCfg.enabled !== false && getJobQueueMaster() != null;
-        LX.has('conlog') && LX.log('conlog', LT.add({ enabled, sandboxName }).toMessage({
+        L.has('conlog') && L.log('conlog', T.add({ enabled, sandboxName }).toMessage({
           text: ' - jobqueueMaster in sandbox <{sandboxName}> status (enabled): {enabled}'
         }));
         return enabled;
@@ -51,7 +51,7 @@ function JobqueueBinder(params={}) {
     }
   });
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));

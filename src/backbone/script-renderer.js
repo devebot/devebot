@@ -12,24 +12,24 @@ const blockRef = chores.getBlockRef(__filename);
 function ScriptRenderer(params={}) {
   let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
-  let LX = loggingFactory.getLogger();
-  let LT = loggingFactory.getTracer();
+  let L = loggingFactory.getLogger();
+  let T = loggingFactory.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
   let defaultOpts = lodash.assign({
-    logger: LX,
-    tracer: LT
+    logger: L,
+    tracer: T
   }, lodash.pick(params, ['schemaValidator']));
 
   self.createOutlet = function(opts) {
     return new WebSocketOutlet(lodash.assign({}, defaultOpts, opts));
   }
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
@@ -112,13 +112,13 @@ function WebSocketOutlet(params) {
   AbstractOutlet.apply(this, arguments);
 
   params = params || {};
-  let {logger: LX, tracer: LT, ws} = params;
+  let {logger: L, tracer: T, ws} = params;
 
-  assert(lodash.isObject(LX));
-  assert(lodash.isObject(LT));
+  assert(lodash.isObject(L));
+  assert(lodash.isObject(T));
   assert(lodash.isObject(ws));
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
+  L.has('conlog') && L.log('conlog', T.toMessage({
     text: ' - create a new WebSocketOutlet()'
   }));
 
@@ -126,7 +126,7 @@ function WebSocketOutlet(params) {
     ws.send(message);
   }
 
-  LX.has('conlog') && LX.log('conlog', LT.toMessage({
+  L.has('conlog') && L.log('conlog', T.toMessage({
     text: ' - the new WebSocketOutlet() has been created'
   }));
 }

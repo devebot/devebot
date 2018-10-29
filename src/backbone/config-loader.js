@@ -21,13 +21,13 @@ const RELOADING_FORCED = true;
 function ConfigLoader(params={}) {
   let {appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, issueInspector, stateInspector, nameResolver} = params;
   let loggingWrapper = new LoggingWrapper(blockRef);
-  let LX = loggingWrapper.getLogger();
-  let LT = loggingWrapper.getTracer();
-  let CTX = { LX, LT, issueInspector, stateInspector, nameResolver };
+  let L = loggingWrapper.getLogger();
+  let T = loggingWrapper.getTracer();
+  let CTX = { L, T, issueInspector, stateInspector, nameResolver };
 
   let label = chores.stringLabelCase(appName);
 
-  LX.has('silly') && LX.log('silly', LT.add({ appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, label }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, label }).toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + Config of application (${appName}) is loaded in name: ${label}'
   }));
@@ -39,7 +39,7 @@ function ConfigLoader(params={}) {
         .apply(null, CONFIG_VAR_NAMES.map(readVariable.bind(null, CTX, label)));
   }
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
@@ -50,7 +50,7 @@ module.exports = ConfigLoader;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ private members
 
 let readVariable = function(ctx, appLabel, varName) {
-  let { LX, LT } = ctx || this;
+  let { L, T } = ctx || this;
   let varLabels = [
     util.format('%s_%s', appLabel, varName),
     util.format('%s_%s', 'DEVEBOT', varName),
@@ -60,19 +60,19 @@ let readVariable = function(ctx, appLabel, varName) {
   let value, varLabel;
   for(const varLabel of varLabels) {
     value = envbox.getEnv(varLabel);
-    LX.has('conlog') && LX.log('conlog', LT.add({ label: varLabel, value }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ label: varLabel, value }).toMessage({
       text: ' - Get value of ${label}: ${value}'
     }));
     if (value) break;
   }
-  LX.has('conlog') && LX.log('conlog', LT.add({ label: varLabels[0], value }).toMessage({
+  L.has('conlog') && L.log('conlog', T.add({ label: varLabels[0], value }).toMessage({
     text: ' - Final value of ${label}: ${value}'
   }));
   return value;
 }
 
 let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRefs, bridgeRefs, profileName, sandboxName, customDir, customEnv) {
-  let { LX, LT, issueInspector, stateInspector, nameResolver } = ctx || this;
+  let { L, T, issueInspector, stateInspector, nameResolver } = ctx || this;
   appOptions = appOptions || {};
 
   const ALIASES_OF = {};
@@ -80,14 +80,14 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   ALIASES_OF[CONFIG_PROFILE_NAME].unshift(CONFIG_PROFILE_NAME);
   ALIASES_OF[CONFIG_SANDBOX_NAME] = lodash.clone(envbox.getEnv('CONFIG_SANDBOX_ALIASES'));
   ALIASES_OF[CONFIG_SANDBOX_NAME].unshift(CONFIG_SANDBOX_NAME);
-  LX.has('silly') && LX.log('silly', LT.add({ aliasesOf: ALIASES_OF }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ aliasesOf: ALIASES_OF }).toMessage({
     tags: [ blockRef, 'config-dir', 'aliases-of' ],
     text: ' - configType aliases mapping: ${aliasesOf}'
   }));
   const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME];
 
   let {plugin: pluginAliasMap, bridge: bridgeAliasMap} = nameResolver.getAbsoluteAliasMap();
-  let transCTX = { LX, LT, pluginAliasMap, bridgeAliasMap, CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME };
+  let transCTX = { L, T, pluginAliasMap, bridgeAliasMap, CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME };
 
   let libRefs = lodash.values(pluginRefs);
   if (devebotRef) {
@@ -102,13 +102,13 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   let config = {};
 
   let defaultConfigDir = appRootDir ? path.join(appRootDir, CONFIG_SUBDIR) : null;
-  LX.has('silly') && LX.log('silly', LT.add({ configDir: defaultConfigDir }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ configDir: defaultConfigDir }).toMessage({
     tags: [ blockRef, 'config-dir', 'internal-config-dir' ],
     text: ' - internal configDir: ${configDir}'
   }));
 
   let externalConfigDir = resolveConfigDir(ctx, appName, appRootDir, customDir, customEnv);
-  LX.has('silly') && LX.log('silly', LT.add({ configDir: externalConfigDir }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ configDir: externalConfigDir }).toMessage({
     tags: [ blockRef, 'config-dir', 'external-config-dir' ],
     text: ' - external configDir: ${configDir}'
   }));
@@ -125,13 +125,13 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   includedNames[CONFIG_SANDBOX_NAME] = lodash.concat(
     lodash.difference(includedNames[CONFIG_SANDBOX_NAME], appSandboxes), appSandboxes);
 
-  LX.has('conlog') && LX.log('conlog', LT.add({ includedNames }).toMessage({
+  L.has('conlog') && L.log('conlog', T.add({ includedNames }).toMessage({
     text: ' + included names: ${includedNames}'
   }));
 
   function loadApplicationConfig(configType, configDir) {
     if (configDir) {
-      LX.has('conlog') && LX.log('conlog', LT.add({ configType, configDir }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ configType, configDir }).toMessage({
         text: ' + load the "${configType}" configuration in "${configDir}"'
       }));
       let configFiles = chores.filterFiles(configDir, '.*\.js');
@@ -143,11 +143,11 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
         }
         return file.replace('.js', '').replace(/[_]/,'&').split('&');
       });
-      LX.has('conlog') && LX.log('conlog', LT.add({ configInfos }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ configInfos }).toMessage({
         text: ' - parsing configFiles result: ${configInfos}'
       }));
 
-      LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ configType }).toMessage({
         text: ' - load the application default config of "${configType}"'
       }));
       for(let i in ALIASES_OF[configType]) {
@@ -159,11 +159,11 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       }
       config[configType]['default'] = lodash.defaultsDeep({}, config[configType]['expanse'], config[configType]['default']);
 
-      LX.has('conlog') && LX.log('conlog', LT.add({ configType }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ configType }).toMessage({
         text: ' - load the application customized config of "${configType}"'
       }));
       let expanseNames = filterConfigBy(ctx, configInfos, includedNames, configType, ALIASES_OF);
-      LX.has('conlog') && LX.log('conlog', LT.add({ expanseNames }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ expanseNames }).toMessage({
         text: ' + expanded names: ${expanseNames}'
       }));
       config[configType]['expanse'] = config[configType]['expanse'] || {};
@@ -182,12 +182,12 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   CONFIG_TYPES.forEach(function(configType) {
     config[configType] = config[configType] || {};
 
-    LX.has('conlog') && LX.log('conlog', LT.toMessage({
+    L.has('conlog') && L.log('conlog', T.toMessage({
       text: ' + load the default config from plugins & framework'
     }));
     lodash.forEach(libRefs, function(libRef) {
       if (libRef.presets && chores.isUpgradeSupported('presets')) {
-        LX.has('conlog') && LX.log('conlog', LT.add(libRef).toMessage({
+        L.has('conlog') && L.log('conlog', T.add(libRef).toMessage({
           text: ' - Presets of ${type}[${name}]: ${presets}'
         }));
       }
@@ -212,7 +212,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       loadApplicationConfig(configType, externalConfigDir);
     }
 
-    LX.has('conlog') && LX.log('conlog', ' - Final config object: %s', util.inspect(config[configType], {depth: 8}));
+    L.has('conlog') && L.log('conlog', ' - Final config object: %s', util.inspect(config[configType], {depth: 8}));
   });
 
   if (chores.isUpgradeSupported('standardizing-config')) {
@@ -229,21 +229,21 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
 }
 
 let loadConfigFile = function(ctx, configFile) {
-  let { LX, LT, issueInspector } = ctx || this;
+  let { L, T, issueInspector } = ctx || this;
   let opStatus = { type: 'CONFIG', file: configFile };
   let content;
   try {
-    LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ configFile }).toMessage({
       text: ' - load config file: "${configFile}"'
     }));
     content = loader(configFile, { stopWhenError: true });
     opStatus.hasError = false;
-    LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ configFile }).toMessage({
       text: ' - loading config file: "${configFile}" has done.'
     }));
   } catch(err) {
     if (err.code != 'MODULE_NOT_FOUND') {
-      LX.has('conlog') && LX.log('conlog', LT.add({ configFile }).toMessage({
+      L.has('conlog') && L.log('conlog', T.add({ configFile }).toMessage({
         text: ' - config file ${configFile} loading is failed.'
       }));
       opStatus.hasError = true;
@@ -270,13 +270,13 @@ let filterConfigBy = function(ctx, configInfos, selectedNames, configType, alias
 }
 
 let resolveConfigDir = function(ctx, appName, appRootDir, configDir, configEnv) {
-  let { LX, LT, issueInspector } = ctx || this;
+  let { L, T, issueInspector } = ctx || this;
   let dirPath = configDir;
   if (lodash.isEmpty(dirPath)) {
     if (['production'].indexOf(process.env.NODE_ENV) >= 0) {
       dirPath = chores.assertDir(appName);
       if (dirPath == null) {
-        LX.has('conlog') && LX.log('conlog', LT.toMessage({
+        L.has('conlog') && L.log('conlog', T.toMessage({
           text: 'Run in production mode, but config directory not found'
         }));
         issueInspector.exit(1);
@@ -305,7 +305,7 @@ let standardizeNames = function(ctx, cfgLabels) {
 }
 
 let transformConfig = function(ctx, configType, configData, moduleType, moduleName, modulePresets) {
-  let { LX, LT, pluginAliasMap, bridgeAliasMap, CONFIG_SANDBOX_NAME } = ctx || this;
+  let { L, T, pluginAliasMap, bridgeAliasMap, CONFIG_SANDBOX_NAME } = ctx || this;
   if (configType === CONFIG_SANDBOX_NAME) {
     configData = convertSandboxConfig(ctx, configData, moduleType, moduleName, modulePresets);
     configData = doAliasMap(ctx, configData, pluginAliasMap, bridgeAliasMap);
@@ -314,7 +314,7 @@ let transformConfig = function(ctx, configType, configData, moduleType, moduleNa
 }
 
 let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, modulePresets) {
-  let { LX, LT } = ctx || this;
+  let { L, T } = ctx || this;
   if (lodash.isEmpty(sandboxConfig) || !lodash.isObject(sandboxConfig)) {
     return sandboxConfig;
   }
@@ -355,7 +355,7 @@ let convertSandboxConfig = function(ctx, sandboxConfig, moduleType, moduleName, 
 }
 
 let doAliasMap = function(ctx, sandboxConfig, pluginAliasMap, bridgeAliasMap) {
-  let { LX, LT } = ctx || this;
+  let { L, T } = ctx || this;
   if (chores.isUpgradeSupported(['standardizing-config'])) {
     if (sandboxConfig && lodash.isObject(sandboxConfig.plugins)) {
       let oldPlugins = sandboxConfig.plugins;

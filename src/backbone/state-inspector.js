@@ -13,10 +13,10 @@ const blockRef = chores.getBlockRef(__filename);
 function StateInspector(params={}) {
   let self = this;
   let loggingWrapper = new LoggingWrapper(blockRef);
-  let LX = loggingWrapper.getLogger();
-  let LT = loggingWrapper.getTracer();
+  let L = loggingWrapper.getLogger();
+  let T = loggingWrapper.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
@@ -67,13 +67,13 @@ function StateInspector(params={}) {
 
     // extract plugin names, bridge names
     let pluginNames = lodash.map(services.pluginRefs, 'name');
-    LX.has('debug') && LX.log('debug', LT.add({pluginNames}).toMessage({
+    L.has('debug') && L.log('debug', T.add({pluginNames}).toMessage({
       tags: [ blockRef, 'examine', 'plugin-names'],
       text: ' - plugin names: ${pluginNames}'
     }));
 
     let bridgeNames = lodash.map(services.bridgeRefs, 'name');
-    LX.has('debug') && LX.log('debug', LT.add({bridgeNames}).toMessage({
+    L.has('debug') && L.log('debug', T.add({bridgeNames}).toMessage({
       tags: [ blockRef, 'examine', 'bridge-names'],
       text: ' - bridge names: ${bridgeNames}'
     }));
@@ -182,7 +182,7 @@ function StateInspector(params={}) {
     return this;
   }
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));

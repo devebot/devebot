@@ -12,10 +12,10 @@ function ContextManager(params={}) {
   let self = this;
   let issueInspector = params.issueInspector;
   let loggingWrapper = new LoggingWrapper(blockRef);
-  let LX = loggingWrapper.getLogger();
-  let LT = loggingWrapper.getTracer();
+  let L = loggingWrapper.getLogger();
+  let T = loggingWrapper.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
@@ -70,7 +70,7 @@ function ContextManager(params={}) {
     return (featureEnabled.indexOf(label) >= 0);
   }
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));

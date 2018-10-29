@@ -20,10 +20,10 @@ const blockRef = chores.getBlockRef(__filename);
 function RunhookManager(params={}) {
   let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
-  let LX = loggingFactory.getLogger();
-  let LT = loggingFactory.getTracer();
+  let L = loggingFactory.getLogger();
+  let T = loggingFactory.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.add({ sandboxName: params.sandboxName }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ sandboxName: params.sandboxName }).toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
@@ -122,9 +122,9 @@ function RunhookManager(params={}) {
   self.execute = function(command, context) {
     context = context || {};
     command = command || {};
-    command.requestId = command.requestId || LT.getLogID();
-    let reqTr = LT.branch({ key: 'requestId', value: command.requestId });
-    LX.has('trace') && LX.log('trace', reqTr.add({ commandName: command.name, command }).toMessage({
+    command.requestId = command.requestId || T.getLogID();
+    let reqTr = T.branch({ key: 'requestId', value: command.requestId });
+    L.has('trace') && L.log('trace', reqTr.add({ commandName: command.name, command }).toMessage({
       tags: [ blockRef, 'execute', 'begin' ],
       text: '${commandName}#${requestId} - validate: {command}'
     }));
@@ -158,7 +158,7 @@ function RunhookManager(params={}) {
     let payload = command.payload || command.data;
     let schema = routine && routine.info && routine.info.schema;
     if (schema && lodash.isObject(schema)) {
-      LX.has('silly') && LX.log('silly', reqTr.add({ commandName: command.name, payload, schema }).toMessage({
+      L.has('silly') && L.log('silly', reqTr.add({ commandName: command.name, payload, schema }).toMessage({
         tags: [ blockRef, 'execute', 'validate-by-schema' ],
         text: '${commandName}#${requestId} - validate payload: {payload} by schema: {schema}'
       }));
@@ -172,7 +172,7 @@ function RunhookManager(params={}) {
     }
     let validate = routine && routine.info && routine.info.validate;
     if (validate && lodash.isFunction(validate)) {
-      LX.has('silly') && LX.log('silly', reqTr.add({ commandName: command.name, payload }).toMessage({
+      L.has('silly') && L.log('silly', reqTr.add({ commandName: command.name, payload }).toMessage({
         tags: [ blockRef, 'execute', 'validate-by-method' ],
         text: '${commandName}#${requestId} - validate payload: {payload} using validate()'
       }));
@@ -184,7 +184,7 @@ function RunhookManager(params={}) {
     }
 
     if (validationError) {
-      LX.has('error') && LX.log('error', reqTr.add({ commandName: command.name, validationError }).toMessage({
+      L.has('error') && L.log('error', reqTr.add({ commandName: command.name, validationError }).toMessage({
         tags: [ blockRef, 'execute', 'validation-error' ],
         text: '${commandName}#${requestId} - validation error: {validationError}'
       }));
@@ -192,7 +192,7 @@ function RunhookManager(params={}) {
       return Promise.reject(validationError);
     }
 
-    LX.has('trace') && LX.log('trace', reqTr.add({ commandName: command.name }).toMessage({
+    L.has('trace') && L.log('trace', reqTr.add({ commandName: command.name }).toMessage({
       tags: [ blockRef, 'execute', 'enqueue' ],
       text: '${commandName}#${requestId} - processing'
     }));
@@ -253,10 +253,10 @@ function RunhookManager(params={}) {
   self.process = function(command, context) {
     context = context || {};
     command = command || {};
-    command.requestId = command.requestId || LT.getLogID();
-    let reqTr = LT.branch({ key: 'requestId', value: command.requestId });
+    command.requestId = command.requestId || T.getLogID();
+    let reqTr = T.branch({ key: 'requestId', value: command.requestId });
 
-    LX.has('trace') && LX.log('trace', reqTr.add({ commandName: command.name, command }).toMessage({
+    L.has('trace') && L.log('trace', reqTr.add({ commandName: command.name, command }).toMessage({
       tags: [ blockRef, 'process', 'begin' ],
       text: '${commandName}#${requestId} - process: {command}'
     }));
@@ -266,7 +266,7 @@ function RunhookManager(params={}) {
     let options = command.options;
     let payload = command.payload || command.data;
     if (lodash.isFunction(handler)) {
-      LX.has('trace') && LX.log('trace', reqTr.add({
+      L.has('trace') && L.log('trace', reqTr.add({
         commandName: command.name,
         command: command,
         predefinedContext: predefinedContext
@@ -301,7 +301,7 @@ function RunhookManager(params={}) {
     routineStore.registerObject(value.name, value.object, { scope: value.crateScope });
   });
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));

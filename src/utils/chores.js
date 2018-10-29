@@ -12,16 +12,15 @@ const constx = require('./constx');
 const loader = require('./loader');
 const envbox = require('./envbox');
 const nodash = require('./nodash');
-const DEFAULT_SCOPE = require('./getenv')('DEVEBOT_DEFAULT_SCOPE', 'devebot');
-const debugx = require('./pinbug')(DEFAULT_SCOPE + ':utils:chores');
+const getenv = require('./getenv');
 
 let store = {
-  defaultScope: DEFAULT_SCOPE,
+  defaultScope: getenv('DEVEBOT_DEFAULT_SCOPE', constx.FRAMEWORK.NAME),
   injektorOptions: {
     namePatternTemplate: '^[a-zA-Z]{1}[a-zA-Z0-9&#\\-_%s]*$',
     separator: '/'
   },
-  injektorContext: { scope: 'devebot' },
+  injektorContext: { scope: constx.FRAMEWORK.NAME },
   validatorOptions: { schemaVersion: 4 }
 };
 let chores = {};
@@ -92,10 +91,6 @@ chores.filterFiles = function(dir, filter, filenames) {
 };
 
 chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
-  let self = this;
-  
-  debugx.enabled && debugx(' - load services by names: %s', JSON.stringify(serviceNames));
-  
   serviceNames = nodash.arrayify(serviceNames);
   serviceNames.forEach(function(serviceName) {
     let filepath = path.join(serviceFolder, serviceName + '.js');
@@ -106,7 +101,6 @@ chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
       lodash.defaults(serviceMap, serviceEntry);
     }
   });
-
   return serviceMap;
 };
 
@@ -129,7 +123,6 @@ chores.stringCamelCase = function camelCase(str) {
 
 chores.assertDir = function(appName) {
   let configDir = path.join(this.homedir(), '.' + appName);
-  debugx.enabled && debugx('config in homeDir: %s', configDir);
   try {
     fs.readdirSync(configDir);
   } catch (err) {
@@ -166,7 +159,7 @@ chores.homedir = (typeof os.homedir === 'function') ? os.homedir : function() {
   return home || null;
 };
 
-const SPECIAL_PLUGINS = ['application', 'devebot'];
+const SPECIAL_PLUGINS = ['application', constx.FRAMEWORK.NAME];
 
 chores.isSpecialPlugin = function(pluginCode) {
   return (SPECIAL_PLUGINS.indexOf(pluginCode) >= 0);
@@ -177,19 +170,19 @@ chores.extractCodeByPattern = function(ctx, patterns, name) {
   for(let k in patterns) {
     assert.ok(patterns[k] instanceof RegExp);
   }
-  let {LX, LT} = ctx;
+  let {L, T} = ctx;
   let info = {};
   for(info.i=0; info.i<patterns.length; info.i++) {
     if (name.match(patterns[info.i])) break;
   }
   if (info.i >= patterns.length) {
-    LX.has('conlog') && LX.log('conlog', LT.add({ name }).toMessage({
+    L.has('conlog') && L.log('conlog', T.add({ name }).toMessage({
       text: ' - The name "${name}" is not matched the patterns'
     }));
     return { i: -1, code: name };
   }
   info.code = name.replace(patterns[info.i], '\$1');
-  LX.has('conlog') && LX.log('conlog', LT.add(lodash.assign({name}, info)).toMessage({
+  L.has('conlog') && L.log('conlog', T.add(lodash.assign({name}, info)).toMessage({
     text: ' - extracted code of "${name}" is "${code}"'
   }));
   return info;
@@ -253,15 +246,17 @@ chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxReg
 }
 
 chores.printError = function(err) {
-  [
-    '',
-    '========== FATAL ERROR ==========',
-    err,
-    '---------------------------------',
-    ''
-  ].forEach(function(item) {
-    debugx.enabled && debugx(item);
-  });
+  if (getenv(['DEVEBOT_ENV', 'NODE_ENV']) !== 'test') {
+    [
+      '',
+      '========== FATAL ERROR ==========',
+      err,
+      '---------------------------------',
+      ''
+    ].forEach(function(item) {
+      console.error(item);
+    });
+  }
 }
 
 chores.injektorOptions = store.injektorOptions;

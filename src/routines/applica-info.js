@@ -13,10 +13,10 @@ let commandObject = {
     options: []
   },
   handler: function(options, payload, ctx) {
-    let LX = this.loggingFactory.getLogger();
-    let LT = this.loggingFactory.getTracer();
+    let L = this.loggingFactory.getLogger();
+    let T = this.loggingFactory.getTracer();
 
-    LX.has('conlog') && LX.log('conlog', 'app-info is invoked with: %s', JSON.stringify(options));
+    L.has('conlog') && L.log('conlog', 'app-info is invoked with: %s', JSON.stringify(options));
     return Promise.resolve([{
         type: 'json',
         title: 'Application Information',

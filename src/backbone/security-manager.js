@@ -11,21 +11,21 @@ const blockRef = chores.getBlockRef(__filename);
 function SecurityManager(params={}) {
   let self = this;
   let loggingFactory = params.loggingFactory.branch(blockRef);
-  let LX = loggingFactory.getLogger();
-  let LT = loggingFactory.getTracer();
-  let CTX = {LX, LT};
+  let L = loggingFactory.getLogger();
+  let T = loggingFactory.getTracer();
+  let CTX = {L, T};
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  let authenCfg = lodash.get(params, ['profileConfig', 'devebot', 'authen'], {});
+  let authenCfg = lodash.get(params, ['profileConfig', constx.FRAMEWORK.NAME, 'authen'], {});
 
   self.authenticate = function(tokens) {
     let output = Promise.resolve({ result: true });
 
-    LX.has('silly') && LX.log('silly', LT.add({
+    L.has('silly') && L.log('silly', T.add({
       tokens: tokens,
       status: authenCfg.disabled ? 'skipped':'processing'
     }).toMessage({
@@ -48,7 +48,7 @@ function SecurityManager(params={}) {
     });
   };
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
@@ -70,12 +70,12 @@ SecurityManager.argumentSchema = {
 module.exports = SecurityManager;
 
 let loadTokenStore = function(ctx, storefile) {
-  let {LX, LT} = ctx;
+  let {L, T} = ctx;
   let readFile = Promise.promisify(fs.readFile);
   return readFile(storefile, 'utf8').then(function(text) {
     let data = JSON.parse(text);
     if (lodash.isEmpty(data.tokens) || !lodash.isArray(data.tokens)) {
-      LX.has('silly') && LX.log('silly', LT.add({
+      L.has('silly') && L.log('silly', T.add({
         storefile: storefile
       }).toMessage({
         tags: [ blockRef, 'loadTokenStore', 'invalid' ],
@@ -83,7 +83,7 @@ let loadTokenStore = function(ctx, storefile) {
       }));
       return {};
     }
-    LX.has('silly') && LX.log('silly', LT.add({
+    L.has('silly') && L.log('silly', T.add({
       storefile: storefile,
       tokenTotal: data.tokens.length
     }).toMessage({
@@ -92,7 +92,7 @@ let loadTokenStore = function(ctx, storefile) {
     }));
     return data;
   }).catch(function(err) {
-    LX.has('silly') && LX.log('silly', LT.add({
+    L.has('silly') && L.log('silly', T.add({
       storefile: storefile,
       errorCode: err.code,
       errorName: err.name || 'Error',

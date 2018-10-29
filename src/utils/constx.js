@@ -68,6 +68,9 @@ const DEPENDENCIES_SCHEMA = {
 }
 
 module.exports = {
+  FRAMEWORK: {
+    NAME: 'devebot'
+  },
   APPINFO: {
     FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license', 'main']
   },

@@ -16,10 +16,10 @@ function SandboxManager(params={}) {
   let self = this;
   let issueInspector = params.issueInspector;
   let loggingFactory = params.loggingFactory.branch(blockRef);
-  let LX = loggingFactory.getLogger();
-  let LT = loggingFactory.getTracer();
+  let L = loggingFactory.getLogger();
+  let T = loggingFactory.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
@@ -40,14 +40,14 @@ function SandboxManager(params={}) {
   let sandboxNames = params.sandboxNames;
   let sandboxConfig = params.sandboxConfig;
 
-  LX.has('conlog') && LX.log('conlog', LT.add({
+  L.has('conlog') && L.log('conlog', T.add({
     sandboxNames: sandboxNames,
     sandboxConfig: util.inspect(sandboxConfig),
   }).toMessage({
     text: ' - load the sandbox${sandboxNames} with configuration: ${sandboxConfig}'
   }));
 
-  LX.has('silly') && LX.log('silly', LT.add({ sandboxNames, sandboxConfig }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ sandboxNames, sandboxConfig }).toMessage({
     tags: [ blockRef, 'sandbox-info' ],
     text: ' - create sandbox${sandboxNames}.injektor object'
   }));
@@ -82,7 +82,7 @@ function SandboxManager(params={}) {
   });
 
   let REGISTRY_EXCLUDED_SERVICES = [ getComponentLabel('sandboxRegistry') ];
-  LX.has('silly') && LX.log('silly', LT.add({
+  L.has('silly') && L.log('silly', T.add({
     excludedServices: REGISTRY_EXCLUDED_SERVICES
   }).toMessage({
     tags: [ blockRef, 'excluded-internal-services' ],
@@ -116,7 +116,7 @@ function SandboxManager(params={}) {
   let instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers, injectedServices) {
     let exceptions = [];
     let handlerName = [handlerRecord.crateScope, handlerRecord.name].join(_injektor.separator);
-    LX.has('silly') && LX.log('silly', LT.add({ handlerName, handlerType }).toMessage({
+    L.has('silly') && L.log('silly', T.add({ handlerName, handlerType }).toMessage({
       tags: [ blockRef, 'instantiateObject' ],
       text: ' - instantiate object: ${handlerName}'
     }));
@@ -209,7 +209,7 @@ function SandboxManager(params={}) {
   };
 
   self.startTriggers = function(triggerNames) {
-    LX.has('silly') && LX.log('silly', LT.toMessage({
+    L.has('silly') && L.log('silly', T.toMessage({
       tags: [ blockRef, 'trigger', 'start' ],
       text: ' - Start triggers'
     }));
@@ -219,7 +219,7 @@ function SandboxManager(params={}) {
   };
 
   self.stopTriggers = function(triggerNames) {
-    LX.has('silly') && LX.log('silly', LT.toMessage({
+    L.has('silly') && L.log('silly', T.toMessage({
       tags: [ blockRef, 'trigger', 'stop' ],
       text: ' - Stop triggers'
     }));
@@ -232,7 +232,7 @@ function SandboxManager(params={}) {
     if (!lodash.isFunction(iteratee)) return;
     if (lodash.isString(triggerNames)) triggerNames = [triggerNames];
     if (triggerNames && !lodash.isArray(triggerNames)) return;
-    LX.has('silly') && LX.log('silly', LT.add({ triggerNames: triggerNames || 'all' }).toMessage({
+    L.has('silly') && L.log('silly', T.add({ triggerNames: triggerNames || 'all' }).toMessage({
       tags: [ blockRef, 'trigger', 'loop' ],
       text: ' - Loop triggers: ${triggerNames}'
     }));
@@ -241,7 +241,7 @@ function SandboxManager(params={}) {
     lodash.forOwn(triggerMap, function(triggerRecord, triggerId) {
       let triggerName = getCrateName(triggerRecord);
       if (!triggerNames || triggerNames.indexOf(triggerName) >= 0) {
-        LX.has('silly') && LX.log('silly', LT.add({ actionName, triggerName }).toMessage({
+        L.has('silly') && L.log('silly', T.add({ actionName, triggerName }).toMessage({
           tags: [ blockRef, 'trigger', 'action' ],
           text: ' - ${actionName} trigger[${triggerName}]'
         }));
@@ -286,7 +286,7 @@ function SandboxManager(params={}) {
     return blocks;
   };
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
@@ -347,7 +347,7 @@ SandboxManager.argumentSchema = {
 module.exports = SandboxManager;
 
 let getComponentLabel = function(compName) {
-  return 'devebot' + chores.getSeparator() + compName;
+  return constx.FRAMEWORK.NAME + chores.getSeparator() + compName;
 }
 
 let wrapScriptConstructor = function(ScriptConstructor, wrapperNames) {
@@ -399,9 +399,9 @@ function SandboxRegistry(params) {
   this.defineService = function(name, construktor, context) {
     context = context || {};
     let info = injektor.parseName(name, context);
-    if (info.scope === 'devebot') {
+    if (info.scope === constx.FRAMEWORK.NAME) {
       let RestrictedError = errors.createConstructor('RestrictedDevebotError');
-      throw new RestrictedError('dependency scope [devebot] is restricted');
+      throw new RestrictedError(util.format('dependency scope [%s] is restricted', constx.FRAMEWORK.NAME));
     }
     let exceptions = [];
     let fullname = injektor.resolveName(serviceName, {

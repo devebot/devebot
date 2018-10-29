@@ -10,10 +10,10 @@ function ProcessManager(params={}) {
   let self = this;
   let issueInspector = params.issueInspector;
   let loggingFactory = params.loggingFactory.branch(blockRef);
-  let LX = loggingFactory.getLogger();
-  let LT = loggingFactory.getTracer();
+  let L = loggingFactory.getLogger();
+  let T = loggingFactory.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
@@ -23,7 +23,7 @@ function ProcessManager(params={}) {
   let pm_id = parseInt(getenv(clusterCfg.ENV_ID_NAMES || ['pm_id', 'NODE_APP_INSTANCE']));
   let pm_total = parseInt(getenv(clusterCfg.ENV_TOTAL_NAMES || ['instances']));
 
-  LX.has('debug') && LX.log('debug', LT.add({ pm_id, pm_total }).toMessage({
+  L.has('debug') && L.log('debug', T.add({ pm_id, pm_total }).toMessage({
     tags: [ blockRef, 'pm2-env-vars' ],
     text: 'PM2 environment: id: ${pm_id} / total: ${pm_total}'
   }));
@@ -64,7 +64,7 @@ function ProcessManager(params={}) {
     return idx === pm_id;
   }
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));

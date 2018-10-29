@@ -9,6 +9,7 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const nodash = require('../utils/nodash');
 const DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
+const FRAMEWORK_METADATA = constx.FRAMEWORK.NAME + '-metadata';
 const STAMP = constx.LOGGER.STARTING_POINT;
 
 function LoggingService(params={}) {
@@ -22,7 +23,7 @@ function LoggingService(params={}) {
   }));
 
   return new LoggingFactory({
-    sectorName: 'devebot',
+    sectorName: constx.FRAMEWORK.NAME,
     mappings: more.mappings,
     originalLogger: logFactory.getLogger()
   });
@@ -108,7 +109,7 @@ function LoggingFactory(args={}) {
       }
       let rootLogger = args.root.getLogger();
       rootLogger.has(STAMP) && rootLogger.log(STAMP, subTracer.add(blockInfo)
-          .toMessage({ tags: [ 'devebot-metadata' ] }));
+          .toMessage({ tags: [ FRAMEWORK_METADATA ] }));
     }
     return subTracer;
   }

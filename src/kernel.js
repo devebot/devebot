@@ -4,6 +4,7 @@ const Injektor = require('injektor');
 const lodash = require('lodash');
 const path = require('path');
 const chores = require('./utils/chores');
+const constx = require('./utils/constx');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
@@ -15,10 +16,10 @@ chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), [
 
 function Kernel(params={}) {
   let loggingWrapper = new LoggingWrapper(blockRef);
-  let LX = loggingWrapper.getLogger();
-  let LT = loggingWrapper.getTracer();
+  let L = loggingWrapper.getLogger();
+  let T = loggingWrapper.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
@@ -48,14 +49,14 @@ function Kernel(params={}) {
 
   let schemaValidator = injektor.lookup('schemaValidator', chores.injektorContext);
   let result = [];
-  let CTX = {LX, LT, schemaValidator};
+  let CTX = {L, T, schemaValidator};
 
   // validate bridge's configures
   let bridgeLoader = injektor.lookup('bridgeLoader', chores.injektorContext);
   let bridgeMetadata = {};
   bridgeLoader.loadMetadata(bridgeMetadata);
 
-  LX.has('silly') && LX.log('silly', LT.add({ metadata: bridgeMetadata }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ metadata: bridgeMetadata }).toMessage({
     tags: [ blockRef, 'bridge-config-schema-input' ],
     text: " - bridge's metadata: ${metadata}"
   }));
@@ -77,7 +78,7 @@ function Kernel(params={}) {
   let pluginMetadata = {};
   pluginLoader.loadMetadata(pluginMetadata);
 
-  LX.has('silly') && LX.log('silly', LT.add({ metadata: pluginMetadata }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ metadata: pluginMetadata }).toMessage({
     tags: [ blockRef, 'plugin-config-schema-input' ],
     text: " - plugin's metadata: ${metadata}"
   }));
@@ -117,7 +118,7 @@ function Kernel(params={}) {
     sandbox: lodash.pick(lodash.get(configObject, ['sandbox', 'mixture'], {}), ['application', 'plugins'])
   }
 
-  LX.has('silly') && LX.log('silly', LT.add({ pluginConfig, pluginSchema }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ pluginConfig, pluginSchema }).toMessage({
     tags: [ blockRef, 'validate-plugin-config-by-schema' ],
     text: ' - Synchronize the structure of configuration data and schemas'
   }));
@@ -125,7 +126,7 @@ function Kernel(params={}) {
   validatePluginConfig(CTX, pluginConfig, pluginSchema, result);
 
   // summarize validating result
-  LX.has('silly') && LX.log('silly', LT.add({ result }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ result }).toMessage({
     tags: [ blockRef, 'validating-config-by-schema-result' ],
     text: ' - Validating sandbox configuration using schemas'
   }));
@@ -135,7 +136,7 @@ function Kernel(params={}) {
   // initialize plugins, bridges, sandboxManager
   let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
 
-  let devebotCfg = lodash.get(configObject, ['profile', 'mixture', 'devebot'], {});
+  let devebotCfg = lodash.get(configObject, ['profile', 'mixture', constx.FRAMEWORK.NAME], {});
   let inOpts = lodash.assign({ invoker: blockRef, footmark: 'sandbox-loading' }, devebotCfg);
   issueInspector.barrier(inOpts);
   stateInspector.conclude(inOpts);
@@ -146,9 +147,21 @@ function Kernel(params={}) {
     });
   }
 
+  let profileConfig = injektor.lookup('profileConfig', chores.injektorContext);
+  let frameworkCfg = profileConfig[constx.FRAMEWORK.NAME] || {};
+  if (frameworkCfg.coupling === 'loose') {
+    let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
+    this.getSandboxManager = function() {
+      return sandboxManager;
+    }
+    this.getSandboxService = function(serviceName, context) {
+      return sandboxManager.getSandboxService(serviceName, context);
+    }
+  }
+
   this._injektor = injektor;
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
@@ -157,13 +170,13 @@ function Kernel(params={}) {
 module.exports = Kernel;
 
 let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
-  let { LX, LT, schemaValidator } = ctx;
+  let { L, T, schemaValidator } = ctx;
   result = result || [];
 
   bridgeConfig = bridgeConfig || {};
   bridgeSchema = bridgeSchema || {};
 
-  LX.has('silly') && LX.log('silly', LT.add({ bridgeConfig, bridgeSchema }).toMessage({
+  L.has('silly') && L.log('silly', T.add({ bridgeConfig, bridgeSchema }).toMessage({
     tags: [ blockRef, 'validate-bridge-config-by-schema' ],
     text: ' - bridge config/schema:\n${bridgeSchema}\n${bridgeConfig}'
   }));
@@ -214,7 +227,7 @@ let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
 }
 
 let validatePluginConfig = function(ctx, pluginConfig, pluginSchema, result) {
-  let { LX, LT, schemaValidator } = ctx;
+  let { L, T, schemaValidator } = ctx;
   result = result || [];
 
   let sandboxConfig = pluginConfig.sandbox || {};
@@ -237,7 +250,7 @@ let validatePluginConfig = function(ctx, pluginConfig, pluginSchema, result) {
       let r = schemaValidator.validate(crateConfig, crateSchema.schema);
       result.push(customizeResult(r, crateSchema.crateScope, crateName));
     } else {
-      LX.has('silly') && LX.log('silly', LT.add({ crateName, crateConfig, crateSchema }).toMessage({
+      L.has('silly') && L.log('silly', T.add({ crateName, crateConfig, crateSchema }).toMessage({
         tags: [ blockRef, 'validate-plugin-config-by-schema-skipped' ],
         text: ' - Validating sandboxConfig[${crateName}] is skipped'
       }));

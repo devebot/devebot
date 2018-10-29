@@ -11,6 +11,14 @@ function Nodash() {
     return a instanceof Array;
   }
 
+  this.isFunction = function(f) {
+    return typeof(f) === 'function';
+  }
+
+  this.isObject = function(o) {
+    return o && typeof(o) === 'object' && !this.isArray(o);
+  }
+
   this.isString = function(s) {
     return typeof(s) === 'string';
   }

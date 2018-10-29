@@ -14,10 +14,10 @@ function Runner(params={}) {
   Kernel.call(this, params);
 
   let loggingWrapper = new LoggingWrapper(blockRef);
-  let LX = loggingWrapper.getLogger();
-  let LT = loggingWrapper.getTracer();
+  let L = loggingWrapper.getLogger();
+  let T = loggingWrapper.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
@@ -34,7 +34,7 @@ function Runner(params={}) {
     let outlet = scriptRenderer.createOutlet({ ws: ws });
 
     ws.on('message', function(command) {
-      LX.has('silly') && LX.log('silly', LT.add({ command }).toMessage({
+      L.has('silly') && L.log('silly', T.add({ command }).toMessage({
         tags: [ blockRef, 'receive-a-command' ],
         text: ' - Runner receives a command: %{command}'
       }));
@@ -44,18 +44,7 @@ function Runner(params={}) {
     return ws.register(new WsClientMock(ws));
   }
 
-  let profileConfig = injektor.lookup('profileConfig', chores.injektorContext);
-  if (profileConfig.devebot && profileConfig.devebot.coupling === 'loose') {
-    let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
-    this.getSandboxManager = function() {
-      return sandboxManager;
-    }
-    this.getSandboxService = function(serviceName, context) {
-      return sandboxManager.getSandboxService(serviceName, context);
-    }
-  }
-
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));

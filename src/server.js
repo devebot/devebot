@@ -11,6 +11,7 @@ const WebSocketServer = require('ws').Server;
 
 const Kernel = require('./kernel');
 const chores = require('./utils/chores');
+const constx = require('./utils/constx');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const RepeatedTimer = require('./backbone/repeated-timer');
 const blockRef = chores.getBlockRef(__filename);
@@ -20,10 +21,10 @@ function Server(params={}) {
 
   // init the default parameters
   let loggingWrapper = new LoggingWrapper(blockRef);
-  let LX = loggingWrapper.getLogger();
-  let LT = loggingWrapper.getTracer();
+  let L = loggingWrapper.getLogger();
+  let T = loggingWrapper.getTracer();
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
@@ -43,14 +44,14 @@ function Server(params={}) {
   let appName = injektor.lookup('appName', chores.injektorContext);
   let appRootUrl = '/' + chores.stringKebabCase(appName);
 
-  // devebot configures
-  let devebotCfg = lodash.get(profileConfig, ['devebot'], {});
+  // framework configures
+  let frameworkCfg = lodash.get(profileConfig, [constx.FRAMEWORK.NAME], {});
 
-  let tunnelCfg = lodash.get(devebotCfg, ['tunnel'], {});
+  let tunnelCfg = lodash.get(frameworkCfg, ['tunnel'], {});
   let sslEnabled = tunnelCfg.enabled && tunnelCfg.key_file && tunnelCfg.crt_file;
 
   let processRequest = function(req, res) {
-    if (chores.isDevelopmentMode() || devebotCfg.appInfoLevel === 'all') {
+    if (chores.isDevelopmentMode() || frameworkCfg.appInfoLevel === 'all') {
       let appInfo = injektor.lookup('appInfo', chores.injektorContext);
       let appInfoBody = JSON.stringify(appInfo, null, 2);
       res.writeHead(200, 'OK', {
@@ -74,14 +75,14 @@ function Server(params={}) {
     loggingFactory: loggingFactory,
     period: 60 * 1000,
     target: function() {
-      LX.has('conlog') && LX.log('conlog', ' - Since: %s, Uptime: %s', this.startTime.toISOString(), this.uptime);
+      L.has('conlog') && L.log('conlog', ' - Since: %s, Uptime: %s', this.startTime.toISOString(), this.uptime);
     }
   });
 
-  let mode = ['silent', 'tictac', 'server'].indexOf(getDevebotMode(devebotCfg.mode));
+  let mode = ['silent', 'tictac', 'server'].indexOf(getDevebotMode(frameworkCfg.mode));
 
   this.start = function() {
-    LX.has('silly') && LX.log('silly', LT.toMessage({
+    L.has('silly') && L.log('silly', T.toMessage({
       tags: [ blockRef, 'start()' ],
       text: 'start() is invoked'
     }));
@@ -89,25 +90,25 @@ function Server(params={}) {
       if (mode == 0) return Promise.resolve();
       if (mode == 1) return rhythm.start();
       return new Promise(function(onResolved, onRejected) {
-        let serverHost = lodash.get(devebotCfg, ['host'], '0.0.0.0');
-        let serverPort = lodash.get(devebotCfg, ['port'], 17779);
+        let serverHost = lodash.get(frameworkCfg, ['host'], '0.0.0.0');
+        let serverPort = lodash.get(frameworkCfg, ['port'], 17779);
         let serverInstance = server.listen(serverPort, serverHost, function () {
           let proto = sslEnabled ? 'wss' : 'ws';
           let host = serverInstance.address().address;
           let port = serverInstance.address().port;
-          chores.isVerboseForced('devebot', devebotCfg) &&
+          chores.isVerboseForced(constx.FRAMEWORK.NAME, frameworkCfg) &&
               console.log('%s is listening on %s://%s:%s%s', appName, proto, host, port, appRootUrl);
           onResolved(serverInstance);
         });
       });
     }).then(function() {
-      LX.has('silly') && LX.log('silly', LT.toMessage({
+      L.has('silly') && L.log('silly', T.toMessage({
         tags: [ blockRef, 'start()', 'webserver-started' ],
         text: 'webserver has started'
       }));
       return sandboxManager.startTriggers();
     }).then(function(info) {
-      LX.has('silly') && LX.log('silly', LT.toMessage({
+      L.has('silly') && L.log('silly', T.toMessage({
         tags: [ blockRef, 'start()', 'triggers-started' ],
         text: 'triggers have started'
       }));
@@ -119,14 +120,14 @@ function Server(params={}) {
 
   let serverCloseEvent;
   this.stop = function() {
-    LX.has('silly') && LX.log('silly', LT.toMessage({
+    L.has('silly') && L.log('silly', T.toMessage({
       tags: [ blockRef, 'close()' ],
       text: 'close() is invoked'
     }));
     return Promise.resolve().then(function() {
       return sandboxManager.stopTriggers();
     }).then(function() {
-      LX.has('silly') && LX.log('silly', LT.toMessage({
+      L.has('silly') && L.log('silly', T.toMessage({
         tags: [ blockRef, 'close()', 'triggers-stopped' ],
         text: 'triggers have stopped'
       }));
@@ -134,27 +135,27 @@ function Server(params={}) {
       if (mode == 1) return rhythm.stop();
       return new Promise(function(onResolved, onRejected) {
         let timeoutHandler = setTimeout(function() {
-          LX.has('conlog') && LX.log('conlog', 'Timeout closing Server');
+          L.has('conlog') && L.log('conlog', 'Timeout closing Server');
           onRejected();
         }, 60000);
         if (typeof(serverCloseEvent) === 'function') {
           server.removeListener("close", serverCloseEvent);
         }
         server.on("close", serverCloseEvent = function() {
-          LX.has('conlog') && LX.log('conlog', 'HTTP Server is invoked');
+          L.has('conlog') && L.log('conlog', 'HTTP Server is invoked');
         });
         server.close(function() {
-          LX.has('conlog') && LX.log('conlog', 'HTTP Server has been closed');
+          L.has('conlog') && L.log('conlog', 'HTTP Server has been closed');
           clearTimeout(timeoutHandler);
           onResolved();
         });
       });
     }).then(function() {
-      LX.has('silly') && LX.log('silly', LT.toMessage({
+      L.has('silly') && L.log('silly', T.toMessage({
         tags: [ blockRef, 'close()', 'webserver-stopped' ],
         text: 'webserver has stopped'
       }));
-      chores.isVerboseForced('devebot', devebotCfg) &&
+      chores.isVerboseForced(constx.FRAMEWORK.NAME, frameworkCfg) &&
           console.log('%s has been closed', appName);
       return Promise.resolve();
     });
@@ -178,28 +179,28 @@ function Server(params={}) {
     let outlet = scriptRenderer.createOutlet({ ws: ws });
 
     ws.on('open', function handler() {
-      LX.has('conlog') && LX.log('conlog', ' - Websocket@server is opened');
+      L.has('conlog') && L.log('conlog', ' - Websocket@server is opened');
     });
 
     ws.on('message', function incoming(command) {
-      LX.has('conlog') && LX.log('conlog', ' - Websocket@server is received a command: <%s>', command);
+      L.has('conlog') && L.log('conlog', ' - Websocket@server is received a command: <%s>', command);
       scriptExecutor.executeCommand(command, outlet);
     });
 
     ws.on('close', function handler(code, message) {
-      LX.has('conlog') && LX.log('conlog', ' - Websocket@server is closed, code: <%s>, message: <%s>', code, message);
+      L.has('conlog') && L.log('conlog', ' - Websocket@server is closed, code: <%s>, message: <%s>', code, message);
     });
 
     ws.on('error', function handler(error) {
-      LX.has('conlog') && LX.log('conlog', ' - Websocket@server encounter an error: <%s>', error);
+      L.has('conlog') && L.log('conlog', ' - Websocket@server encounter an error: <%s>', error);
     });
   });
 
   wss.on('error', function connection(error) {
-    LX.has('conlog') && LX.log('conlog', ' - Websocket@server has an error: <%s>', JSON.stringify(error));
+    L.has('conlog') && L.log('conlog', ' - Websocket@server has an error: <%s>', JSON.stringify(error));
   });
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
+  L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));

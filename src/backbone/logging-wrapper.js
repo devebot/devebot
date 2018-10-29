@@ -6,6 +6,7 @@ const LogTracer = require('logolite').LogTracer;
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const CHECK = constx.LOGGER.INTERNAL_LEVEL;
+const FRAMEWORK_METADATA = constx.FRAMEWORK.NAME + '-metadata';
 
 function LoggingWrapper(sectorName) {
   sectorName = sectorName || chores.getBlockRef(__filename);
@@ -35,7 +36,7 @@ function LoggingWrapper(sectorName) {
 
       let rootLogger = this.getLogger();
       rootLogger.has(CHECK) && rootLogger.log(CHECK, __tracer.add(blockInfo)
-          .toMessage({ tags: [ 'devebot-metadata' ] }));
+          .toMessage({ tags: [ FRAMEWORK_METADATA ] }));
     }
     return __tracer;
   }
