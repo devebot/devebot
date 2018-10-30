@@ -16,7 +16,7 @@ let commandObject = {
     let L = this.loggingFactory.getLogger();
     let T = this.loggingFactory.getTracer();
 
-    L.has('conlog') && L.log('conlog', 'app-info is invoked with: %s', JSON.stringify(options));
+    L.has('dunce') && L.log('dunce', 'app-info is invoked with: %s', JSON.stringify(options));
     return Promise.resolve([{
         type: 'json',
         title: 'Application Information',

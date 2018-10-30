@@ -35,7 +35,7 @@ function JobqueueBinder(params={}) {
     enabled: {
       get: function() {
         let enabled = jqCfg.enabled !== false && getJobQueueMaster() != null;
-        L.has('conlog') && L.log('conlog', T.add({ enabled, sandboxName }).toMessage({
+        L.has('dunce') && L.log('dunce', T.add({ enabled, sandboxName }).toMessage({
           text: ' - jobqueueMaster in sandbox <{sandboxName}> status (enabled): {enabled}'
         }));
         return enabled;

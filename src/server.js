@@ -74,7 +74,7 @@ function Server(params={}) {
     loggingFactory: loggingFactory,
     period: 60 * 1000,
     target: function() {
-      L.has('conlog') && L.log('conlog', ' - Since: %s, Uptime: %s', this.startTime.toISOString(), this.uptime);
+      L.has('dunce') && L.log('dunce', ' - Since: %s, Uptime: %s', this.startTime.toISOString(), this.uptime);
     }
   });
 
@@ -134,17 +134,17 @@ function Server(params={}) {
       if (mode == 1) return rhythm.stop();
       return new Promise(function(onResolved, onRejected) {
         let timeoutHandler = setTimeout(function() {
-          L.has('conlog') && L.log('conlog', 'Timeout closing Server');
+          L.has('dunce') && L.log('dunce', 'Timeout closing Server');
           onRejected();
         }, 60000);
         if (typeof(serverCloseEvent) === 'function') {
           server.removeListener("close", serverCloseEvent);
         }
         server.on("close", serverCloseEvent = function() {
-          L.has('conlog') && L.log('conlog', 'HTTP Server is invoked');
+          L.has('dunce') && L.log('dunce', 'HTTP Server is invoked');
         });
         server.close(function() {
-          L.has('conlog') && L.log('conlog', 'HTTP Server has been closed');
+          L.has('dunce') && L.log('dunce', 'HTTP Server has been closed');
           clearTimeout(timeoutHandler);
           onResolved();
         });
@@ -178,25 +178,25 @@ function Server(params={}) {
     let outlet = scriptRenderer.createOutlet({ ws: ws });
 
     ws.on('open', function handler() {
-      L.has('conlog') && L.log('conlog', ' - Websocket@server is opened');
+      L.has('dunce') && L.log('dunce', ' - Websocket@server is opened');
     });
 
     ws.on('message', function incoming(command) {
-      L.has('conlog') && L.log('conlog', ' - Websocket@server is received a command: <%s>', command);
+      L.has('dunce') && L.log('dunce', ' - Websocket@server is received a command: <%s>', command);
       scriptExecutor.executeCommand(command, outlet);
     });
 
     ws.on('close', function handler(code, message) {
-      L.has('conlog') && L.log('conlog', ' - Websocket@server is closed, code: <%s>, message: <%s>', code, message);
+      L.has('dunce') && L.log('dunce', ' - Websocket@server is closed, code: <%s>, message: <%s>', code, message);
     });
 
     ws.on('error', function handler(error) {
-      L.has('conlog') && L.log('conlog', ' - Websocket@server encounter an error: <%s>', error);
+      L.has('dunce') && L.log('dunce', ' - Websocket@server encounter an error: <%s>', error);
     });
   });
 
   wss.on('error', function connection(error) {
-    L.has('conlog') && L.log('conlog', ' - Websocket@server has an error: <%s>', JSON.stringify(error));
+    L.has('dunce') && L.log('dunce', ' - Websocket@server has an error: <%s>', JSON.stringify(error));
   });
 
   L.has('silly') && L.log('silly', T.toMessage({

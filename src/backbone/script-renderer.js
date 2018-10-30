@@ -117,7 +117,7 @@ function WebSocketOutlet(params) {
   assert(lodash.isObject(T));
   assert(lodash.isObject(ws));
 
-  L.has('conlog') && L.log('conlog', T.toMessage({
+  L.has('dunce') && L.log('dunce', T.toMessage({
     text: ' - create a new WebSocketOutlet()'
   }));
 
@@ -125,7 +125,7 @@ function WebSocketOutlet(params) {
     ws.send(message);
   }
 
-  L.has('conlog') && L.log('conlog', T.toMessage({
+  L.has('dunce') && L.log('dunce', T.toMessage({
     text: ' - the new WebSocketOutlet() has been created'
   }));
 }

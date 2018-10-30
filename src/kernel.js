@@ -83,7 +83,7 @@ function Kernel(params={}) {
     text: " - plugin's metadata: ${metadata}"
   }));
 
-  let SELECTED_FIELDS = [ 'crateScope', 'schema', 'extension' ];
+  let SELECTED_FIELDS = [ 'crateScope', 'extension', 'schema', 'validator' ];
   let extractPluginSchema = function(pluginMetadata) {
     let configSchema = { profile: {}, sandbox: {} };
     lodash.forOwn(pluginMetadata, function(ref, key) {
@@ -119,7 +119,7 @@ function Kernel(params={}) {
   }
 
   L.has('silly') && L.log('silly', T.add({ pluginConfig, pluginSchema }).toMessage({
-    tags: [ blockRef, 'validate-plugin-config-by-schema' ],
+    tags: [ blockRef, 'validate-plugin-config-by-metadata' ],
     text: ' - Synchronize the structure of configuration data and schemas'
   }));
 
@@ -127,7 +127,7 @@ function Kernel(params={}) {
 
   // summarize validating result
   L.has('silly') && L.log('silly', T.add({ result }).toMessage({
-    tags: [ blockRef, 'validating-config-by-schema-result' ],
+    tags: [ blockRef, 'validating-config-by-metadata-result' ],
     text: ' - Validating sandbox configuration using schemas'
   }));
 
@@ -177,7 +177,7 @@ let validateBridgeConfig = function(ctx, bridgeConfig, bridgeSchema, result) {
   bridgeSchema = bridgeSchema || {};
 
   L.has('silly') && L.log('silly', T.add({ bridgeConfig, bridgeSchema }).toMessage({
-    tags: [ blockRef, 'validate-bridge-config-by-schema' ],
+    tags: [ blockRef, 'validate-bridge-config-by-metadata' ],
     text: ' - bridge config/schema:\n${bridgeSchema}\n${bridgeConfig}'
   }));
 
@@ -234,6 +234,8 @@ let validatePluginConfig = function(ctx, pluginConfig, pluginSchema, result) {
   let sandboxSchema = pluginSchema.sandbox || {};
 
   let customizeResult = function(result, crateScope, crateName) {
+    if (result == null) result = false;
+    result = (typeof result === 'boolean') ? { ok: result } : result;
     let output = {};
     output.stage = 'config/schema';
     output.name = crateScope;
@@ -246,12 +248,22 @@ let validatePluginConfig = function(ctx, pluginConfig, pluginSchema, result) {
   }
 
   let validateSandbox = function(result, crateConfig, crateSchema, crateName) {
-    if (crateSchema && crateSchema.schema && crateSchema.enabled !== false) {
-      let r = schemaValidator.validate(crateConfig, crateSchema.schema);
-      result.push(customizeResult(r, crateSchema.crateScope, crateName));
-    } else {
+    let validated = false;
+    if (crateSchema && crateSchema.enabled !== false) {
+      if (lodash.isObject(crateSchema.schema)) {
+        let r = schemaValidator.validate(crateConfig, crateSchema.schema);
+        result.push(customizeResult(r, crateSchema.crateScope, crateName));
+        validated = true;
+      }
+      if (lodash.isFunction(crateSchema.validator)) {
+        let r = crateSchema.validator(crateConfig);
+        result.push(customizeResult(r, crateSchema.crateScope, crateName));
+        validated = true;
+      }
+    }
+    if (!validated) {
       L.has('silly') && L.log('silly', T.add({ crateName, crateConfig, crateSchema }).toMessage({
-        tags: [ blockRef, 'validate-plugin-config-by-schema-skipped' ],
+        tags: [ blockRef, 'validate-plugin-config-by-metadata-skipped' ],
         text: ' - Validating sandboxConfig[${crateName}] is skipped'
       }));
     }

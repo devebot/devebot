@@ -59,12 +59,12 @@ let readVariable = function(ctx, appLabel, varName) {
   let value, varLabel;
   for(const varLabel of varLabels) {
     value = envbox.getEnv(varLabel);
-    L.has('conlog') && L.log('conlog', T.add({ label: varLabel, value }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ label: varLabel, value }).toMessage({
       text: ' - Get value of ${label}: ${value}'
     }));
     if (value) break;
   }
-  L.has('conlog') && L.log('conlog', T.add({ label: varLabels[0], value }).toMessage({
+  L.has('dunce') && L.log('dunce', T.add({ label: varLabels[0], value }).toMessage({
     text: ' - Final value of ${label}: ${value}'
   }));
   return value;
@@ -124,13 +124,13 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   includedNames[CONFIG_SANDBOX_NAME] = lodash.concat(
     lodash.difference(includedNames[CONFIG_SANDBOX_NAME], appSandboxes), appSandboxes);
 
-  L.has('conlog') && L.log('conlog', T.add({ includedNames }).toMessage({
+  L.has('dunce') && L.log('dunce', T.add({ includedNames }).toMessage({
     text: ' + included names: ${includedNames}'
   }));
 
   function loadApplicationConfig(configType, configDir) {
     if (configDir) {
-      L.has('conlog') && L.log('conlog', T.add({ configType, configDir }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ configType, configDir }).toMessage({
         text: ' + load the "${configType}" configuration in "${configDir}"'
       }));
       let configFiles = chores.filterFiles(configDir, '.*\.js');
@@ -142,11 +142,11 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
         }
         return file.replace('.js', '').replace(/[_]/,'&').split('&');
       });
-      L.has('conlog') && L.log('conlog', T.add({ configInfos }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ configInfos }).toMessage({
         text: ' - parsing configFiles result: ${configInfos}'
       }));
 
-      L.has('conlog') && L.log('conlog', T.add({ configType }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ configType }).toMessage({
         text: ' - load the application default config of "${configType}"'
       }));
       for(let i in ALIASES_OF[configType]) {
@@ -158,11 +158,11 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       }
       config[configType]['default'] = lodash.defaultsDeep({}, config[configType]['expanse'], config[configType]['default']);
 
-      L.has('conlog') && L.log('conlog', T.add({ configType }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ configType }).toMessage({
         text: ' - load the application customized config of "${configType}"'
       }));
       let expanseNames = filterConfigBy(ctx, configInfos, includedNames, configType, ALIASES_OF);
-      L.has('conlog') && L.log('conlog', T.add({ expanseNames }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ expanseNames }).toMessage({
         text: ' + expanded names: ${expanseNames}'
       }));
       config[configType]['expanse'] = config[configType]['expanse'] || {};
@@ -181,12 +181,12 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
   CONFIG_TYPES.forEach(function(configType) {
     config[configType] = config[configType] || {};
 
-    L.has('conlog') && L.log('conlog', T.toMessage({
+    L.has('dunce') && L.log('dunce', T.toMessage({
       text: ' + load the default config from plugins & framework'
     }));
     lodash.forEach(libRefs, function(libRef) {
       if (libRef.presets && chores.isUpgradeSupported('presets')) {
-        L.has('conlog') && L.log('conlog', T.add(libRef).toMessage({
+        L.has('dunce') && L.log('dunce', T.add(libRef).toMessage({
           text: ' - Presets of ${type}[${name}]: ${presets}'
         }));
       }
@@ -211,7 +211,7 @@ let loadConfig = function(ctx, appName, appOptions, appRef, devebotRef, pluginRe
       loadApplicationConfig(configType, externalConfigDir);
     }
 
-    L.has('conlog') && L.log('conlog', ' - Final config object: %s', util.inspect(config[configType], {depth: 8}));
+    L.has('dunce') && L.log('dunce', ' - Final config object: %s', util.inspect(config[configType], {depth: 8}));
   });
 
   if (chores.isUpgradeSupported('standardizing-config')) {
@@ -232,17 +232,17 @@ let loadConfigFile = function(ctx, configFile) {
   let opStatus = { type: 'CONFIG', file: configFile };
   let content;
   try {
-    L.has('conlog') && L.log('conlog', T.add({ configFile }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ configFile }).toMessage({
       text: ' - load config file: "${configFile}"'
     }));
     content = loader(configFile, { stopWhenError: true });
     opStatus.hasError = false;
-    L.has('conlog') && L.log('conlog', T.add({ configFile }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ configFile }).toMessage({
       text: ' - loading config file: "${configFile}" has done.'
     }));
   } catch(err) {
     if (err.code != 'MODULE_NOT_FOUND') {
-      L.has('conlog') && L.log('conlog', T.add({ configFile }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ configFile }).toMessage({
         text: ' - config file ${configFile} loading is failed.'
       }));
       opStatus.hasError = true;
@@ -275,7 +275,7 @@ let resolveConfigDir = function(ctx, appName, appRootDir, configDir, configEnv) 
     if (['production'].indexOf(process.env.NODE_ENV) >= 0) {
       dirPath = chores.assertDir(appName);
       if (dirPath == null) {
-        L.has('conlog') && L.log('conlog', T.toMessage({
+        L.has('dunce') && L.log('dunce', T.toMessage({
           text: 'Run in production mode, but config directory not found'
         }));
         issueInspector.exit(1);

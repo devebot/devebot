@@ -16,7 +16,7 @@ function BridgeLoader(params={}) {
     text: ' + constructor start ...'
   }));
 
-  L.has('conlog') && L.log('conlog', T.add(params).toMessage({
+  L.has('dunce') && L.log('dunce', T.add(params).toMessage({
     text: ' + bridgeLoader start with bridgeRefs: ${bridgeRefs}'
   }));
 
@@ -89,7 +89,7 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
   let bridgeCode = nameResolver.getDefaultAlias(bridgeRef);
   let bridgePath = bridgeRef.path;
 
-  L.has('conlog') && L.log('conlog', T.add(bridgeRef).toMessage({
+  L.has('dunce') && L.log('dunce', T.add(bridgeRef).toMessage({
     text: ' - bridge constructor (${name}) loading is started'
   }));
 
@@ -101,7 +101,7 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
 
   try {
     let bridgeConstructor = loader(bridgePath, { stopWhenError: true });
-    L.has('conlog') && L.log('conlog', T.add(bridgeRef).toMessage({
+    L.has('dunce') && L.log('dunce', T.add(bridgeRef).toMessage({
       text: ' - bridge constructor (${name}) loading has done.'
     }));
     if (lodash.isFunction(bridgeConstructor)) {
@@ -111,13 +111,13 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
       };
       opStatus.hasError = false;
     } else {
-      L.has('conlog') && L.log('conlog', T.add(bridgeRef).toMessage({
+      L.has('dunce') && L.log('dunce', T.add(bridgeRef).toMessage({
         text: ' - bridge "${name}" is not a constructor'
       }));
       opStatus.hasError = true;
     }
   } catch(err) {
-    L.has('conlog') && L.log('conlog', T.add(bridgeRef).toMessage({
+    L.has('dunce') && L.log('dunce', T.add(bridgeRef).toMessage({
       text: ' - bridge constructor (${name}) loading has failed'
     }));
     opStatus.hasError = true;
@@ -138,7 +138,7 @@ let loadBridgeConstructors = function(ctx, bridgeRefs) {
     return lodash.isString(bridgeRef.name) && lodash.isString(bridgeRef.path);
   });
 
-  L.has('conlog') && L.log('conlog', T.add({ bridgeRefs }).toMessage({
+  L.has('dunce') && L.log('dunce', T.add({ bridgeRefs }).toMessage({
     text: ' - load a list of bridge constructors: ${bridgeRefs}'
   }));
 
@@ -147,7 +147,7 @@ let loadBridgeConstructors = function(ctx, bridgeRefs) {
     lodash.assign(bridgeConstructors, loadBridgeContructor(ctx, bridgeRef));
   });
 
-  L.has('conlog') && L.log('conlog', T.add({
+  L.has('dunce') && L.log('dunce', T.add({
     bridgeConstructorNames: lodash.keys(bridgeConstructors)
   }).toMessage({
     text: ' - bridge constructors have been loaded: ${bridgeConstructorNames}'
@@ -162,18 +162,18 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
   let result = {};
 
   if (!lodash.isString(bridgeCode)) {
-    L.has('conlog') && L.log('conlog', T.toMessage({
+    L.has('dunce') && L.log('dunce', T.toMessage({
       text: ' - bridgeCode is invalid (not a string)'
     }));
     return result;
   } else {
-    L.has('conlog') && L.log('conlog', T.add({ dialectOpts }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ dialectOpts }).toMessage({
       text: ' - buildBridgeDialect() with parameters: ${dialectOpts}'
     }));
   }
 
   dialectName = dialectName || bridgeCode + 'Wrapper';
-  L.has('conlog') && L.log('conlog', T.add({ dialectName }).toMessage({
+  L.has('dunce') && L.log('dunce', T.add({ dialectName }).toMessage({
     text: ' - building bridgeDialect (${dialectName}) is started'
   }));
 
@@ -190,7 +190,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
 
   let bridgeConstructor = bridgeRecord.construktor;
   if (!lodash.isFunction(bridgeConstructor)) {
-    L.has('conlog') && L.log('conlog', T.toMessage({
+    L.has('dunce') && L.log('dunce', T.toMessage({
       text: ' - bridgeConstructor is invalid (not a function)'
     }));
     return result;
@@ -307,7 +307,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
     construktor: dialectConstructor
   };
 
-  L.has('conlog') && L.log('conlog', T.add({ dialectName }).toMessage({
+  L.has('dunce') && L.log('dunce', T.add({ dialectName }).toMessage({
     text: ' - building bridgeDialect (${dialectName}) has done.'
   }));
 

@@ -15,7 +15,7 @@ function LoggingWrapper(sectorName) {
   this.getLogger = function() {
     return __logger = __logger || LogAdapter.getLogger({
       sector: sectorName,
-      target: 'conlog'
+      target: 'dunce'
     });
   }
 

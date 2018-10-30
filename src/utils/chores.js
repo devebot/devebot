@@ -176,13 +176,13 @@ chores.extractCodeByPattern = function(ctx, patterns, name) {
     if (name.match(patterns[info.i])) break;
   }
   if (info.i >= patterns.length) {
-    L.has('conlog') && L.log('conlog', T.add({ name }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ name }).toMessage({
       text: ' - The name "${name}" is not matched the patterns'
     }));
     return { i: -1, code: name };
   }
   info.code = name.replace(patterns[info.i], '\$1');
-  L.has('conlog') && L.log('conlog', T.add(lodash.assign({name}, info)).toMessage({
+  L.has('dunce') && L.log('dunce', T.add(lodash.assign({name}, info)).toMessage({
     text: ' - extracted code of "${name}" is "${code}"'
   }));
   return info;

@@ -40,7 +40,7 @@ function SandboxManager(params={}) {
   let sandboxNames = params.sandboxNames;
   let sandboxConfig = params.sandboxConfig;
 
-  L.has('conlog') && L.log('conlog', T.add({
+  L.has('dunce') && L.log('dunce', T.add({
     sandboxNames: sandboxNames,
     sandboxConfig: util.inspect(sandboxConfig),
   }).toMessage({

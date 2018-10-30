@@ -24,7 +24,7 @@ function PluginLoader(params={}) {
     return pluginRef;
   });
 
-  L.has('conlog') && L.log('conlog', T.add(params).toMessage({
+  L.has('dunce') && L.log('dunce', T.add(params).toMessage({
     text: ' - pluginRefs: ${pluginRefs}'
   }));
 
@@ -120,7 +120,7 @@ let loadScriptEntries = function(CTX, scriptMap, scriptType, scriptContext, plug
 
   let scriptSubDir = chores.getComponentDir(pluginRootDir, scriptType);
   let scriptFolder = path.join(pluginRootDir.pathDir, scriptSubDir);
-  L.has('conlog') && L.log('conlog', T.add({
+  L.has('dunce') && L.log('dunce', T.add({
     scriptKey: constx[scriptType].ROOT_KEY,
     scriptFolder: scriptFolder
   }).toMessage({
@@ -141,26 +141,26 @@ let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptF
   try {
     let scriptInit = loader(filepath, { stopWhenError: true });
     if (lodash.isFunction(scriptInit)) {
-      L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
         text: ' - script file ${filepath} is ok'
       }));
       let scriptObject = scriptInit(scriptContext);
       let output = validateScript(CTX, scriptObject, scriptType);
       if (!output.valid) {
-        L.has('conlog') && L.log('conlog', T.add({
+        L.has('dunce') && L.log('dunce', T.add({
           validationResult: output
         }).toMessage({
           text: ' - validating script fail: ${validationResult}'
         }));
         opStatus.hasError = true;
       } else if (scriptObject.enabled === false) {
-        L.has('conlog') && L.log('conlog', T.toMessage({
+        L.has('dunce') && L.log('dunce', T.toMessage({
           text: ' - script is disabled'
         }));
         opStatus.hasError = false;
         opStatus.isSkipped = true;
       } else {
-        L.has('conlog') && L.log('conlog', T.toMessage({
+        L.has('dunce') && L.log('dunce', T.toMessage({
           text: ' - script validation pass'
         }));
         opStatus.hasError = false;
@@ -176,13 +176,13 @@ let loadScriptEntry = function(CTX, scriptMap, scriptType, scriptSubDir, scriptF
         lodash.defaultsDeep(scriptMap, entry);
       }
     } else {
-      L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
         text: ' - script file ${filepath} doesnot contain a function.'
       }));
       opStatus.hasError = true;
     }
   } catch (err) {
-    L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
       text: ' - script file ${filepath} loading has failed.'
     }));
     opStatus.hasError = true;
@@ -245,7 +245,7 @@ let loadMetainfEntries = function(CTX, metainfMap, pluginRootDir) {
   let metainfType = 'METAINF';
   let metainfSubDir = chores.getComponentDir(pluginRootDir, metainfType);
   let metainfFolder = path.join(pluginRootDir.pathDir, metainfSubDir);
-  L.has('conlog') && L.log('conlog', T.add({
+  L.has('dunce') && L.log('dunce', T.add({
     metainfKey: constx[metainfType].ROOT_KEY,
     metainfFolder: metainfFolder
   }).toMessage({
@@ -267,20 +267,20 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
     let metainfObject = loader(filepath, { stopWhenError: true });
     let output = validateMetainf(CTX, metainfObject, metainfType);
     if (!output.valid) {
-      L.has('conlog') && L.log('conlog', T.add({
+      L.has('dunce') && L.log('dunce', T.add({
         validationResult: output
       }).toMessage({
         text: ' - validating schema fail: ${validationResult}'
       }));
       opStatus.hasError = true;
     } else if (metainfObject.enabled === false) {
-      L.has('conlog') && L.log('conlog', T.toMessage({
+      L.has('dunce') && L.log('dunce', T.toMessage({
         text: ' - schema is disabled'
       }));
       opStatus.hasError = false;
       opStatus.isSkipped = true;
     } else {
-      L.has('conlog') && L.log('conlog', T.toMessage({
+      L.has('dunce') && L.log('dunce', T.toMessage({
         text: ' - schema validation pass'
       }));
       opStatus.hasError = false;
@@ -299,10 +299,10 @@ let loadMetainfEntry = function(CTX, metainfMap, metainfSubDir, schemaFile, plug
       lodash.defaultsDeep(metainfMap, entry);
     }
   } catch(err) {
-    L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
       text: ' - schema file ${filepath} loading has failed'
     }));
-    L.has('conlog') && chores.printError(err);
+    L.has('dunce') && chores.printError(err);
     opStatus.hasError = true;
     opStatus.stack = err.stack;
   }
@@ -342,7 +342,7 @@ let loadGadgetEntries = function(CTX, gadgetMap, gadgetType, pluginRootDir) {
 
   let gadgetSubDir = chores.getComponentDir(pluginRootDir, gadgetType);
   let gadgetFolder = path.join(pluginRootDir.pathDir, gadgetSubDir);
-  L.has('conlog') && L.log('conlog', T.add({
+  L.has('dunce') && L.log('dunce', T.add({
     gadgetKey: constx[gadgetType].ROOT_KEY,
     gadgetFolder: gadgetFolder
   }).toMessage({
@@ -362,7 +362,7 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
   let filepath = path.join(pluginRootDir.pathDir, gadgetSubDir, gadgetFile);
   try {
     let gadgetConstructor = loader(filepath, { stopWhenError: true });
-    L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
       text: ' - gadget file ${filepath} loading has done'
     }));
     if (lodash.isFunction(gadgetConstructor)) {
@@ -370,16 +370,16 @@ let loadGadgetEntry = function(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetF
       lodash.defaults(gadgetMap, buildGadgetWrapper(CTX, gadgetConstructor, gadgetName, pluginRootDir));
       opStatus.hasError = false;
     } else {
-      L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
+      L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
         text: ' - gadget file ${filepath} doesnot contain a function'
       }));
       opStatus.hasError = true;
     }
   } catch(err) {
-    L.has('conlog') && L.log('conlog', T.add({ filepath }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
       text: ' - gadget file ${filepath} loading has failed'
     }));
-    L.has('conlog') && chores.printError(err);
+    L.has('dunce') && chores.printError(err);
     opStatus.hasError = true;
     opStatus.stack = err.stack;
   }
@@ -392,7 +392,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
   let result = {};
 
   if (!lodash.isFunction(gadgetConstructor)) {
-    L.has('conlog') && L.log('conlog', T.toMessage({
+    L.has('dunce') && L.log('dunce', T.toMessage({
       text: ' - gadgetConstructor is invalid'
     }));
     return result;
@@ -417,7 +417,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     kwargs.componentId = uniqueName;
     // resolve newFeatures
     let newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', pluginCode], {});
-    L.has('conlog') && L.log('conlog', T.add({ pluginCode, newFeatures }).toMessage({
+    L.has('dunce') && L.log('dunce', T.add({ pluginCode, newFeatures }).toMessage({
       text: ' - newFeatures[${pluginCode}]: ${newFeatures}'
     }));
     // resolve plugin configuration path
@@ -522,7 +522,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     wrapperConstructor.argumentSchema = wrappedArgumentSchema;
   }
 
-  L.has('conlog') && L.log('conlog', T.add({
+  L.has('dunce') && L.log('dunce', T.add({
     argumentSchema: wrapperConstructor.argumentSchema
   }).toMessage({
     text: ' - wrapperConstructor.argumentSchema: ${argumentSchema}'
@@ -534,7 +534,7 @@ let buildGadgetWrapper = function(CTX, gadgetConstructor, wrapperName, pluginRoo
     construktor: wrapperConstructor
   };
 
-  L.has('conlog') && L.log('conlog', T.add({
+  L.has('dunce') && L.log('dunce', T.add({
     uniqueName: uniqueName,
     crateScope: pluginName,
     name: wrapperName

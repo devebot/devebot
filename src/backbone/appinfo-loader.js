@@ -11,10 +11,10 @@ function appinfoLoader(appRootPath, libRootPaths, topRootPath) {
   let L = loggingWrapper.getLogger();
   let T = loggingWrapper.getTracer();
 
-  if (L.has('conlog')) {
-    L.log('conlog', ' + load the application package at: %s', appRootPath);
-    L.log('conlog', ' - load the layerware packages at: %s', JSON.stringify(libRootPaths, null, 2));
-    L.log('conlog', ' - load the framework package at: %s', topRootPath);
+  if (L.has('dunce')) {
+    L.log('dunce', ' + load the application package at: %s', appRootPath);
+    L.log('dunce', ' - load the layerware packages at: %s', JSON.stringify(libRootPaths, null, 2));
+    L.log('dunce', ' - load the framework package at: %s', topRootPath);
   }
 
   let appInfo = chores.loadPackageInfo(appRootPath);
@@ -26,7 +26,7 @@ function appinfoLoader(appRootPath, libRootPaths, topRootPath) {
 
   appInfo.framework = chores.loadPackageInfo(topRootPath);
 
-  L.has('conlog') && L.log('conlog', ' - appInfo object: %s', JSON.stringify(appInfo, null, 2));
+  L.has('dunce') && L.log('dunce', ' - appInfo object: %s', JSON.stringify(appInfo, null, 2));
 
   return appInfo;
 }

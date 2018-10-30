@@ -34,7 +34,7 @@ function appLoader(params={}) {
     text: ' + application loading start ...'
   }));
 
-  L.has('conlog') && L.log('conlog', T.add({ context: params }).toMessage({
+  L.has('dunce') && L.log('dunce', T.add({ context: params }).toMessage({
     text: ' * application parameters: ${context}'
   }));
 
@@ -51,7 +51,7 @@ function appLoader(params={}) {
     privateSandbox: params.privateSandbox || params.privateSandboxes
   };
 
-  L.has('conlog') && L.log('conlog', T.add({ appName }).toMessage({
+  L.has('dunce') && L.log('dunce', T.add({ appName }).toMessage({
     text: ' - application name (appName): ${appName}'
   }));
 
