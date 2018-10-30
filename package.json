@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "directories": {
@@ -16,11 +16,11 @@
   "scripts": {
     "build": "babel ./src -d ./lib",
     "clean": "rm -rf ./lib",
-    "prepublish": "npm run clean && BABEL_ENV=${DEVEBOT_BABEL_ENV:-production} npm run build",
-    "pretest": "npm run clean && BABEL_ENV=${DEVEBOT_BABEL_ENV:-test} npm run build",
+    "clean-build": "npm run clean && npm run build",
+    "prepublish": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-production} npm run clean-build",
+    "pretest": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-test} npm run clean-build",
     "test": "mocha --recursive ./test/**/*-test.js",
-    "t1": "npm run prepublish && mocha --recursive ./test/**/*-test.js",
-    "t2": "npm run clean && npm run build && mocha --recursive ./test/**/*-test.js"
+    "test-publish": "npm run prepublish && mocha --recursive ./test/**/*-test.js"
   },
   "repository": {
     "type": "git",

@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const Promise = require('bluebird');
 const lodash = require('lodash');
 const util = require('util');
 const chores = require('../utils/chores');

@@ -1,6 +1,5 @@
 'use strict';
 
-const Promise = require('bluebird');
 const lodash = require('lodash');
 const chores = require('../utils/chores');
 const getenv = require('../utils/getenv');

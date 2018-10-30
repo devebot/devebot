@@ -1,6 +1,5 @@
 'use strict';
 
-const fs = require('fs');
 const lodash = require('lodash');
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');

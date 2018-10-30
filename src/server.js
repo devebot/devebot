@@ -2,7 +2,6 @@
 
 const Promise = require('bluebird');
 const lodash = require('lodash');
-const events = require('events');
 const util = require('util');
 const http = require('http');
 const https = require('https');

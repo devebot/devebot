@@ -1,7 +1,6 @@
 'use strict';
 
 const lodash = require('lodash');
-const LogTracer = require('logolite').LogTracer;
 const loader = require('../utils/loader');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);

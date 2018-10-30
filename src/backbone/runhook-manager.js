@@ -1,8 +1,5 @@
 'use strict';
 
-const events = require('events');
-const util = require('util');
-const path = require('path');
 const Promise = require('bluebird');
 const Injektor = require('injektor');
 const lodash = require('lodash');
