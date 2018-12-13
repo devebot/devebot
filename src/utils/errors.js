@@ -4,6 +4,13 @@ const util = require('util');
 const getenv = require('./getenv');
 
 function ErrorCollection() {
+  const cachedErrors = {};
+
+  this.assertConstructor = function(errorName) {
+    cachedErrors[errorName] = cachedErrors[errorName] || this.createConstructor(errorName);
+    return cachedErrors[errorName];
+  }
+
   this.createConstructor = function(errorName) {
     let ErrorConstructor = function() {
       let message = undefined, code = undefined, payload = undefined;

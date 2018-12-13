@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const util = require('util');
 const uuidv4 = require('logolite/uuidv4');
+const format = require('logolite/lib/format');
 const Validator = require('schemato').Validator;
 const constx = require('./constx');
 const loader = require('./loader');
@@ -47,6 +48,10 @@ chores.getUUID = function() {
   return uuidv4();
 }
 
+chores.formatTemplate = function(tmpl, data) {
+  return format(tmpl, data);
+}
+
 chores.loadPackageInfo = function(pkgRootPath) {
   try {
     return lodash.pick(JSON.parse(fs.readFileSync(pkgRootPath + '/package.json', 'utf8')),
@@ -55,6 +60,22 @@ chores.loadPackageInfo = function(pkgRootPath) {
     return {};
   }
 };
+
+chores.getFirstDefinedValue = function() {
+  let val = undefined;
+  for(let i=0; i<arguments.length; i++) {
+    val = arguments[i];
+    if (val !== undefined && val !== null) break;
+  }
+  return val;
+}
+
+chores.isOwnOrInheritedProperty = function(object, property) {
+  for(let propName in object) {
+    if (propName === property) return true;
+  }
+  return object.hasOwnProperty(property);
+}
 
 chores.pickProperty = function(propName, containers, propDefault) {
   if (!lodash.isString(propName) || !lodash.isArray(containers)) return null;
@@ -65,6 +86,19 @@ chores.pickProperty = function(propName, containers, propDefault) {
   }
   return propDefault;
 };
+
+chores.deepFreeze = function (o) {
+  let self = this;
+  Object.freeze(o);
+  Object.getOwnPropertyNames(o).forEach(function (prop) {
+    if (o.hasOwnProperty(prop)
+        && (nodash.isObject(o[prop]) || nodash.isFunction(o[prop]))
+        && !Object.isFrozen(o[prop])) {
+      self.deepFreeze(o[prop]);
+    }
+  });
+  return o;
+}
 
 chores.fileExists = function(filepath) {
   return fs.existsSync(filepath);
@@ -326,6 +360,54 @@ let checkUpgradeSupported = function(label) {
   if (store.upgradeDisabled.indexOf(label) >= 0) return false;
   if (constx.UPGRADE_ENABLED.indexOf(label) >= 0) return true;
   return (store.upgradeEnabled.indexOf(label) >= 0);
+}
+
+chores.argumentsToArray = function(args, l, r) {
+  if (args && ((!Array.isArray(args) && args.length >= 0) || (Array.isArray(args) && (l>=0 || r>=0)))) {
+    args = Array.prototype.slice.call(args, l || 0, args.length - (r || 0));
+  };
+  return args;
+}
+
+chores.extractObjectInfo = function(data, opts) {
+  function detect(data, level=2) {
+    if (typeof level !== "number" || level < 0) level = 0;
+    let info = undefined;
+    let type = typeof(data);
+    switch(type) {
+      case "boolean":
+      case "number":
+      case "string":
+      case "symbol":
+      case "function":
+      case "undefined": {
+        info = type;
+        break;
+      }
+      case "object": {
+        if (data === null) {
+          info = "null";
+        } else if (Array.isArray(data)) {
+          info = [];
+          if (level > 0) {
+            for(let i in data) {
+              info.push(detect(data[i], level - 1));
+            }
+          }
+        } else {
+          info = {};
+          if (level > 0) {
+            for(let field in data) {
+              info[field] = detect(data[field], level - 1);
+            }
+          }
+        }
+        break;
+      }
+    }
+    return info;
+  }
+  return detect(data, opts && opts.level);
 }
 
 module.exports = chores;

@@ -19,7 +19,7 @@ function NameResolver(params={}) {
 
   let absoluteAliasMap, relativeAliasMap;
 
-  this.getAbsoluteAliasMap = function() {
+  function _getAbsoluteAliasMap() {
     absoluteAliasMap = absoluteAliasMap || {
       plugin: buildAbsoluteAliasMap(params.pluginRefs),
       bridge: buildAbsoluteAliasMap(params.bridgeRefs)
@@ -27,7 +27,7 @@ function NameResolver(params={}) {
     return absoluteAliasMap;
   }
 
-  this.getRelativeAliasMap = function() {
+  function _getRelativeAliasMap() {
     relativeAliasMap = relativeAliasMap || {
       plugin: buildRelativeAliasMap(params.pluginRefs),
       bridge: buildRelativeAliasMap(params.bridgeRefs)
@@ -35,35 +35,61 @@ function NameResolver(params={}) {
     return relativeAliasMap;
   }
 
-  this.getAliasBy = function(selectedField, crateDescriptor) {
-    crateDescriptor = crateDescriptor || {};
-    let crateAlias = crateDescriptor[selectedField];
-    if (crateDescriptor.type === 'application') {
-      crateAlias = crateDescriptor.type;
-    }
-    return crateAlias;
-  }
-
-  this.getOriginalNameOf = function(crateName, crateType) {
-    if (crateType === 'plugin' || crateType === 'bridge') {
-      let absoluteAlias = this.getAbsoluteAliasMap();
-      crateName = absoluteAlias[crateType][crateName] || crateName;
-    }
-    return crateName;
-  }
-
-  this.getOriginalName = this.getAliasBy.bind(this, 'name');
-
-  this.getDefaultAliasOf = function(crateName, crateType) {
-    if (crateType === 'plugin' || crateType === 'bridge') {
-      crateName = this.getOriginalNameOf(crateName, crateType);
-      let relativeAlias = this.getRelativeAliasMap();
-      crateName = relativeAlias[crateType][crateName] || crateName;
+  function _getOriginalNameOf(crateName, crateType) {
+    switch(crateType) {
+      case 'application': {
+        crateName = crateType;
+        break;
+      }
+      case 'plugin':
+      case 'bridge': {
+        let absoluteAlias = _getAbsoluteAliasMap();
+        crateName = absoluteAlias[crateType][crateName] || crateName;
+        break;
+      }
     }
     return crateName;
   }
 
-  this.getDefaultAlias = this.getAliasBy.bind(this, 'codeInCamel');
+  function _getDefaultAliasOf(crateName, crateType) {
+    switch(crateType) {
+      case 'application': {
+        crateName = crateType;
+        break;
+      }
+      case 'plugin':
+      case 'bridge': {
+        crateName = _getOriginalNameOf(crateName, crateType);
+        let relativeAlias = _getRelativeAliasMap();
+        crateName = relativeAlias[crateType][crateName] || crateName;
+        break;
+      }
+    }
+    return crateName;
+  }
+
+  this.getOriginalNameOf = _getOriginalNameOf;
+  this.getDefaultAliasOf = _getDefaultAliasOf;
+
+  if (!chores.isUpgradeSupported(['simplify-name-resolver'])) {
+    this.getAbsoluteAliasMap = _getAbsoluteAliasMap;
+    this.getRelativeAliasMap = _getRelativeAliasMap;
+  }
+
+  if (!chores.isUpgradeSupported('improving-name-resolver')) {
+    this.getAliasBy = function(selectedField, crateDescriptor) {
+      crateDescriptor = crateDescriptor || {};
+      let crateAlias = crateDescriptor[selectedField];
+      if (crateDescriptor.type === 'application') {
+        crateAlias = crateDescriptor.type;
+      }
+      return crateAlias;
+    }
+
+    this.getOriginalName = this.getAliasBy.bind(this, 'name');
+
+    this.getDefaultAlias = this.getAliasBy.bind(this, 'codeInCamel');
+  }
 
   extractAliasNames(CTX, 'plugin', params.pluginRefs);
   extractAliasNames(CTX, 'bridge', params.bridgeRefs);

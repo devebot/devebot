@@ -1,6 +1,7 @@
 'use strict';
 
 const lodash = require('lodash');
+const util = require('util');
 const loader = require('../utils/loader');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
@@ -9,7 +10,9 @@ function BridgeLoader(params={}) {
   let loggingFactory = params.loggingFactory.branch(blockRef);
   let L = loggingFactory.getLogger();
   let T = loggingFactory.getTracer();
-  let CTX = {L, T, issueInspector: params.issueInspector, nameResolver: params.nameResolver};
+  let CTX = lodash.assign({L, T}, lodash.pick(params, [
+    'issueInspector', 'nameResolver', 'objectDecorator'
+  ]));
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -72,6 +75,9 @@ BridgeLoader.argumentSchema = {
     },
     "loggingFactory": {
       "type": "object"
+    },
+    "objectDecorator": {
+      "type": "object"
     }
   }
 };
@@ -85,9 +91,13 @@ let loadBridgeContructor = function(ctx, bridgeRef) {
 
   bridgeRef = bridgeRef || {};
 
-  let bridgeName = nameResolver.getOriginalName(bridgeRef);
-  let bridgeCode = nameResolver.getDefaultAlias(bridgeRef);
   let bridgePath = bridgeRef.path;
+  let bridgeName = nameResolver.getOriginalNameOf(bridgeRef.name, bridgeRef.type);
+  let bridgeCode = nameResolver.getDefaultAliasOf(bridgeRef.name, bridgeRef.type);
+  if (!chores.isUpgradeSupported('improving-name-resolver')) {
+    bridgeName = nameResolver.getOriginalName(bridgeRef);
+    bridgeCode = nameResolver.getDefaultAlias(bridgeRef);
+  }
 
   L.has('dunce') && L.log('dunce', T.add(bridgeRef).toMessage({
     text: ' - bridge constructor (${name}) loading is started'
@@ -157,7 +167,7 @@ let loadBridgeConstructors = function(ctx, bridgeRefs) {
 };
 
 let buildBridgeDialect = function(ctx, dialectOpts) {
-  let {L, T, issueInspector, nameResolver} = ctx;
+  let {L, T, issueInspector, nameResolver, objectDecorator} = ctx;
   let {pluginName, bridgeCode, bridgeRecord, dialectName, optType} = dialectOpts;
   let result = {};
 
@@ -224,11 +234,9 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
   function dialectConstructor(kwargs) {
     kwargs = kwargs || {};
 
-    let isWrapped = false;
-    let getWrappedParams = function() {
-      if (isWrapped) return kwargs;
-      isWrapped = true;
-      return kwargs = lodash.clone(kwargs);
+    let kwargsRef = null;
+    let getWrappedParams = function(kwargs) {
+      return kwargsRef = kwargsRef || lodash.clone(kwargs) || {};
     }
 
     let newFeatures = lodash.get(kwargs, ['profileConfig', 'newFeatures', dialectName], null);
@@ -277,7 +285,7 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
     issueInspector.collect(opStatus);
   }
 
-  dialectConstructor.prototype = Object.create(bridgeConstructor.prototype);
+  util.inherits(dialectConstructor, bridgeConstructor);
 
   dialectConstructor.argumentSchema = {
     "$id": uniqueName,
@@ -301,10 +309,16 @@ let buildBridgeDialect = function(ctx, dialectOpts) {
     }
   };
 
+  let construktor = objectDecorator.wrapBridgeDialect(dialectConstructor, {
+    pluginName: pluginName,
+    bridgeCode: bridgeCode,
+    dialectName: dialectName
+  });
+
   result[uniqueName] = {
     crateScope: crateScope,
     name: crateName,
-    construktor: dialectConstructor
+    construktor: construktor
   };
 
   L.has('dunce') && L.log('dunce', T.add({ dialectName }).toMessage({

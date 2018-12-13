@@ -19,8 +19,11 @@
     "clean-build": "npm run clean && npm run build",
     "prepublish": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-production} npm run clean-build",
     "pretest": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-test} npm run clean-build",
-    "test": "mocha --recursive ./test/**/*-test.js",
-    "test-publish": "npm run prepublish && mocha --recursive ./test/**/*-test.js"
+    "prove": "mocha --recursive ./test/**/${DEVEBOT_TESTCASES:-*}-test.js",
+    "test": "npm run prove",
+    "test-without-rebuilding": "npm run prove",
+    "test-publish": "npm run prepublish && npm run prove",
+    "test-to-reports": "npm run clean-build && mocha --recursive ./test/**/${DEVEBOT_TESTCASES:-*}-test.js --reporter mochawesome --reporter-options reportDir=test-reports,reportFilename=index"
   },
   "repository": {
     "type": "git",
@@ -56,6 +59,7 @@
     "babel-plugin-minify-mangle-names": "^0.3.0",
     "babel-plugin-transform-async-to-module-method": "^6.24.1",
     "babel-preset-env": "^1.6.1",
-    "mocha": "^4.1.0"
+    "mocha": "^4.1.0",
+    "mochawesome": "^3.1.1"
   }
 }

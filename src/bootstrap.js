@@ -24,10 +24,7 @@ const stateInspector = StateInspector.instance;
 const FRAMEWORK_CAPNAME = lodash.capitalize(constx.FRAMEWORK.NAME);
 
 function appLoader(params={}) {
-  let loggingWrapper = new LoggingWrapper(blockRef);
-  let L = loggingWrapper.getLogger();
-  let T = loggingWrapper.getTracer();
-  let ctx = { L, T };
+  let {logger: L, tracer: T} = params;
 
   L.has('silly') && L.log('silly', T.add({ context: lodash.cloneDeep(params) }).toMessage({
     tags: [ blockRef, 'constructor-begin', 'appLoader' ],
@@ -70,6 +67,9 @@ function appLoader(params={}) {
     name: constx.FRAMEWORK.NAME,
     path: topRootPath
   };
+
+  lodash.forOwn(params.pluginRefs, function(ref) { ref.type = 'plugin' });
+  lodash.forOwn(params.bridgeRefs, function(ref) { ref.type = 'bridge' });
 
   // declare user-defined environment variables
   let currentEnvNames = envbox.getEnvNames();
@@ -163,10 +163,7 @@ function registerLayerware(context, pluginNames, bridgeNames) {
     context = null;
   }
 
-  if (lodash.isString(context)) {
-    context = { layerRootPath: context };
-  }
-
+  context = lodash.isString(context) ? { layerRootPath: context } : context;
   if (!lodash.isEmpty(context)) {
     let result = chores.validate(context, constx.BOOTSTRAP.registerLayerware.context.schema);
     if (!result.ok) {
@@ -179,6 +176,11 @@ function registerLayerware(context, pluginNames, bridgeNames) {
       });
     }
   }
+  context = context || {};
+
+  const loggingWrapper = new LoggingWrapper(blockRef);
+  context.logger = loggingWrapper.getLogger();
+  context.tracer = loggingWrapper.getTracer();
 
   if (!lodash.isEmpty(pluginNames)) {
     let result = chores.validate(pluginNames, constx.BOOTSTRAP.registerLayerware.plugins.schema);
@@ -209,19 +211,35 @@ function registerLayerware(context, pluginNames, bridgeNames) {
   function initialize(context, pluginNames, bridgeNames, accumulator) {
     context = context || {};
     accumulator = accumulator || {};
+
+    let {logger: L, tracer: T} = context;
+    lodash.defaults(accumulator, lodash.pick(context, ['logger', 'tracer']));
+
+    if (context.layerRootPath && context.layerRootPath != accumulator.libRootPath) {
+      L.has('warn') && L.log('warn', T.add({
+        layerRootPath: context.layerRootPath,
+        libRootPath: accumulator.libRootPath
+      }).toMessage({
+        text: ' - layerRootPath is different with libRootPath'
+      }));
+    }
+
     if (typeof(context.layerRootPath) === 'string' && context.layerRootPath.length > 0) {
       accumulator.libRootPaths = accumulator.libRootPaths || [];
       accumulator.libRootPaths.push(context.layerRootPath);
     }
-    if (chores.isUpgradeSupported('presets')) {
-      if (accumulator.libRootPath) {
-        let newPresets = context.presets || {};
-        let oldPresets = lodash.get(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], null);
-        if (oldPresets) {
-          lodash.defaultsDeep(oldPresets, newPresets);
-        } else {
-          lodash.set(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], newPresets);
-        }
+  
+    if (!chores.isUpgradeSupported('presets')) {
+      return expandExtensions(accumulator, pluginNames, bridgeNames);
+    }
+
+    if (accumulator.libRootPath) {
+      let newPresets = context.presets || {};
+      let oldPresets = lodash.get(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], null);
+      if (oldPresets) {
+        lodash.defaultsDeep(oldPresets, newPresets);
+      } else {
+        lodash.set(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], newPresets);
       }
     }
     return expandExtensions(accumulator, pluginNames, bridgeNames);
@@ -231,9 +249,7 @@ function registerLayerware(context, pluginNames, bridgeNames) {
 }
 
 function launchApplication(context, pluginNames, bridgeNames) {
-  if (lodash.isString(context)) {
-    context = { appRootPath: context };
-  }
+  context = lodash.isString(context) ? { appRootPath: context } : context;
   if (!lodash.isEmpty(context)) {
     let result = chores.validate(context, constx.BOOTSTRAP.launchApplication.context.schema);
     if (!result.ok) {
@@ -246,6 +262,15 @@ function launchApplication(context, pluginNames, bridgeNames) {
       });
     }
   }
+  context = context || {};
+
+  if (lodash.isString(context.appRootPath)) {
+    context.libRootPath = context.appRootPath;
+  }
+
+  const loggingWrapper = new LoggingWrapper(blockRef);
+  context.logger = loggingWrapper.getLogger();
+  context.tracer = loggingWrapper.getTracer();
 
   if (!lodash.isEmpty(pluginNames)) {
     let result = chores.validate(pluginNames, constx.BOOTSTRAP.launchApplication.plugins.schema);
@@ -278,7 +303,10 @@ function launchApplication(context, pluginNames, bridgeNames) {
 
 function expandExtensions(accumulator, pluginNames, bridgeNames) {
   accumulator = accumulator || {};
-  let context = lodash.pick(accumulator, ATTRS);
+  accumulator.bridgeRefs = accumulator.bridgeRefs || {};
+  accumulator.pluginRefs = accumulator.pluginRefs || {};
+  let context = lodash.pick(accumulator, ATTRS.concat(['logger', 'tracer']));
+  let {logger: L, tracer: T} = context;
 
   context.libRootPaths = context.libRootPaths || [];
   context.bridgeRefs = context.bridgeRefs || {};
@@ -290,21 +318,42 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   const CTX = { issueInspector };
 
   let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
-    if (!chores.isUpgradeSupported('presets')) {
-      return lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
-    }
     let item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
+    if (!chores.isUpgradeSupported('presets')) { return item }
     item.path = locatePackage(CTX, item, 'bridge');
     return item;
   });
   let pluginInfos = lodash.map(pluginNames, function(pluginName) {
-    if (!chores.isUpgradeSupported('presets')) {
-      return lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
-    }
     let item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
+    if (!chores.isUpgradeSupported('presets')) { return item }
     item.path = locatePackage(CTX, item, 'plugin');
     return item;
   });
+
+  // create the bridge & plugin dependencies
+  if (lodash.isString(accumulator.libRootPath)) {
+    let crateRef = accumulator.pluginRefs[accumulator.libRootPath];
+    if (lodash.isObject(crateRef)) {
+      crateRef.bridgeDepends = lodash.map(bridgeInfos, function(item) {
+        return item.name;
+      });
+      crateRef.pluginDepends = lodash.map(pluginInfos, function(item) {
+        return item.name;
+      });
+      L.has('debug') && L.log('debug', T.add({
+        libRootPath: accumulator.libRootPath,
+        crateObject: crateRef
+      }).toMessage({
+        text: ' - crate "${libRootPath}" object: ${crateObject}'
+      }));
+    } else {
+      L.has('warn') && L.log('warn', T.add({
+        libRootPath: accumulator.libRootPath
+      }).toMessage({
+        text: ' - crate "${libRootPath}" hasnot defined'
+      }));
+    }
+  }
 
   let bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
     if (!chores.isUpgradeSupported('presets')) {

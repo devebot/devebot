@@ -24,6 +24,11 @@ const ENV_DEF_DEFAULT = [
     description: "Customized sandbox names, merged from right to left"
   },
   {
+    name: "TEXTURE",
+    type: "string",
+    description: "Customized texture names, merged from right to left"
+  },
+  {
     name: "CONFIG_DIR",
     type: "string",
     description: "The home directory of configuration"
@@ -44,6 +49,12 @@ const ENV_DEF_DEFAULT = [
     type: "array",
     defaultValue: [],
     description: "Aliases of the file name prefix of the [sandbox] configuration"
+  },
+  {
+    name: "CONFIG_TEXTURE_ALIASES",
+    type: "array",
+    defaultValue: [],
+    description: "Aliases of the file name prefix of the [texture] configuration"
   },
   {
     name: "FEATURE_DISABLED",
