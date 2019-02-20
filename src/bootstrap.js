@@ -8,6 +8,7 @@ const minimist = require('minimist');
 const appinfoLoader = require('./backbone/appinfo-loader');
 const IssueInspector = require('./backbone/issue-inspector');
 const StateInspector = require('./backbone/state-inspector');
+const ManifestHandler = require('./backbone/manifest-handler');
 const ConfigLoader = require('./backbone/config-loader');
 const ContextManager = require('./backbone/context-manager');
 const LoggingWrapper = require('./backbone/logging-wrapper');
@@ -15,6 +16,7 @@ const NameResolver = require('./backbone/name-resolver');
 const chores = require('./utils/chores');
 const constx = require('./utils/constx');
 const envbox = require('./utils/envbox');
+const errors = require('./utils/errors');
 const nodash = require('./utils/nodash');
 const Runner = require('./runner');
 const Server = require('./server');
@@ -24,57 +26,49 @@ const stateInspector = StateInspector.instance;
 const FRAMEWORK_CAPNAME = lodash.capitalize(constx.FRAMEWORK.NAME);
 
 function appLoader(params={}) {
-  let {logger: L, tracer: T} = params;
+  const {logger: L, tracer: T} = params;
 
   L.has('silly') && L.log('silly', T.add({ context: lodash.cloneDeep(params) }).toMessage({
     tags: [ blockRef, 'constructor-begin', 'appLoader' ],
     text: ' + application loading start ...'
   }));
 
-  L.has('dunce') && L.log('dunce', T.add({ context: params }).toMessage({
-    text: ' * application parameters: ${context}'
-  }));
-
-  let appRootPath = params.appRootPath;
-  let libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
+  const appRootPath = params.appRootPath;
+  const libRootPaths = lodash.map(params.pluginRefs, function(pluginRef) {
     return pluginRef.path;
   });
-  let topRootPath = path.join(__dirname, '/..');
+  const topRootPath = path.join(__dirname, '/..');
 
-  let appInfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
-  let appName = params.appName || appInfo.name || constx.FRAMEWORK.NAME + '-application';
-  let appOptions = {
+  const appInfo = appinfoLoader(appRootPath, libRootPaths, topRootPath);
+  const appName = params.appName || appInfo.name || constx.FRAMEWORK.NAME + '-application';
+  const options = {
     privateProfile: params.privateProfile || params.privateProfiles,
-    privateSandbox: params.privateSandbox || params.privateSandboxes
+    privateSandbox: params.privateSandbox || params.privateSandboxes,
+    privateTexture: params.privateTexture || params.privateTextures,
   };
 
   L.has('dunce') && L.log('dunce', T.add({ appName }).toMessage({
     text: ' - application name (appName): ${appName}'
   }));
 
-  let appRef = lodash.isEmpty(appRootPath) ? null : {
-    type: 'application',
-    name: appName,
-    path: appRootPath
-  };
+  const appRef = { type: 'application', name: appName };
+  if (lodash.isString(appRootPath)) {
+    appRef.path = appRootPath;
+  }
   if (lodash.isObject(params.presets)) {
-    appRef = appRef || {};
     appRef.presets = lodash.cloneDeep(params.presets);
   }
 
-  let devebotRef = {
+  const devebotRef = {
     type: 'framework',
     name: constx.FRAMEWORK.NAME,
     path: topRootPath
   };
 
-  lodash.forOwn(params.pluginRefs, function(ref) { ref.type = 'plugin' });
-  lodash.forOwn(params.bridgeRefs, function(ref) { ref.type = 'bridge' });
-
   // declare user-defined environment variables
-  let currentEnvNames = envbox.getEnvNames();
-  let evDescriptors = lodash.get(params, ['environmentVarDescriptors'], []);
-  let duplicated = lodash.filter(evDescriptors, function(ev) {
+  const currentEnvNames = envbox.getEnvNames();
+  const evDescriptors = lodash.get(params, ['environmentVarDescriptors'], []);
+  const duplicated = lodash.filter(evDescriptors, function(ev) {
     return currentEnvNames.indexOf(ev.name) >= 0;
   });
   if (duplicated.length > 0) {
@@ -84,7 +78,7 @@ function appLoader(params={}) {
       type: 'application',
       name: appName,
       stack: duplicated.map(function(ev) {
-        let evName = chores.stringLabelCase(appName) + '_' + ev.name;
+        const evName = chores.stringLabelCase(appName) + '_' + ev.name;
         return util.format('- Environment Variable "%s" has already been defined', evName)
       }).join('\n')
     });
@@ -98,50 +92,76 @@ function appLoader(params={}) {
     ownershipLabel: util.format('<owned-by-%s>', appName)
   });
 
-  let pluginRefList = lodash.values(params.pluginRefs);
-  let bridgeRefList = lodash.values(params.bridgeRefs);
-  let nameResolver = new NameResolver({ issueInspector, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
+  const bridgeList = lodash.values(params.bridgeRefs);
+  const pluginList = lodash.values(params.pluginRefs);
+  const bundleList = [].concat(appRef, pluginList, devebotRef);
 
-  stateInspector.register({ nameResolver, pluginRefs: pluginRefList, bridgeRefs: bridgeRefList });
+  const nameResolver = new NameResolver({ issueInspector, bridgeList, pluginList });
+  const manifestHandler = new ManifestHandler({ nameResolver, issueInspector, bridgeList, bundleList });
 
-  let configLoader = new ConfigLoader({appName, appOptions, appRef, devebotRef,
-    pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs, issueInspector, stateInspector, nameResolver
+  stateInspector.register({ nameResolver, bridgeList, pluginList });
+
+  const configLoader = new ConfigLoader({ options,
+    appRef, devebotRef, pluginRefs: params.pluginRefs, bridgeRefs: params.bridgeRefs,
+    nameResolver, issueInspector, stateInspector, manifestHandler
   });
 
-  let contextManager = new ContextManager({ issueInspector });
+  const contextManager = new ContextManager({ issueInspector });
   contextManager.addDefaultFeatures(params.defaultFeatures);
 
-  let app = {};
+  const _app_ = {};
+  const _ref_ = {};
 
-  let _config;
-  Object.defineProperty(app, 'config', {
+  Object.defineProperty(_app_, 'config', {
     get: function() {
-      if (_config == undefined || _config == null) {
-        _config = configLoader.load();
-        _config.appName = appName;
-        _config.appInfo = appInfo;
-        _config.bridgeRefs = bridgeRefList;
-        _config.pluginRefs = [].concat(appRef || [], pluginRefList, devebotRef);
+      if (_ref_.config == undefined || _ref_.config == null) {
+        _ref_.config = configLoader.load();
+        _ref_.config.appName = appName;
+        _ref_.config.appInfo = appInfo;
+        _ref_.config.bridgeList = bridgeList;
+        _ref_.config.bundleList = bundleList;
+        if (!chores.isUpgradeSupported('config-extended-fields')) {
+          _ref_.config.bridgeRefs = bridgeList; // @Deprecated
+          _ref_.config.pluginRefs = bundleList; // @Deprecated
+        }
       }
-      return _config;
+      return _ref_.config;
     },
     set: function(value) {}
   });
 
-  let _runner;
-  Object.defineProperty(app, 'runner', {
+  Object.defineProperty(_app_, 'runner', {
     get: function() {
-      let args = { configObject: this.config, contextManager, issueInspector, stateInspector, nameResolver };
-      return _runner = _runner || new Runner(args);
+      return _ref_.runner = _ref_.runner || new Runner({
+        appName,
+        appInfo,
+        bridgeList,
+        bundleList,
+        configObject: this.config,
+        contextManager,
+        issueInspector,
+        stateInspector,
+        nameResolver,
+        manifestHandler,
+      });
     },
     set: function(value) {}
   });
 
-  let _server;
-  Object.defineProperty(app, 'server', {
+  Object.defineProperty(_app_, 'server', {
     get: function() {
-      let args = { configObject: this.config, contextManager, issueInspector, stateInspector, nameResolver };
-      return _server = _server || new Server(args);
+      return _ref_.server = _ref_.server || new Server({
+        appName,
+        appInfo,
+        bridgeList,
+        bundleList,
+        configObject: this.config,
+        contextManager,
+        issueInspector,
+        stateInspector,
+        nameResolver,
+        manifestHandler,
+      });
     },
     set: function(value) {}
   });
@@ -151,7 +171,7 @@ function appLoader(params={}) {
     text: ' - Application loading has done'
   }));
 
-  return app;
+  return _app_;
 }
 
 const ATTRS = ['libRootPaths', 'pluginRefs', 'bridgeRefs'];
@@ -165,7 +185,7 @@ function registerLayerware(context, pluginNames, bridgeNames) {
 
   context = lodash.isString(context) ? { layerRootPath: context } : context;
   if (!lodash.isEmpty(context)) {
-    let result = chores.validate(context, constx.BOOTSTRAP.registerLayerware.context.schema);
+    const result = chores.validate(context, constx.BOOTSTRAP.registerLayerware.context.schema);
     if (!result.ok) {
       issueInspector.collect({
         stage: 'bootstrap',
@@ -183,7 +203,7 @@ function registerLayerware(context, pluginNames, bridgeNames) {
   context.tracer = loggingWrapper.getTracer();
 
   if (!lodash.isEmpty(pluginNames)) {
-    let result = chores.validate(pluginNames, constx.BOOTSTRAP.registerLayerware.plugins.schema);
+    const result = chores.validate(pluginNames, constx.BOOTSTRAP.registerLayerware.plugins.schema);
     if (!result.ok) {
       issueInspector.collect({
         stage: 'bootstrap',
@@ -196,7 +216,7 @@ function registerLayerware(context, pluginNames, bridgeNames) {
   }
 
   if (!lodash.isEmpty(bridgeNames)) {
-    let result = chores.validate(bridgeNames, constx.BOOTSTRAP.registerLayerware.bridges.schema);
+    const result = chores.validate(bridgeNames, constx.BOOTSTRAP.registerLayerware.bridges.schema);
     if (!result.ok) {
       issueInspector.collect({
         stage: 'bootstrap',
@@ -212,7 +232,7 @@ function registerLayerware(context, pluginNames, bridgeNames) {
     context = context || {};
     accumulator = accumulator || {};
 
-    let {logger: L, tracer: T} = context;
+    const {logger: L, tracer: T} = context;
     lodash.defaults(accumulator, lodash.pick(context, ['logger', 'tracer']));
 
     if (context.layerRootPath && context.layerRootPath != accumulator.libRootPath) {
@@ -228,14 +248,14 @@ function registerLayerware(context, pluginNames, bridgeNames) {
       accumulator.libRootPaths = accumulator.libRootPaths || [];
       accumulator.libRootPaths.push(context.layerRootPath);
     }
-  
+
     if (!chores.isUpgradeSupported('presets')) {
       return expandExtensions(accumulator, pluginNames, bridgeNames);
     }
 
     if (accumulator.libRootPath) {
-      let newPresets = context.presets || {};
-      let oldPresets = lodash.get(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], null);
+      const newPresets = context.presets || {};
+      const oldPresets = lodash.get(accumulator, ['pluginRefs', accumulator.libRootPath, 'presets'], null);
       if (oldPresets) {
         lodash.defaultsDeep(oldPresets, newPresets);
       } else {
@@ -251,7 +271,7 @@ function registerLayerware(context, pluginNames, bridgeNames) {
 function launchApplication(context, pluginNames, bridgeNames) {
   context = lodash.isString(context) ? { appRootPath: context } : context;
   if (!lodash.isEmpty(context)) {
-    let result = chores.validate(context, constx.BOOTSTRAP.launchApplication.context.schema);
+    const result = chores.validate(context, constx.BOOTSTRAP.launchApplication.context.schema);
     if (!result.ok) {
       issueInspector.collect({
         stage: 'bootstrap',
@@ -273,7 +293,7 @@ function launchApplication(context, pluginNames, bridgeNames) {
   context.tracer = loggingWrapper.getTracer();
 
   if (!lodash.isEmpty(pluginNames)) {
-    let result = chores.validate(pluginNames, constx.BOOTSTRAP.launchApplication.plugins.schema);
+    const result = chores.validate(pluginNames, constx.BOOTSTRAP.launchApplication.plugins.schema);
     if (!result.ok) {
       issueInspector.collect({
         stage: 'bootstrap',
@@ -286,7 +306,7 @@ function launchApplication(context, pluginNames, bridgeNames) {
   }
 
   if (!lodash.isEmpty(bridgeNames)) {
-    let result = chores.validate(bridgeNames, constx.BOOTSTRAP.launchApplication.bridges.schema);
+    const result = chores.validate(bridgeNames, constx.BOOTSTRAP.launchApplication.bridges.schema);
     if (!result.ok) {
       issueInspector.collect({
         stage: 'bootstrap',
@@ -305,8 +325,8 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   accumulator = accumulator || {};
   accumulator.bridgeRefs = accumulator.bridgeRefs || {};
   accumulator.pluginRefs = accumulator.pluginRefs || {};
-  let context = lodash.pick(accumulator, ATTRS.concat(['logger', 'tracer']));
-  let {logger: L, tracer: T} = context;
+  const context = lodash.pick(accumulator, ATTRS.concat(['logger', 'tracer']));
+  const {logger: L, tracer: T} = context;
 
   context.libRootPaths = context.libRootPaths || [];
   context.bridgeRefs = context.bridgeRefs || {};
@@ -317,14 +337,16 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
 
   const CTX = { issueInspector };
 
-  let bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
-    let item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
+  const bridgeInfos = lodash.map(bridgeNames, function(bridgeName) {
+    const item = lodash.isString(bridgeName) ? { name: bridgeName, path: bridgeName } : bridgeName;
+    item.type = 'bridge';
     if (!chores.isUpgradeSupported('presets')) { return item }
     item.path = locatePackage(CTX, item, 'bridge');
     return item;
   });
-  let pluginInfos = lodash.map(pluginNames, function(pluginName) {
-    let item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
+  const pluginInfos = lodash.map(pluginNames, function(pluginName) {
+    const item = lodash.isString(pluginName) ? { name: pluginName, path: pluginName } : pluginName;
+    item.type = 'plugin';
     if (!chores.isUpgradeSupported('presets')) { return item }
     item.path = locatePackage(CTX, item, 'plugin');
     return item;
@@ -332,7 +354,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
 
   // create the bridge & plugin dependencies
   if (lodash.isString(accumulator.libRootPath)) {
-    let crateRef = accumulator.pluginRefs[accumulator.libRootPath];
+    const crateRef = accumulator.pluginRefs[accumulator.libRootPath];
     if (lodash.isObject(crateRef)) {
       crateRef.bridgeDepends = lodash.map(bridgeInfos, function(item) {
         return item.name;
@@ -355,13 +377,13 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
     }
   }
 
-  let bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
+  const bridgeDiffs = lodash.differenceWith(bridgeInfos, lodash.keys(context.bridgeRefs), function(bridgeInfo, bridgeKey) {
     if (!chores.isUpgradeSupported('presets')) {
       return (bridgeInfo.name == bridgeKey);
     }
     return (bridgeInfo.path == bridgeKey);
   });
-  let pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
+  const pluginDiffs = lodash.differenceWith(pluginInfos, lodash.keys(context.pluginRefs), function(pluginInfo, pluginKey) {
     if (!chores.isUpgradeSupported('presets')) {
       return (pluginInfo.name == pluginKey);
     }
@@ -372,11 +394,12 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
     if (!chores.isUpgradeSupported('presets')) {
       context.bridgeRefs[bridgeInfo.name] = {
         name: bridgeInfo.name,
+        type: bridgeInfo.type,
         path: locatePackage(CTX, bridgeInfo, 'bridge')
       }
       return;
     }
-    let inc = lodash.pick(bridgeInfo, ['name', 'path', 'presets']);
+    const inc = lodash.pick(bridgeInfo, ['name', 'type', 'path', 'presets']);
     context.bridgeRefs[bridgeInfo.path] = lodash.assign(context.bridgeRefs[bridgeInfo.path], inc);
   });
 
@@ -384,17 +407,18 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
     if (!chores.isUpgradeSupported('presets')) {
       context.pluginRefs[pluginInfo.name] = {
         name: pluginInfo.name,
+        type: pluginInfo.type,
         path: locatePackage(CTX, pluginInfo, 'plugin')
       }
       return;
     }
-    let inc = lodash.pick(pluginInfo, ['name', 'path', 'presets']);
+    const inc = lodash.pick(pluginInfo, ['name', 'type', 'path', 'presets']);
     context.pluginRefs[pluginInfo.path] = lodash.assign(context.pluginRefs[pluginInfo.path], inc);
   });
 
   issueInspector.barrier({ invoker: blockRef, footmark: 'package-touching' });
 
-  let pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
+  const pluginInitializers = lodash.map(pluginDiffs, function(pluginInfo) {
     if (!chores.isUpgradeSupported('presets')) {
       return require(pluginInfo.path);
     }
@@ -413,7 +437,7 @@ function expandExtensions(accumulator, pluginNames, bridgeNames) {
   }, context);
 };
 
-let bootstrap = {};
+const bootstrap = {};
 
 bootstrap.registerLayerware = registerLayerware;
 bootstrap.launchApplication = launchApplication;
@@ -423,19 +447,18 @@ bootstrap.parseArguments = function(active) {
   return this.initialize('actions', { enabled: active, forced: true });
 }
 
-bootstrap.initialize = function(action, options) {
-  options = options || {};
+bootstrap.initialize = function(action, options = {}) {
   if (['actions', 'tasks'].indexOf(action) >= 0) {
     if (options.enabled !== false) {
-      let argv = minimist(process.argv.slice(2));
-      let tasks = argv.tasks || argv.actions;
+      const argv = minimist(process.argv.slice(2));
+      const tasks = argv.tasks || argv.actions;
       if (lodash.isEmpty(tasks)) {
         if (options.forced && !lodash.isEmpty(argv._)) {
           console.log('Incorrect task(s). Should be: (--tasks=print-config,check-config)');
           process.exit(0);
         }
       } else {
-        let jobs = stateInspector.init({ tasks });
+        const jobs = stateInspector.init({ tasks });
         if (lodash.isEmpty(jobs)) {
           console.log('Unknown task(s): (%s)!', tasks);
           process.exit(0);
@@ -456,49 +479,46 @@ bootstrap.require = function(packageName) {
   return null;
 };
 
-function locatePackage(ctx, pkgInfo, pkgType) {
+function locatePackage({issueInspector} = {}, pkgInfo) {
+  chores.assertOk(issueInspector, pkgInfo, pkgInfo.name, pkgInfo.type, pkgInfo.path);
   try {
     const entrypoint = require.resolve(pkgInfo.path);
-    let absolutePath = path.dirname(entrypoint);
-    let pkg = loadPackageJson(absolutePath);
-    while (pkg === null) {
-      let parentPath = path.dirname(absolutePath);
-      if (parentPath === absolutePath) break;
-      absolutePath = parentPath;
-      pkg = loadPackageJson(absolutePath);
+    const buf = {};
+    buf.packagePath = path.dirname(entrypoint);
+    buf.packageJson = chores.loadPackageInfo(buf.packagePath);
+    while (buf.packageJson === null) {
+      const parentPath = path.dirname(buf.packagePath);
+      if (parentPath === buf.packagePath) break;
+      buf.packagePath = parentPath;
+      buf.packageJson = chores.loadPackageInfo(buf.packagePath);
     }
-    if (pkg && typeof pkg === 'object') {
-      if (typeof pkg.main === 'string') {
-        let verifiedPath = require.resolve(path.join(absolutePath, pkg.main));
+    if (nodash.isObject(buf.packageJson)) {
+      if (nodash.isString(buf.packageJson.main)) {
+        const verifiedPath = require.resolve(path.join(buf.packagePath, buf.packageJson.main));
         if (verifiedPath !== entrypoint) {
-          throw new Error("package.json file's [main] attribute is mismatched");
+          const MismatchedMainError = errors.assertConstructor('PackageError');
+          throw new MismatchedMainError("package.json file's [main] attribute is mismatched");
         }
       }
-      if (typeof pkgInfo.name === 'string') {
-        if (pkgInfo.name !== pkg.name) {
-          throw new Error('package name is different with provided name');
+      if (nodash.isString(pkgInfo.name)) {
+        if (pkgInfo.name !== buf.packageJson.name) {
+          const MismatchedNameError = errors.assertConstructor('PackageError');
+          throw new MismatchedNameError('package name is different with provided name');
         }
       }
     } else {
-      throw new Error('package.json file is not found or has invalid format');
+      const InvalidPackageError = errors.assertConstructor('PackageError');
+      throw new InvalidPackageError('package.json file is not found or has invalid format');
     }
-    return absolutePath;
+    return buf.packagePath;
   } catch (err) {
-    ctx.issueInspector.collect({
-      stage: 'bootstrap',
-      type: pkgType,
-      name: pkgInfo.name,
+    issueInspector.collect({
       hasError: true,
+      stage: 'bootstrap',
+      type: pkgInfo.type,
+      name: pkgInfo.name,
       stack: err.stack
     });
-    return null;
-  }
-}
-
-function loadPackageJson(pkgRootPath) {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(pkgRootPath, '/package.json'), 'utf8'));
-  } catch(err) {
     return null;
   }
 }

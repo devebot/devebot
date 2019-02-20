@@ -6,21 +6,20 @@ const getenv = require('../utils/getenv');
 const blockRef = chores.getBlockRef(__filename);
 
 function ProcessManager(params={}) {
-  let self = this;
-  let issueInspector = params.issueInspector;
-  let loggingFactory = params.loggingFactory.branch(blockRef);
-  let L = loggingFactory.getLogger();
-  let T = loggingFactory.getTracer();
+  const issueInspector = params.issueInspector;
+  const loggingFactory = params.loggingFactory.branch(blockRef);
+  const L = loggingFactory.getLogger();
+  const T = loggingFactory.getTracer();
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  let clusterCfg = lodash.get(params, ['profileConfig', 'cluster'], {});
+  const clusterCfg = lodash.get(params, ['profileConfig', 'cluster'], {});
 
-  let pm_id = parseInt(getenv(clusterCfg.ENV_ID_NAMES || ['pm_id', 'NODE_APP_INSTANCE']));
-  let pm_total = parseInt(getenv(clusterCfg.ENV_TOTAL_NAMES || ['instances']));
+  const pm_id = parseInt(getenv(clusterCfg.ENV_ID_NAMES || ['pm_id', 'NODE_APP_INSTANCE']));
+  const pm_total = parseInt(getenv(clusterCfg.ENV_TOTAL_NAMES || ['instances']));
 
   L.has('debug') && L.log('debug', T.add({ pm_id, pm_total }).toMessage({
     tags: [ blockRef, 'pm2-env-vars' ],

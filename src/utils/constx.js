@@ -1,5 +1,9 @@
 'use strict';
 
+const fs = require('fs');
+
+const PKG_INFO = JSON.parse(fs.readFileSync(__dirname + '/../../package.json', 'utf8'));
+
 const PRESETS_SCHEMA = {
   "type": "object",
   "properties": {
@@ -67,9 +71,12 @@ const DEPENDENCIES_SCHEMA = {
   }
 }
 
+const SEMVER_PATTERN = '.+';
+
 module.exports = {
   FRAMEWORK: {
-    NAME: 'devebot'
+    NAME: PKG_INFO.name,
+    VERSION: PKG_INFO.version,
   },
   APPINFO: {
     FIELDS: ['version', 'name', 'description', 'homepage', 'author', 'license', 'main']
@@ -96,6 +103,12 @@ module.exports = {
               "$ref": "#/definitions/contextConfigSchema"
             },
             "privateSandboxes": {
+              "$ref": "#/definitions/contextConfigSchema"
+            },
+            "privateTexture": {
+              "$ref": "#/definitions/contextConfigSchema"
+            },
+            "privateTextures": {
               "$ref": "#/definitions/contextConfigSchema"
             },
             "defaultFeatures": {
@@ -242,6 +255,80 @@ module.exports = {
       bridges: {
         schema: DEPENDENCIES_SCHEMA
       }
+    }
+  },
+  MANIFEST: {
+    DEFAULT_ROOT_NAME: "config",
+    SCHEMA_OBJECT: {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "migration": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+              },
+              "patternProperties": {
+                ".+": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "from": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": SEMVER_PATTERN,
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "pattern": SEMVER_PATTERN,
+                          }
+                        },
+                      ]
+                    },
+                    "transform": {}
+                  },
+                  "required": ["from", "transform"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "validation": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "schema": {
+                  "type": "object",
+                  "oneOf": [
+                    {
+                      "$ref": "http://json-schema.org/draft-04/schema#"
+                    }
+                  ]
+                },
+                "checkConstraints": {}
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   LOGGER: {
@@ -433,12 +520,49 @@ module.exports = {
       }
     }
   },
-  UPGRADE_ENABLED: [
-    'presets',
-    'bridge-full-ref',
-    'standardizing-config',
-    'gadget-around-log',
-    //'simplify-name-resolver',
-    'bean-decorator'
+  UPGRADE_TAGS: [
+    {
+      tag: 'presets',
+      enabled: true,
+    },
+    {
+      tag: 'bridge-full-ref',
+      enabled: true,
+    },
+    {
+      tag: 'standardizing-config',
+      enabled: true,
+    },
+    {
+      tag: 'gadget-around-log',
+      enabled: true,
+    },
+    {
+      tag: 'simplify-name-resolver',
+      enabled: true,
+    },
+    {
+      tag: 'refining-name-resolver',
+      enabled: true,
+    },
+    {
+      tag: 'bean-decorator',
+      enabled: true,
+    },
+    {
+      tag: 'config-extended-fields',
+      plan: {
+        enabled: true,
+        minBound: '0.2.10',
+      }
+    },
+    {
+      tag: 'metadata-refiner',
+      enabled: false,
+    },
+    {
+      tag: 'manifest-refiner',
+      enabled: true,
+    },
   ]
 };

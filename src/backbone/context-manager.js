@@ -8,24 +8,21 @@ const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
 function ContextManager(params={}) {
-  let self = this;
-  let issueInspector = params.issueInspector;
-  let loggingWrapper = new LoggingWrapper(blockRef);
-  let L = loggingWrapper.getLogger();
-  let T = loggingWrapper.getTracer();
+  const issueInspector = params.issueInspector;
+  const loggingWrapper = new LoggingWrapper(blockRef);
+  const L = loggingWrapper.getLogger();
+  const T = loggingWrapper.getTracer();
+  const defaultFeatures = [];
+  const _ref_ = {};
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  let defaultFeatures = [];
-  let featureDisabled;
-  let featureEnabled;
-
   this.clearCache = function() {
-    featureDisabled = null;
-    featureEnabled = null;
+    _ref_.featureDisabled = null;
+    _ref_.featureEnabled = null;
     return this;
   }
 
@@ -41,7 +38,7 @@ function ContextManager(params={}) {
   this.addDefaultFeatures = function(features) {
     if (features) {
       features = nodash.arrayify(features);
-      let newFeatures = lodash.union(defaultFeatures, features);
+      const newFeatures = lodash.union(defaultFeatures, features);
       Array.prototype.splice.call(defaultFeatures, 0);
       Array.prototype.push.apply(defaultFeatures, newFeatures);
     }
@@ -49,24 +46,23 @@ function ContextManager(params={}) {
   }
 
   this.isFeatureSupported = function(labels) {
-    if (!featureDisabled) {
-      featureDisabled = envbox.getEnv('FEATURE_DISABLED');
+    if (!_ref_.featureDisabled) {
+      _ref_.featureDisabled = envbox.getEnv('FEATURE_DISABLED');
     }
-    if (!featureEnabled) {
-      featureEnabled = envbox.getEnv('FEATURE_ENABLED');
+    if (!_ref_.featureEnabled) {
+      _ref_.featureEnabled = envbox.getEnv('FEATURE_ENABLED');
     }
     labels = nodash.arrayify(labels);
-    let ok = true;
-    for(let k in labels) {
+    for(const k in labels) {
       if (!checkFeatureSupported(labels[k])) return false;
     }
     return true;
   }
 
-  let checkFeatureSupported = function(label) {
-    if (featureDisabled.indexOf(label) >= 0) return false;
+  function checkFeatureSupported(label) {
+    if (_ref_.featureDisabled.indexOf(label) >= 0) return false;
     if (defaultFeatures.indexOf(label) >= 0) return true;
-    return (featureEnabled.indexOf(label) >= 0);
+    return (_ref_.featureEnabled.indexOf(label) >= 0);
   }
 
   L.has('silly') && L.log('silly', T.toMessage({

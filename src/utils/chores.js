@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const lodash = require('lodash');
+const semver = require('semver');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -11,11 +12,21 @@ const format = require('logolite/lib/format');
 const Validator = require('schemato').Validator;
 const constx = require('./constx');
 const loader = require('./loader');
+const errors = require('./errors');
 const envbox = require('./envbox');
 const nodash = require('./nodash');
 const getenv = require('./getenv');
 
-let store = {
+const codetags = require('codetags')
+  .getInstance(constx.FRAMEWORK.NAME, {
+    namespace: constx.FRAMEWORK.NAME,
+    INCLUDED_TAGS: 'UPGRADE_ENABLED',
+    EXCLUDED_TAGS: 'UPGRADE_DISABLED',
+    version: constx.FRAMEWORK.VERSION,
+  })
+  .register(constx.UPGRADE_TAGS);
+
+const store = {
   defaultScope: getenv('DEVEBOT_DEFAULT_SCOPE', constx.FRAMEWORK.NAME),
   injektorOptions: {
     namePatternTemplate: '^[a-zA-Z]{1}[a-zA-Z0-9&#\\-_%s]*$',
@@ -24,24 +35,17 @@ let store = {
   injektorContext: { scope: constx.FRAMEWORK.NAME },
   validatorOptions: { schemaVersion: 4 }
 };
-let chores = {};
+const chores = {};
+
+chores.assertOk = function () {
+  for(const k in arguments) {
+    assert.ok(arguments[k], util.format('The argument #%s evaluated to a falsy value', k));
+  }
+}
 
 // @Deprecated
-let CustomError = function(message, payload) {
-  Error.call(this, message);
-  Error.captureStackTrace(this, this.constructor);
-  this.message = message;
-  this.payload = payload;
-}
-util.inherits(CustomError, Error);
-
 chores.buildError = function(errorName) {
-  let ErrorConstructor = function() {
-    CustomError.apply(this, arguments);
-    this.name = errorName;
-  }
-  util.inherits(ErrorConstructor, CustomError);
-  return ErrorConstructor;
+  return errors.assertConstructor(errorName);
 }
 
 chores.getUUID = function() {
@@ -52,26 +56,36 @@ chores.formatTemplate = function(tmpl, data) {
   return format(tmpl, data);
 }
 
-chores.loadPackageInfo = function(pkgRootPath) {
+chores.loadPackageInfo = function(pkgRootPath, selectedFieldNames, defaultInfo) {
   try {
-    return lodash.pick(JSON.parse(fs.readFileSync(pkgRootPath + '/package.json', 'utf8')),
-      constx.APPINFO.FIELDS);
+    const pkgJson = JSON.parse(fs.readFileSync(path.join(pkgRootPath, '/package.json'), 'utf8'));
+    if (lodash.isArray(selectedFieldNames)) {
+      return lodash.pick(pkgJson, selectedFieldNames);
+    }
+    return pkgJson;
   } catch(err) {
-    return {};
+    return defaultInfo || null;
   }
 };
 
 chores.getFirstDefinedValue = function() {
-  let val = undefined;
-  for(let i=0; i<arguments.length; i++) {
-    val = arguments[i];
-    if (val !== undefined && val !== null) break;
+  for(const i in arguments) {
+    const val = arguments[i];
+    if (val !== undefined && val !== null) return val;
   }
-  return val;
+  return undefined;
+}
+
+chores.kickOutOf = function(map, excludedNames) {
+  if (lodash.isObject(map) && lodash.isArray(excludedNames)) {
+    lodash.forEach(excludedNames, function(name) {
+      if (name in map) delete map[name];
+    });
+  }
 }
 
 chores.isOwnOrInheritedProperty = function(object, property) {
-  for(let propName in object) {
+  for(const propName in object) {
     if (propName === property) return true;
   }
   return object.hasOwnProperty(property);
@@ -79,7 +93,7 @@ chores.isOwnOrInheritedProperty = function(object, property) {
 
 chores.pickProperty = function(propName, containers, propDefault) {
   if (!lodash.isString(propName) || !lodash.isArray(containers)) return null;
-  for(let i=0; i<containers.length; i++) {
+  for(const i in containers) {
     if (lodash.isObject(containers[i]) && containers[i][propName]) {
       return containers[i][propName];
     }
@@ -88,7 +102,7 @@ chores.pickProperty = function(propName, containers, propDefault) {
 };
 
 chores.deepFreeze = function (o) {
-  let self = this;
+  const self = this;
   Object.freeze(o);
   Object.getOwnPropertyNames(o).forEach(function (prop) {
     if (o.hasOwnProperty(prop)
@@ -106,31 +120,28 @@ chores.fileExists = function(filepath) {
 
 chores.filterFiles = function(dir, filter, filenames) {
   filenames = filenames || [];
-  let regex = (filter) ? new RegExp(filter) : null;
-  let files;
+  const regex = (filter) ? new RegExp(filter) : null;
   try {
-    files = fs.readdirSync(dir);
-  } catch (err) {
-    files = [];
-  }
-  for (let i in files) {
-    if ((regex) ? regex.test(files[i]) : true) {
-      let name = dir + '/' + files[i];
-      if (fs.statSync(name).isFile()) {
-        filenames.push(files[i]);
+    const files = fs.readdirSync(dir);
+    for (const i in files) {
+      if ((regex) ? regex.test(files[i]) : true) {
+        const name = dir + '/' + files[i];
+        if (fs.statSync(name).isFile()) {
+          filenames.push(files[i]);
+        }
       }
     }
-  }
+  } catch (err) {}
   return filenames;
 };
 
 chores.loadServiceByNames = function(serviceMap, serviceFolder, serviceNames) {
   serviceNames = nodash.arrayify(serviceNames);
   serviceNames.forEach(function(serviceName) {
-    let filepath = path.join(serviceFolder, serviceName + '.js');
-    let serviceConstructor = loader(filepath);
+    const filepath = path.join(serviceFolder, serviceName + '.js');
+    const serviceConstructor = loader(filepath);
     if (lodash.isFunction(serviceConstructor)) {
-      let serviceEntry = {};
+      const serviceEntry = {};
       serviceEntry[chores.stringCamelCase(serviceName)] = serviceConstructor;
       lodash.defaults(serviceMap, serviceEntry);
     }
@@ -156,7 +167,7 @@ chores.stringCamelCase = function camelCase(str) {
 }
 
 chores.assertDir = function(appName) {
-  let configDir = path.join(this.homedir(), '.' + appName);
+  const configDir = path.join(this.homedir(), '.' + appName);
   try {
     fs.readdirSync(configDir);
   } catch (err) {
@@ -174,9 +185,9 @@ chores.assertDir = function(appName) {
 }
 
 chores.homedir = (typeof os.homedir === 'function') ? os.homedir : function() {
-  let env = process.env;
-  let home = env.HOME;
-  let user = env.LOGNAME || env.USER || env.LNAME || env.USERNAME;
+  const env = process.env;
+  const home = env.HOME;
+  const user = env.LOGNAME || env.USER || env.LNAME || env.USERNAME;
 
   if (process.platform === 'win32') {
     return env.USERPROFILE || env.HOMEDRIVE + env.HOMEPATH || home || null;
@@ -193,37 +204,43 @@ chores.homedir = (typeof os.homedir === 'function') ? os.homedir : function() {
   return home || null;
 };
 
-const SPECIAL_PLUGINS = ['application', constx.FRAMEWORK.NAME];
+const SPECIAL_BUNDLES = ['application', 'framework', constx.FRAMEWORK.NAME];
 
-chores.isSpecialPlugin = function(pluginCode) {
-  return (SPECIAL_PLUGINS.indexOf(pluginCode) >= 0);
+chores.isSpecialBundle = function(bundle) {
+  return (SPECIAL_BUNDLES.indexOf(_getBundleType(bundle)) >= 0);
 }
 
-chores.extractCodeByPattern = function(ctx, patterns, name) {
+chores.isAppboxBundle = function(bundle) {
+  return _getBundleType(bundle) === 'application';
+}
+
+chores.isFrameworkBundle = function(bundle) {
+  const type = _getBundleType(bundle);
+  return type === 'framework' || type === 'devebot';
+}
+
+function _getBundleType(bundle) {
+  return lodash.isString(bundle) && bundle || lodash.isObject(bundle) && bundle.type;
+}
+
+chores.extractCodeByPattern = function(patterns, name) {
   assert.ok(patterns instanceof Array);
-  for(let k in patterns) {
+  for(const k in patterns) {
     assert.ok(patterns[k] instanceof RegExp);
   }
-  let {L, T} = ctx;
-  let info = {};
+  const info = {};
   for(info.i=0; info.i<patterns.length; info.i++) {
     if (name.match(patterns[info.i])) break;
   }
   if (info.i >= patterns.length) {
-    L.has('dunce') && L.log('dunce', T.add({ name }).toMessage({
-      text: ' - The name "${name}" is not matched the patterns'
-    }));
     return { i: -1, code: name };
   }
   info.code = name.replace(patterns[info.i], '\$1');
-  L.has('dunce') && L.log('dunce', T.add(lodash.assign({name}, info)).toMessage({
-    text: ' - extracted code of "${name}" is "${code}"'
-  }));
   return info;
 }
 
 chores.getComponentDir = function(pluginRef, componentType) {
-  let compDir = lodash.get(pluginRef, ['presets', 'componentDir'], {});
+  const compDir = lodash.get(pluginRef, ['presets', 'componentDir'], {});
   if (componentType) {
     return compDir[componentType] || constx[componentType].SCRIPT_DIR;
   }
@@ -232,7 +249,7 @@ chores.getComponentDir = function(pluginRef, componentType) {
 
 chores.getBlockRef = function(filename, blockScope) {
   if (filename == null) return null;
-  let blockName = chores.stringCamelCase(path.basename(filename, '.js'));
+  const blockName = chores.stringCamelCase(path.basename(filename, '.js'));
   blockScope = blockScope || store.defaultScope;
   if (!nodash.isArray(blockScope)) blockScope = [blockScope];
   return blockScope.concat(blockName).join(chores.getSeparator());
@@ -253,13 +270,13 @@ chores.toFullname = function() {
 chores.transformBeanName = function(name, opts) {
   opts = opts || {};
   if (typeof name !== 'string') return name;
-  let pattern = (opts.namePattern instanceof RegExp) ? opts.namePattern : /^(.+)\/([^:^\/]+)$/g;
+  const pattern = (opts.namePattern instanceof RegExp) ? opts.namePattern : /^(.+)\/([^:^\/]+)$/g;
   return name.replace(pattern, "$1:$2");
 }
 
 chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxRegistry) {
-  let ref = {};
-  let commander = sandboxRegistry.lookupService(proxyName);
+  const ref = {};
+  const commander = sandboxRegistry.lookupService(proxyName);
   if (commander && lodash.isFunction(commander.lookupService)) {
     ref.isDirected = false;
     ref.isRemote = true;
@@ -301,6 +318,11 @@ chores.isDevelopmentMode = function() {
   return ['test', 'dev', 'development'].indexOf(envbox.getEnv('ENV')) >= 0;
 }
 
+chores.isProductionMode = function() {
+  if (envbox.getEnv('ENV') === 'production') return true;
+  return false;
+}
+
 chores.fatalErrorReaction = function() {
   return envbox.getEnv('FATAL_ERROR_REACTION');
 }
@@ -310,35 +332,22 @@ chores.skipProcessExit = function() {
 }
 
 chores.isSilentForced = function(moduleId, cfg) {
-  let fsm = envbox.getEnv('FORCING_SILENT');
+  const fsm = envbox.getEnv('FORCING_SILENT');
   return (fsm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose === false);
 }
 
 chores.isVerboseForced = function(moduleId, cfg) {
-  let fvm = envbox.getEnv('FORCING_VERBOSE');
+  const fvm = envbox.getEnv('FORCING_VERBOSE');
   return (fvm.indexOf(moduleId) >= 0) || (cfg && cfg.verbose !== false);
 }
 
 chores.clearCache = function() {
-  store.upgradeDisabled = null;
-  store.upgradeEnabled = null;
+  envbox.clearCache();
+  codetags.clearCache();
   return this;
 }
 
-chores.isUpgradeSupported = function(label) {
-  if (!store.upgradeDisabled) {
-    store.upgradeDisabled = envbox.getEnv('UPGRADE_DISABLED');
-  }
-  if (!store.upgradeEnabled) {
-    store.upgradeEnabled = envbox.getEnv('UPGRADE_ENABLED');
-  }
-  label = nodash.isArray(label) ? label : [label];
-  let ok = true;
-  for(let k in label) {
-    if (!checkUpgradeSupported(label[k])) return false;
-  }
-  return true;
-}
+chores.isUpgradeSupported = codetags.isActive.bind(codetags);
 
 chores.dateToString = function(d) {
   return d.toISOString().replace(/[:-]/g, '').replace(/[T.]/g, '-');
@@ -349,17 +358,11 @@ chores.getValidator = function() {
 }
 
 chores.validate = function(object, schema) {
-  let result = this.getValidator().validate(object, schema);
+  const result = this.getValidator().validate(object, schema);
   if (typeof result.ok === 'boolean') {
     result.valid = result.ok;
   }
   return result;
-}
-
-let checkUpgradeSupported = function(label) {
-  if (store.upgradeDisabled.indexOf(label) >= 0) return false;
-  if (constx.UPGRADE_ENABLED.indexOf(label) >= 0) return true;
-  return (store.upgradeEnabled.indexOf(label) >= 0);
 }
 
 chores.argumentsToArray = function(args, l, r) {
@@ -372,8 +375,7 @@ chores.argumentsToArray = function(args, l, r) {
 chores.extractObjectInfo = function(data, opts) {
   function detect(data, level=2) {
     if (typeof level !== "number" || level < 0) level = 0;
-    let info = undefined;
-    let type = typeof(data);
+    const type = typeof(data);
     switch(type) {
       case "boolean":
       case "number":
@@ -381,33 +383,56 @@ chores.extractObjectInfo = function(data, opts) {
       case "symbol":
       case "function":
       case "undefined": {
-        info = type;
-        break;
+        return type;
       }
       case "object": {
         if (data === null) {
-          info = "null";
-        } else if (Array.isArray(data)) {
-          info = [];
+          return "null";
+        }
+        if (Array.isArray(data)) {
+          const info = [];
           if (level > 0) {
-            for(let i in data) {
+            for(const i in data) {
               info.push(detect(data[i], level - 1));
             }
           }
+          return info;
         } else {
-          info = {};
+          const info = {};
           if (level > 0) {
-            for(let field in data) {
+            for(const field in data) {
               info[field] = detect(data[field], level - 1);
             }
           }
+          return info;
         }
         break;
       }
     }
-    return info;
+    return undefined;
   }
   return detect(data, opts && opts.level);
+}
+
+chores.isVersionLessThan = function (version1, version2) {
+  if (!semver.valid(version1) || !semver.valid(version2)) return null;
+  return semver.lt(version1, version2);
+}
+
+chores.isVersionSatisfied = function (version, versionMask) {
+  if (semver.valid(version)) {
+    if (lodash.isString(versionMask)) {
+      if (version === versionMask) return true;
+      if (semver.satisfies(version, versionMask)) return true;
+    }
+    if (lodash.isArray(versionMask)) {
+      if (versionMask.indexOf(version) >= 0) return true;
+      for(const i in versionMask) {
+        if (semver.satisfies(version, versionMask[i])) return true;
+      }
+    }
+  }
+  return false;
 }
 
 module.exports = chores;

@@ -2,13 +2,13 @@
 
 let debug = null;
 
-let pinbug = function(pkgName) {
+function pinbug(pkgName) {
   if (debug == null) {
     try {
       debug = require('debug');
     } catch(err) {
       debug = function() {
-        let log = function() {
+        function log() {
           return console.log.apply(console, arguments);
         }
         log.enabled = false;

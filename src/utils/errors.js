@@ -12,31 +12,31 @@ function ErrorCollection() {
   }
 
   this.createConstructor = function(errorName) {
-    let ErrorConstructor = function() {
-      let message = undefined, code = undefined, payload = undefined;
+    function ErrorConstructor() {
+      const info = { message: undefined, code: undefined, payload: undefined }
       Array.prototype.forEach.call(arguments, function(arg) {
         if (arg) {
-          let type = typeof(arg);
+          const type = typeof(arg);
           switch(type) {
             case 'string': {
-              if (message !== undefined) {
+              if (info.message !== undefined) {
                 throw new TypeError(util.format('%s has already initialized', 'message'));
               }
-              message = arg;
+              info.message = arg;
               break;
             }
             case 'number': {
-              if (code !== undefined) {
+              if (info.code !== undefined) {
                 throw new TypeError(util.format('%s has already initialized', 'code'));
               }
-              code = arg;
+              info.code = arg;
               break;
             }
             case 'object': {
-              if (payload !== undefined) {
+              if (info.payload !== undefined) {
                 throw new TypeError(util.format('%s has already initialized', 'payload'));
               }
-              payload = arg;
+              info.payload = arg;
               break;
             }
             default: {
@@ -45,7 +45,7 @@ function ErrorCollection() {
           }
         }
       });
-      AbstractError.call(this, message, code, payload);
+      AbstractError.call(this, info.message, info.code, info.payload);
       this.name = errorName;
     }
     util.inherits(ErrorConstructor, AbstractError);
@@ -62,23 +62,25 @@ function ErrorCollection() {
   }
 
   Object.defineProperty(this, 'stackTraceLimit', {
-    get: function() { return stackTraceLimit },
+    get: function() { return _ref_.stackTraceLimit },
     set: function(val) {
       if (typeof val === 'number') {
-        stackTraceLimit = val;
+        _ref_.stackTraceLimit = val;
       }
     }
   });
 
-  let stackTraceLimit = parseInt(getenv('DEVEBOT_STACK_TRACE_LIMIT')) || Error.stackTraceLimit;
+  const _ref_ = {
+    stackTraceLimit: parseInt(getenv('DEVEBOT_STACK_TRACE_LIMIT')) || Error.stackTraceLimit
+  }
 
   function AbstractError(message, code, payload) {
     Error.call(this, message);
     this.message = message;
     this.code = code;
     this.payload = payload;
-    let oldLimit = Error.stackTraceLimit;
-    Error.stackTraceLimit = stackTraceLimit;
+    const oldLimit = Error.stackTraceLimit;
+    Error.stackTraceLimit = _ref_.stackTraceLimit;
     Error.captureStackTrace(this, this.constructor);
     Error.stackTraceLimit = oldLimit;
   }

@@ -10,35 +10,35 @@ const FRAMEWORK_METADATA = constx.FRAMEWORK.NAME + '-metadata';
 
 function LoggingWrapper(sectorName) {
   sectorName = sectorName || chores.getBlockRef(__filename);
+  const _ref_ = { logger: null, tracer: null }
 
-  let __logger = null;
   this.getLogger = function() {
-    return __logger = __logger || LogAdapter.getLogger({
+    return _ref_.logger = _ref_.logger || LogAdapter.getLogger({
       sector: sectorName,
       target: 'dunce'
     });
   }
 
-  let __tracer = null;
   this.getTracer = function() {
-    if (__tracer == null) {
-      let parentTracer = LogTracer.ROOT;
-      __tracer = parentTracer.branch({
+    if (_ref_.tracer == null) {
+      const parentTracer = LogTracer.ROOT;
+      _ref_.tracer = parentTracer.branch({
         key: constx.TRACER.SECTOR.ID_FIELD,
         value: LogTracer.getLogID()
       });
 
-      let blockInfo = {
+      const blockInfo = {
         parentKey: parentTracer.key,
         parentValue: parentTracer.value
       }
       blockInfo[constx.TRACER.SECTOR.NAME_FIELD] = sectorName;
 
-      let rootLogger = this.getLogger();
-      rootLogger.has(CHECK) && rootLogger.log(CHECK, __tracer.add(blockInfo)
+      const rootLogger = this.getLogger();
+      rootLogger.has(CHECK) && rootLogger.log(CHECK, _ref_.tracer
+          .add(blockInfo)
           .toMessage({ tags: [ FRAMEWORK_METADATA ] }));
     }
-    return __tracer;
+    return _ref_.tracer;
   }
 
   return this;

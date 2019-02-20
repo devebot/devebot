@@ -15,17 +15,16 @@ const blockRef = chores.getBlockRef(__filename);
  * @param {Object} params.runhook - The parameters that sent to Runhooks
  */
 function RunhookManager(params={}) {
-  let self = this;
-  let loggingFactory = params.loggingFactory.branch(blockRef);
-  let L = loggingFactory.getLogger();
-  let T = loggingFactory.getTracer();
+  const loggingFactory = params.loggingFactory.branch(blockRef);
+  const L = loggingFactory.getLogger();
+  const T = loggingFactory.getTracer();
 
   L.has('silly') && L.log('silly', T.add({ sandboxName: params.sandboxName }).toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
-  let runhookInstance = {
+  const runhookInstance = {
     appName: params.appName,
     appInfo: params.appInfo,
     sandboxName: params.sandboxName,
@@ -41,12 +40,12 @@ function RunhookManager(params={}) {
    * @param {string} command.package - The package on which this command/routine belongs to.
    * @param {string} command.requestId - The requestId.
    */
-  let buildRunhookInstance = function(command, runhookId) {
+  function buildRunhookInstance(command, runhookId) {
     runhookId = runhookId || command.requestId;
-    let customized = {
+    const customized = {
       loggingFactory: params.loggingFactory.branch(command.name, runhookId)
     }
-    if (command.package && !chores.isSpecialPlugin(command.package)) {
+    if (command.package && !chores.isSpecialBundle(command.package)) {
       if (params.injectedServices && params.injectedServices[command.package]) {
         customized.injectedServices = params.injectedServices[command.package];
       }
@@ -54,23 +53,23 @@ function RunhookManager(params={}) {
     return lodash.defaults(customized, runhookInstance);
   };
 
-  let predefinedContext = lodash.get(params, [
-      'profileConfig', constx.ROUTINE.ROOT_KEY, 'predefinedContext'
-  ]) == true; // default: undefined ~ false
+  // default: undefined ~ false
+  const predefinedContext = lodash.get(params, ['profileConfig', constx.ROUTINE.ROOT_KEY, 'predefinedContext']) == true;
 
-  let routineMap = {};
-  let routineStore = new Injektor(chores.injektorOptions);
+  const routineStore = new Injektor(chores.injektorOptions);
 
-  let getRunhooks = function() {
-    return (routineMap = routineMap || {});
+  const routineMap = {};
+
+  function getRunhooks() {
+    return routineMap;
   };
 
-  let getRunhook = function(command) {
+  function getRunhook(command) {
     if (!command || !command.name) return {
       code: -1,
       message: 'command.name is undefined'
     };
-    let fn = routineStore.suggestName(command.name);
+    const fn = routineStore.suggestName(command.name);
     if (fn == null || fn.length == 0) return {
       code: -2,
       message: 'command.name not found'
@@ -97,7 +96,7 @@ function RunhookManager(params={}) {
     return routineStore.lookup(fn[0]);
   }
 
-  self.getDefinitions = function(defs) {
+  this.getDefinitions = function(defs) {
     defs = defs || [];
     lodash.forOwn(getRunhooks(), function(value, key) {
       defs.push(lodash.assign({
@@ -108,25 +107,26 @@ function RunhookManager(params={}) {
     return defs;
   };
 
-  self.getRunhook = function(command) {
+  this.getRunhook = function(command) {
     return getRunhook(command);
   }
 
-  self.isAvailable = function(command) {
+  this.isAvailable = function(command) {
     return lodash.isFunction(getRunhook(command).handler);
   };
 
-  self.execute = function(command, context) {
+  this.execute = function(command, context) {
+    const self = this;
     context = context || {};
     command = command || {};
     command.requestId = command.requestId || T.getLogID();
-    let reqTr = T.branch({ key: 'requestId', value: command.requestId });
+    const reqTr = T.branch({ key: 'requestId', value: command.requestId });
     L.has('trace') && L.log('trace', reqTr.add({ commandName: command.name, command }).toMessage({
       tags: [ blockRef, 'execute', 'begin' ],
       text: '${commandName}#${requestId} - validate: {command}'
     }));
 
-    let routine = getRunhook(command);
+    const routine = getRunhook(command);
     let validationError = null;
 
     if (lodash.isEmpty(routine) || routine.code === -1) {
@@ -152,14 +152,14 @@ function RunhookManager(params={}) {
       return Promise.reject(validationError);
     }
 
-    let payload = command.payload || command.data;
-    let schema = routine && routine.info && routine.info.schema;
+    const payload = command.payload || command.data;
+    const schema = routine && routine.info && routine.info.schema;
     if (schema && lodash.isObject(schema)) {
       L.has('silly') && L.log('silly', reqTr.add({ commandName: command.name, payload, schema }).toMessage({
         tags: [ blockRef, 'execute', 'validate-by-schema' ],
         text: '${commandName}#${requestId} - validate payload: {payload} by schema: {schema}'
       }));
-      let result = params.schemaValidator.validate(payload, schema);
+      const result = params.schemaValidator.validate(payload, schema);
       if (result.valid === false) {
         validationError = {
           message: 'failed validation using schema',
@@ -167,7 +167,7 @@ function RunhookManager(params={}) {
         };
       }
     }
-    let validate = routine && routine.info && routine.info.validate;
+    const validate = routine && routine.info && routine.info.validate;
     if (validate && lodash.isFunction(validate)) {
       L.has('silly') && L.log('silly', reqTr.add({ commandName: command.name, payload }).toMessage({
         tags: [ blockRef, 'execute', 'validate-by-method' ],
@@ -195,16 +195,12 @@ function RunhookManager(params={}) {
     }));
 
     let promize = null;
-    let mode = routine.mode || command.mode;
+    const mode = routine.mode || command.mode;
     if (mode !== 'remote' || params.jobqueueBinder.enabled === false) {
-      let progressMeter = self.createProgressMeter({
+      const progressMeter = self.createProgressMeter({
         progress: function(completed, total, data) {
-          let percent = -1;
-          if (lodash.isNumber(total) && total > 0 &&
-              lodash.isNumber(completed) && completed >= 0 &&
-              completed <= total) {
-            percent = (total === 100) ? completed : lodash.round((completed * 100) / total);
-          }
+          const ok = lodash.isNumber(total) && total > 0 && lodash.isNumber(completed) && completed >= 0 && completed <= total;
+          const percent = ok ? ((total === 100) ? completed : lodash.round((completed * 100) / total)) : -1;
           context.outlet && context.outlet.render('progress', { progress: percent, data: data });
         }
       });
@@ -247,21 +243,21 @@ function RunhookManager(params={}) {
     return promize;
   };
 
-  self.process = function(command, context) {
+  this.process = function(command, context) {
     context = context || {};
     command = command || {};
     command.requestId = command.requestId || T.getLogID();
-    let reqTr = T.branch({ key: 'requestId', value: command.requestId });
+    const reqTr = T.branch({ key: 'requestId', value: command.requestId });
 
     L.has('trace') && L.log('trace', reqTr.add({ commandName: command.name, command }).toMessage({
       tags: [ blockRef, 'process', 'begin' ],
       text: '${commandName}#${requestId} - process: {command}'
     }));
 
-    let routine = getRunhook(command);
-    let handler = routine && routine.handler;
-    let options = command.options;
-    let payload = command.payload || command.data;
+    const routine = getRunhook(command);
+    const handler = routine && routine.handler;
+    const options = command.options;
+    const payload = command.payload || command.data;
     if (lodash.isFunction(handler)) {
       L.has('trace') && L.log('trace', reqTr.add({
         commandName: command.name,
@@ -281,7 +277,7 @@ function RunhookManager(params={}) {
     }
   };
 
-  self.createProgressMeter = function(args) {
+  this.createProgressMeter = function(args) {
     if (args && lodash.isFunction(args.progress)) {
       return {
         update: function(completed, total, extra) {
@@ -292,7 +288,7 @@ function RunhookManager(params={}) {
     return { update: function() {} }
   }
 
-  params.pluginLoader.loadRoutines(routineMap, predefinedContext ? runhookInstance : {});
+  params.bundleLoader.loadRoutines(routineMap, predefinedContext ? runhookInstance : {});
 
   lodash.forOwn(getRunhooks(), function(value, key) {
     routineStore.registerObject(value.name, value.object, { scope: value.crateScope });
@@ -335,7 +331,7 @@ RunhookManager.argumentSchema = {
     "jobqueueBinder": {
       "type": "object"
     },
-    "pluginLoader": {
+    "bundleLoader": {
       "type": "object"
     },
     "schemaValidator": {

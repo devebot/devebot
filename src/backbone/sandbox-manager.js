@@ -7,38 +7,37 @@ const Injektor = require('injektor');
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const errors = require('../utils/errors');
+const nodash = require('../utils/nodash');
 const RunhookManager = require('./runhook-manager');
 const blockRef = chores.getBlockRef(__filename);
 
 const DEFAULT_SERVICES = [ 'jobqueue-binder' ];
 
 function SandboxManager(params={}) {
-  let self = this;
-  let issueInspector = params.issueInspector;
-  let loggingFactory = params.loggingFactory.branch(blockRef);
-  let L = loggingFactory.getLogger();
-  let T = loggingFactory.getTracer();
+  const issueInspector = params.issueInspector;
+  const loggingFactory = params.loggingFactory.branch(blockRef);
+  const L = loggingFactory.getLogger();
+  const T = loggingFactory.getTracer();
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  let managerMap = {};
-  let serviceMap = {};
-  let triggerMap = {};
-
+  const managerMap = {};
   chores.loadServiceByNames(managerMap, __dirname, DEFAULT_SERVICES);
+  const managerNames = lodash.keys(managerMap);
 
-  params.pluginLoader.loadServices(serviceMap);
-  params.pluginLoader.loadTriggers(triggerMap);
+  const serviceMap = {};
+  params.bundleLoader.loadServices(serviceMap);
+  chores.kickOutOf(serviceMap, managerNames);
 
-  let managerNames = lodash.keys(managerMap);
-  serviceMap = lodash.omit(serviceMap, managerNames);
-  triggerMap = lodash.omit(triggerMap, managerNames);
+  const triggerMap = {};
+  params.bundleLoader.loadTriggers(triggerMap);
+  chores.kickOutOf(triggerMap, managerNames);
 
-  let sandboxNames = params.sandboxNames;
-  let sandboxConfig = params.sandboxConfig;
+  const sandboxNames = params.sandboxNames;
+  const sandboxConfig = params.sandboxConfig;
 
   L.has('dunce') && L.log('dunce', T.add({
     sandboxNames: sandboxNames,
@@ -52,8 +51,8 @@ function SandboxManager(params={}) {
     text: ' - create sandbox${sandboxNames}.injektor object'
   }));
 
-  let sandboxInjektor = new Injektor(chores.injektorOptions);
-  let COPIED_DEPENDENCIES = [ 'appName', 'appInfo',
+  const sandboxInjektor = new Injektor(chores.injektorOptions);
+  const COPIED_DEPENDENCIES = [ 'appName', 'appInfo',
     'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
     'contextManager', 'schemaValidator', 'loggingFactory', 'processManager'
   ];
@@ -73,7 +72,7 @@ function SandboxManager(params={}) {
     });
   });
 
-  let dialectMap = params.bridgeLoader.loadDialects({}, lodash.get(sandboxConfig, ['bridges'], {}));
+  const dialectMap = params.bridgeLoader.loadDialects({}, lodash.get(sandboxConfig, ['bridges'], {}));
 
   lodash.forOwn(dialectMap, function(dialectRecord, dialectName) {
     sandboxInjektor.defineService(dialectRecord.name, dialectRecord.construktor, {
@@ -81,7 +80,7 @@ function SandboxManager(params={}) {
     });
   });
 
-  let REGISTRY_EXCLUDED_SERVICES = [ getComponentLabel('sandboxRegistry') ];
+  const REGISTRY_EXCLUDED_SERVICES = [ getComponentLabel('sandboxRegistry') ];
   L.has('silly') && L.log('silly', T.add({
     excludedServices: REGISTRY_EXCLUDED_SERVICES
   }).toMessage({
@@ -98,11 +97,11 @@ function SandboxManager(params={}) {
     return [handlerRecord.crateScope, handlerRecord.name].join(sandboxInjektor.separator);
   }
 
-  let injectedHandlers = {};
-  let injectedServices = {};
-  let sandboxName = params['sandboxNames'].join(',');
-  let profileName = params['profileNames'].join(',');
-  let miscObjects = {
+  const injectedHandlers = {};
+  const injectedServices = {};
+  const sandboxName = params['sandboxNames'].join(',');
+  const profileName = params['profileNames'].join(',');
+  const miscObjects = {
     bridgeDialectNames: lodash.map(lodash.values(dialectMap), getCrateName),
     pluginServiceNames: lodash.map(lodash.values(serviceMap), getCrateName),
     pluginTriggerNames: lodash.map(lodash.values(triggerMap), getCrateName),
@@ -113,14 +112,14 @@ function SandboxManager(params={}) {
     sandboxInjektor.registerObject(name, obj, chores.injektorContext);
   });
 
-  let instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers, injectedServices) {
-    let exceptions = [];
-    let handlerName = [handlerRecord.crateScope, handlerRecord.name].join(_injektor.separator);
+  const instantiateObject = function(_injektor, handlerRecord, handlerType, injectedHandlers, injectedServices) {
+    const exceptions = [];
+    const handlerName = [handlerRecord.crateScope, handlerRecord.name].join(_injektor.separator);
     L.has('silly') && L.log('silly', T.add({ handlerName, handlerType }).toMessage({
       tags: [ blockRef, 'instantiateObject' ],
       text: ' - instantiate object: ${handlerName}'
     }));
-    let handler = _injektor.lookup(handlerName, exceptions);
+    const handler = _injektor.lookup(handlerName, exceptions);
     if (handler && injectedHandlers) {
       injectedHandlers[handlerName] = handler;
     }
@@ -129,11 +128,11 @@ function SandboxManager(params={}) {
       injectedServices[handlerRecord.crateScope][handlerName] = handler;
     }
     if (handler && handlerType === 'TRIGGER') {
-      let methods = {
+      const methods = {
         start: (handler.start || handler.open),
         stop: (handler.stop || handler.close)
       }
-      let requiredMethods = lodash.filter(lodash.keys(methods), function(name) {
+      const requiredMethods = lodash.filter(lodash.keys(methods), function(name) {
         return !lodash.isFunction(methods[name]);
       });
       if (!lodash.isEmpty(requiredMethods)) {
@@ -147,7 +146,7 @@ function SandboxManager(params={}) {
       }
     }
     lodash.forEach(exceptions, function(exception) {
-      let opStatus = {
+      const opStatus = {
         stage: 'instantiating',
         type: handlerType,
         name: handlerName,
@@ -170,8 +169,8 @@ function SandboxManager(params={}) {
     instantiateObject(sandboxInjektor, triggerRecord, 'TRIGGER', injectedServices);
   });
 
-  let runhookInjektor = new Injektor(chores.injektorOptions);
-  let RUNHOOK_DEPENDENCIES = [ 'pluginLoader' ].concat(COPIED_DEPENDENCIES);
+  const runhookInjektor = new Injektor(chores.injektorOptions);
+  const RUNHOOK_DEPENDENCIES = [ 'bundleLoader' ].concat(COPIED_DEPENDENCIES);
   RUNHOOK_DEPENDENCIES.forEach(function(refName) {
     runhookInjektor.registerObject(refName, params[refName], chores.injektorContext);
   });
@@ -184,51 +183,51 @@ function SandboxManager(params={}) {
     runhookInjektor.defineService(managerName, managerConstructor, chores.injektorContext);
   });
   runhookInjektor.defineService('runhookManager', RunhookManager, chores.injektorContext);
-  let runhookManager = runhookInjektor.lookup('runhookManager', chores.injektorContext);
+  const runhookManager = runhookInjektor.lookup('runhookManager', chores.injektorContext);
 
   sandboxInjektor.registerObject('runhookManager', runhookManager, chores.injektorContext);
 
-  self.getRunhookManager = function() {
+  this.getRunhookManager = function() {
     return runhookManager;
   }
 
-  self.getSandboxService = function(serviceName, context) {
+  this.getSandboxService = function(serviceName, context) {
     return sandboxInjektor.lookup(serviceName, context);
   };
 
-  self.getBridgeDialectNames = function() {
+  this.getBridgeDialectNames = function() {
     return sandboxInjektor.lookup('bridgeDialectNames', chores.injektorContext);
   };
 
-  self.getPluginServiceNames = function() {
+  this.getPluginServiceNames = function() {
     return sandboxInjektor.lookup('pluginServiceNames', chores.injektorContext);
   };
 
-  self.getPluginTriggerNames = function() {
+  this.getPluginTriggerNames = function() {
     return sandboxInjektor.lookup('pluginTriggerNames', chores.injektorContext);
   };
 
-  self.startTriggers = function(triggerNames) {
+  this.startTriggers = function(triggerNames) {
     L.has('silly') && L.log('silly', T.toMessage({
       tags: [ blockRef, 'trigger', 'start' ],
       text: ' - Start triggers'
     }));
-    return self.eachTriggers(function(trigger) {
+    return this.eachTriggers(function(trigger) {
       return trigger.start();
     }, triggerNames, { actionName: 'start' });
   };
 
-  self.stopTriggers = function(triggerNames) {
+  this.stopTriggers = function(triggerNames) {
     L.has('silly') && L.log('silly', T.toMessage({
       tags: [ blockRef, 'trigger', 'stop' ],
       text: ' - Stop triggers'
     }));
-    return self.eachTriggers(function(trigger) {
+    return this.eachTriggers(function(trigger) {
       return trigger.stop();
     }, triggerNames, { actionName: 'stop' });
   };
 
-  self.eachTriggers = function(iteratee, triggerNames, options) {
+  this.eachTriggers = function(iteratee, triggerNames, options) {
     if (!lodash.isFunction(iteratee)) return;
     if (lodash.isString(triggerNames)) triggerNames = [triggerNames];
     if (triggerNames && !lodash.isArray(triggerNames)) return;
@@ -236,31 +235,31 @@ function SandboxManager(params={}) {
       tags: [ blockRef, 'trigger', 'loop' ],
       text: ' - Loop triggers: ${triggerNames}'
     }));
-    let actionName = options && options.actionName;
-    let triggers = [];
+    const actionName = options && options.actionName;
+    const triggers = [];
     lodash.forOwn(triggerMap, function(triggerRecord, triggerId) {
-      let triggerName = getCrateName(triggerRecord);
+      const triggerName = getCrateName(triggerRecord);
       if (!triggerNames || triggerNames.indexOf(triggerName) >= 0) {
         L.has('silly') && L.log('silly', T.add({ actionName, triggerName }).toMessage({
           tags: [ blockRef, 'trigger', 'action' ],
           text: ' - ${actionName} trigger[${triggerName}]'
         }));
-        let trigger = sandboxInjektor.lookup(triggerName);
+        const trigger = sandboxInjektor.lookup(triggerName);
         if (trigger) {
           triggers.push(trigger);
         }
       }
     });
-
     return Promise.mapSeries(triggers, iteratee);
   };
 
-  self.getServiceInfo = function() {
+  this.getServiceInfo = function() {
     return {};
   };
 
-  self.getServiceHelp = function() {
-    let blocks = [];
+  this.getServiceHelp = function() {
+    const self = this;
+    const blocks = [];
 
     blocks.push({
       type: 'record',
@@ -305,7 +304,7 @@ SandboxManager.argumentSchema = {
     "bridgeLoader": {
       "type": "object"
     },
-    "pluginLoader": {
+    "bundleLoader": {
       "type": "object"
     },
     "sandboxNames": {
@@ -346,11 +345,11 @@ SandboxManager.argumentSchema = {
 
 module.exports = SandboxManager;
 
-let getComponentLabel = function(compName) {
+function getComponentLabel(compName) {
   return constx.FRAMEWORK.NAME + chores.getSeparator() + compName;
 }
 
-let wrapScriptConstructor = function(ScriptConstructor, wrapperNames) {
+function wrapScriptConstructor(ScriptConstructor, wrapperNames) {
   function wrapperConstructor(params) {
     ScriptConstructor.call(this, params);
   }
@@ -359,7 +358,7 @@ let wrapScriptConstructor = function(ScriptConstructor, wrapperNames) {
 
   wrapperConstructor.argumentSchema = lodash.cloneDeep(ScriptConstructor.argumentSchema);
   lodash.forEach(wrapperNames, function(serviceName) {
-    let serviceEntry = {};
+    const serviceEntry = {};
     serviceEntry[serviceName] = { "type": "object" };
     lodash.assign(wrapperConstructor.argumentSchema.properties, serviceEntry);
   });
@@ -367,21 +366,18 @@ let wrapScriptConstructor = function(ScriptConstructor, wrapperNames) {
   return wrapperConstructor;
 };
 
-let mergeSandboxServiceHelps = function(serviceNames, blocks) {
-  let self = this;
+function mergeSandboxServiceHelps(serviceNames, blocks) {
+  const self = this;
   serviceNames.forEach(function(serviceName) {
     pickSandboxServiceHelp.call(self, serviceName, blocks);
   });
 };
 
-let pickSandboxServiceHelp = function(serviceName, blocks) {
-  let self = this;
-  let serviceObject = self.getSandboxService(serviceName);
+function pickSandboxServiceHelp(serviceName, blocks) {
+  const self = this;
+  const serviceObject = self.getSandboxService(serviceName);
   if (lodash.isObject(serviceObject) && lodash.isFunction(serviceObject.getServiceHelp)) {
-    let serviceHelp = serviceObject.getServiceHelp();
-    if (lodash.isObject(serviceHelp) && !lodash.isArray(serviceHelp)) {
-      serviceHelp = [serviceHelp];
-    }
+    const serviceHelp = nodash.arrayify(serviceObject.getServiceHelp());
     if (lodash.isArray(serviceHelp)) {
       lodash.forEach(serviceHelp, function(serviceInfo) {
         if (lodash.isString(serviceInfo.title)) {
@@ -393,31 +389,36 @@ let pickSandboxServiceHelp = function(serviceName, blocks) {
   }
 };
 
-function SandboxRegistry(params) {
-  params = params || {};
-  let {injektor, isExcluded, excludedServices} = params;
-  this.defineService = function(name, construktor, context) {
-    context = context || {};
-    let info = injektor.parseName(name, context);
+function SandboxRegistry(params = {}) {
+  const {injektor, isExcluded, excludedServices} = params;
+  function validateBeanName(beanName, context = {}) {
+    const info = injektor.parseName(beanName, context);
     if (info.scope === constx.FRAMEWORK.NAME) {
-      let RestrictedError = errors.createConstructor('RestrictedDevebotError');
+      const RestrictedError = errors.assertConstructor('RestrictedDevebotError');
       throw new RestrictedError(util.format('dependency scope [%s] is restricted', constx.FRAMEWORK.NAME));
     }
-    let exceptions = [];
-    let fullname = injektor.resolveName(serviceName, {
+    const exceptions = [];
+    const fullname = injektor.resolveName(beanName, {
       scope: context.scope,
       exceptions: exceptions
     });
     if (fullname != null) {
-      let DuplicatedError = errors.createConstructor('DuplicatedDevebotError');
+      const DuplicatedError = errors.assertConstructor('DuplicatedDevebotError');
       throw new DuplicatedError('dependency item is duplicated');
     }
-    injektor.defineService(name, construktor, context);
+  }
+  this.declareObject = function(beanName, beanObject, context) {
+    validateBeanName(beanName, context);
+    injektor.registerObject(beanName, beanObject, context);
   };
-  this.lookupService = function(serviceName, context) {
+  this.defineService = function(beanName, construktor, context) {
+    validateBeanName(beanName, context);
+    injektor.defineService(beanName, construktor, context);
+  };
+  this.lookup = function(serviceName, context) {
     context = context || {};
-    let exceptions = [];
-    let fullname = injektor.resolveName(serviceName, {
+    const exceptions = [];
+    const fullname = injektor.resolveName(serviceName, {
       scope: context.scope,
       exceptions: exceptions
     });
@@ -426,4 +427,6 @@ function SandboxRegistry(params) {
     if (lodash.isArray(excludedServices) && excludedServices.indexOf(fullname) >= 0) return null;
     return injektor.lookup(serviceName, context);
   }
+  // @deprecated
+  this.lookupService = this.lookup;
 };

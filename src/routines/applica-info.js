@@ -4,17 +4,17 @@ const Promise = require('bluebird');
 const lodash = require('lodash');
 const chores = require('../utils/chores');
 
-let commandConfig;
+const commandConfig = {};
 
-let commandObject = {
+const commandObject = {
   info: {
     alias: 'app-info',
     description: 'Display application information',
     options: []
   },
   handler: function(options, payload, ctx) {
-    let L = this.loggingFactory.getLogger();
-    let T = this.loggingFactory.getTracer();
+    const L = this.loggingFactory.getLogger();
+    const T = this.loggingFactory.getTracer();
 
     L.has('dunce') && L.log('dunce', 'app-info is invoked with: %s', JSON.stringify(options));
     return Promise.resolve([{
@@ -26,6 +26,6 @@ let commandObject = {
 };
 
 module.exports = function(params) {
-  commandConfig = params || {};
+  lodash.merge(commandConfig, params);
   return commandObject;
 };

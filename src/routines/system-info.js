@@ -4,9 +4,9 @@ const Promise = require('bluebird');
 const lodash = require('lodash');
 const os = require('os');
 
-let commandConfig;
+const commandConfig = {};
 
-let commandObject = {
+const commandObject = {
   info: {
     alias: 'sys-info',
     description: 'Display the system information (configuration, logger, sandbox)',
@@ -45,6 +45,6 @@ let commandObject = {
 };
 
 module.exports = function(params) {
-  commandConfig = params || {};
+  lodash.merge(commandConfig, params);
   return commandObject;
 };

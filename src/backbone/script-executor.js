@@ -6,20 +6,19 @@ const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 
 function ScriptExecutor(params={}) {
-  let self = this;
-  let loggingFactory = params.loggingFactory.branch(blockRef);
-  let L = loggingFactory.getLogger();
-  let T = loggingFactory.getTracer();
+  const loggingFactory = params.loggingFactory.branch(blockRef);
+  const L = loggingFactory.getLogger();
+  const T = loggingFactory.getTracer();
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  let sandboxManager = params.sandboxManager;
-  let runhookManager = sandboxManager.getRunhookManager();
+  const sandboxManager = params.sandboxManager;
+  const runhookManager = sandboxManager.getRunhookManager();
 
-  let resolveCommand = function(command) {
+  function resolveCommand(command) {
     command = command || {};
     command = lodash.isString(command) ? JSON.parse(command) : command;
     // rename "command" field -> "name" field
@@ -30,7 +29,7 @@ function ScriptExecutor(params={}) {
     return command;
   }
 
-  self.executeCommand = function(command, outlet) {
+  this.executeCommand = function(command, outlet) {
     try {
       command = resolveCommand(command);
     } catch(error) {
@@ -42,7 +41,7 @@ function ScriptExecutor(params={}) {
       return;
     }
 
-    let reqTr = T.branch({ key: 'requestId', value: command.requestId });
+    const reqTr = T.branch({ key: 'requestId', value: command.requestId });
 
     L.has('info') && L.log('info', reqTr.add({ commandName: command.name, command }).toMessage({
       tags: [ blockRef, 'executeCommand', 'begin' ],

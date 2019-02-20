@@ -11,19 +11,18 @@ const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
 function StateInspector(params={}) {
-  let self = this;
-  let loggingWrapper = new LoggingWrapper(blockRef);
-  let L = loggingWrapper.getLogger();
-  let T = loggingWrapper.getTracer();
+  const loggingWrapper = new LoggingWrapper(blockRef);
+  const L = loggingWrapper.getLogger();
+  const T = loggingWrapper.getTracer();
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  let options = {};
-  let services = {};
-  let stateMap = {};
+  const options = {};
+  const services = {};
+  const stateMap = {};
 
   function getOptions() {
     options.mode = options.mode || filterTask(envbox.getEnv('TASKS'));
@@ -32,23 +31,21 @@ function StateInspector(params={}) {
 
   this.init = function(opts) {
     if (opts && opts.tasks) {
-      let tasks = lodash.isArray(opts.tasks) ? opts.tasks : nodash.stringToArray(opts.tasks);
-      options.mode = filterTask(tasks);
+      const taskList = lodash.isArray(opts.tasks) ? opts.tasks : nodash.stringToArray(opts.tasks);
+      options.mode = filterTask(taskList);
     }
     return lodash.clone(options.mode);
   }
 
   this.register = function(bean) {
-    let options = getOptions();
-    if (isEnabled(options)) {
+    if (isEnabled(getOptions())) {
       lodash.assign(services, bean);
     }
     return this;
   }
 
   this.collect = function(info) {
-    let options = getOptions();
-    if (isEnabled(options)) {
+    if (isEnabled(getOptions())) {
       if (info instanceof Array) {
         lodash.assign.apply(lodash, lodash.concat([stateMap], info));
       } else {
@@ -62,29 +59,33 @@ function StateInspector(params={}) {
 
   this.examine = function(opts) {
     assert(lodash.isObject(services.nameResolver));
-    assert(lodash.isArray(services.pluginRefs));
-    assert(lodash.isArray(services.bridgeRefs));
+    assert(lodash.isArray(services.bridgeList));
+    assert(lodash.isArray(services.pluginList));
 
-    // extract plugin names, bridge names
-    let pluginNames = lodash.map(services.pluginRefs, 'name');
-    L.has('debug') && L.log('debug', T.add({pluginNames}).toMessage({
-      tags: [ blockRef, 'examine', 'plugin-names'],
-      text: ' - plugin names: ${pluginNames}'
-    }));
-
-    let bridgeNames = lodash.map(services.bridgeRefs, 'name');
+    // extract bridge names
+    const bridgeNames = lodash.map(services.bridgeList, 'name');
     L.has('debug') && L.log('debug', T.add({bridgeNames}).toMessage({
       tags: [ blockRef, 'examine', 'bridge-names'],
       text: ' - bridge names: ${bridgeNames}'
     }));
 
-    let summary = { config: { sandbox: { plugins: {}, bridges: {} } } };
+    // extract plugin names
+    const pluginList = lodash.filter(services.pluginList, function(pluginRef) {
+      return pluginRef.type === 'plugin';
+    });
+    const pluginNames = lodash.map(pluginList, 'name');
+    L.has('debug') && L.log('debug', T.add({pluginNames}).toMessage({
+      tags: [ blockRef, 'examine', 'plugin-names'],
+      text: ' - plugin names: ${pluginNames}'
+    }));
+
+    const summary = { config: { sandbox: { plugins: {}, bridges: {} } } };
 
     // examines configuration of plugins
-    let pluginMixture = lodash.get(stateMap, 'config.sandbox.mixture.plugins', {});
-    let pluginExpanse = lodash.get(stateMap, 'config.sandbox.expanse.plugins', {});
+    const pluginMixture = lodash.get(stateMap, 'config.sandbox.mixture.plugins', {});
+    const pluginExpanse = lodash.get(stateMap, 'config.sandbox.expanse.plugins', {});
     lodash.forEach(pluginNames, function(name) {
-      let codeInCamel = services.nameResolver.getDefaultAliasOf(name, 'plugin');
+      const codeInCamel = services.nameResolver.getDefaultAliasOf(name, 'plugin');
       if (codeInCamel in pluginExpanse) {
         if (lodash.isEmpty(pluginExpanse[codeInCamel])) {
           lodash.set(summary, ['config', 'sandbox', 'plugins', name], {
@@ -112,11 +113,11 @@ function StateInspector(params={}) {
     });
 
     // examine configuration of bridges
-    let bridgeMixtureInDeep = lodash.get(stateMap, 'config.sandbox.mixture.bridges', {});
-    let bridgeExpanseInDeep = lodash.get(stateMap, 'config.sandbox.expanse.bridges', {});
+    const bridgeMixtureInDeep = lodash.get(stateMap, 'config.sandbox.mixture.bridges', {});
+    const bridgeExpanseInDeep = lodash.get(stateMap, 'config.sandbox.expanse.bridges', {});
     if (chores.isUpgradeSupported(['presets', 'bridge-full-ref', 'standardizing-config'])) {
-      let bridgeMixture = flattenBridgeConfig(bridgeMixtureInDeep);
-      let bridgeExpanse = flattenBridgeConfig(bridgeExpanseInDeep);
+      const bridgeMixture = flattenBridgeConfig(bridgeMixtureInDeep);
+      const bridgeExpanse = flattenBridgeConfig(bridgeExpanseInDeep);
       lodash.forOwn(bridgeMixture, function(bridgeInfo, bridgeName) {
         if (bridgeName in bridgeExpanse) {
           if (lodash.isEmpty(bridgeExpanse[bridgeName])) {
@@ -146,9 +147,9 @@ function StateInspector(params={}) {
   }
 
   this.conclude = function(opts) {
-    let options = getOptions();
+    const options = getOptions();
     if (isEnabled(options)) {
-      let label = getModeLabel(options);
+      const label = getModeLabel(options);
       try {
         if (hasTask(options, 'list-env-vars')) {
           envbox.printEnvList();
@@ -198,7 +199,7 @@ module.exports = StateInspector;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
 
-let chalk = new Chalk({
+const chalk = new Chalk({
   themes: {
     heading1: ['cyan', 'bold'],
     heading2: 'cyan',
@@ -224,15 +225,15 @@ const TASK_MAP = {
 
 envbox.setAcceptedValues("TASKS", lodash.keys(TASK_MAP));
 
-let getModeLabel = function(options) {
+function getModeLabel(options) {
   return JSON.stringify(options.mode);
 }
 
-let isEnabled = function(options) {
+function isEnabled(options) {
   return options && lodash.isArray(options.mode) && !lodash.isEmpty(options.mode);
 }
 
-let filterTask = function(tasks) {
+function filterTask(tasks) {
   if (lodash.isArray(tasks)) {
     return lodash.filter(tasks, function(task) {
       return task in TASK_MAP;
@@ -241,22 +242,22 @@ let filterTask = function(tasks) {
   return [];
 }
 
-let hasTask = function(options, taskName) {
+function hasTask(options, taskName) {
   return options && lodash.isArray(options.mode) && options.mode.indexOf(taskName) >= 0;
 }
 
-let printContent = function(stateMap) {
+function printContent(stateMap) {
   console.log(chalk.heading1('[+] Display final configuration content:'));
   lodash.forEach(['profile', 'sandbox'], function(cfgType) {
-    let cfgObj = lodash.get(stateMap, ['config', cfgType, 'mixture'], null);
+    const cfgObj = lodash.get(stateMap, ['config', cfgType, 'mixture'], null);
     console.log(chalk.heading2('[-] Final %s configuration:'), chalk.configType(cfgType));
     console.log(chalk.configBody(JSON_stringify(cfgObj)));
   });
 }
 
-let printSummary = function(summary) {
+function printSummary(summary) {
   console.log(chalk.heading1('[+] %s configuration checking result:'), chalk.configModule('Plugin'));
-  let pluginInfos = lodash.get(summary, ['config', 'sandbox', 'plugins'], {});
+  const pluginInfos = lodash.get(summary, ['config', 'sandbox', 'plugins'], {});
   lodash.forOwn(pluginInfos, function(info, name) {
     switch (info.status) {
       case -1:
@@ -277,7 +278,7 @@ let printSummary = function(summary) {
   });
 
   console.log(chalk.heading1('[+] %s configuration checking result:'), chalk.configModule('Bridge'));
-  let bridgeInfos = lodash.get(summary, ['config', 'sandbox', 'bridges'], {});
+  const bridgeInfos = lodash.get(summary, ['config', 'sandbox', 'bridges'], {});
   lodash.forOwn(bridgeInfos, function(info, name) {
     switch (info.status) {
       case -1:
@@ -298,12 +299,12 @@ let printSummary = function(summary) {
   });
 }
 
-let flattenBridgeConfig = function(bridgeConfig, flatBridgeCfgs) {
+function flattenBridgeConfig(bridgeConfig, flatBridgeCfgs) {
   flatBridgeCfgs = flatBridgeCfgs || {};
   lodash.forOwn(bridgeConfig, function(bridgeInfo, bridgeName) {
     lodash.forOwn(bridgeInfo, function(pluginInfo, pluginName) {
       lodash.forOwn(pluginInfo, function(dialectInfo, dialectName) {
-        let fullname = [pluginName, chores.getSeparator(), bridgeName, '#', dialectName].join('');
+        const fullname = [pluginName, chores.getSeparator(), bridgeName, '#', dialectName].join('');
         flatBridgeCfgs[fullname] = dialectInfo;
       });
     });
@@ -311,9 +312,9 @@ let flattenBridgeConfig = function(bridgeConfig, flatBridgeCfgs) {
   return flatBridgeCfgs;
 }
 
-let JSON_stringify = function(jsObj) {
+function JSON_stringify(jsObj) {
   if (toolset.has('traverse')) {
-    let traverse = toolset.get('traverse');
+    const traverse = toolset.get('traverse');
     jsObj = traverse(jsObj).forEach(function (x) {
       if (lodash.isFunction(x)) {
         this.update('[Function]');

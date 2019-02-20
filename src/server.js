@@ -19,9 +19,9 @@ function Server(params={}) {
   Kernel.call(this, params);
 
   // init the default parameters
-  let loggingWrapper = new LoggingWrapper(blockRef);
-  let L = loggingWrapper.getLogger();
-  let T = loggingWrapper.getTracer();
+  const loggingWrapper = new LoggingWrapper(blockRef);
+  const L = loggingWrapper.getLogger();
+  const T = loggingWrapper.getTracer();
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -29,30 +29,30 @@ function Server(params={}) {
   }));
 
   // lookup service instances
-  let injektor = this._injektor;
+  const injektor = this._injektor;
   delete this._injektor;
 
-  let profileConfig = injektor.lookup('profileConfig', chores.injektorContext);
-  let loggingFactory = injektor.lookup('loggingFactory', chores.injektorContext);
-  let sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
-  let scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
-  let scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
-  let securityManager = injektor.lookup('securityManager', chores.injektorContext);
+  const profileConfig = injektor.lookup('profileConfig', chores.injektorContext);
+  const loggingFactory = injektor.lookup('loggingFactory', chores.injektorContext);
+  const sandboxManager = injektor.lookup('sandboxManager', chores.injektorContext);
+  const scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
+  const scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
+  const securityManager = injektor.lookup('securityManager', chores.injektorContext);
 
   // application root url
-  let appName = injektor.lookup('appName', chores.injektorContext);
-  let appRootUrl = '/' + chores.stringKebabCase(appName);
+  const appName = injektor.lookup('appName', chores.injektorContext);
+  const appRootUrl = '/' + chores.stringKebabCase(appName);
 
   // framework configures
-  let frameworkCfg = lodash.get(profileConfig, [constx.FRAMEWORK.NAME], {});
+  const frameworkCfg = lodash.get(profileConfig, [constx.FRAMEWORK.NAME], {});
 
-  let tunnelCfg = lodash.get(frameworkCfg, ['tunnel'], {});
-  let sslEnabled = tunnelCfg.enabled && tunnelCfg.key_file && tunnelCfg.crt_file;
+  const tunnelCfg = lodash.get(frameworkCfg, ['tunnel'], {});
+  const sslEnabled = tunnelCfg.enabled && tunnelCfg.key_file && tunnelCfg.crt_file;
 
-  let processRequest = function(req, res) {
+  function processRequest(req, res) {
     if (chores.isDevelopmentMode() || frameworkCfg.appInfoLevel === 'all') {
-      let appInfo = injektor.lookup('appInfo', chores.injektorContext);
-      let appInfoBody = JSON.stringify(appInfo, null, 2);
+      const appInfo = injektor.lookup('appInfo', chores.injektorContext);
+      const appInfoBody = JSON.stringify(appInfo, null, 2);
       res.writeHead(200, 'OK', {
         'Content-Length': Buffer.byteLength(appInfoBody, 'utf8'),
         'Content-Type': 'application/json'
@@ -65,12 +65,12 @@ function Server(params={}) {
   };
 
   // creates a HttpServer instance
-  let server = sslEnabled ? https.createServer({
+  const server = sslEnabled ? https.createServer({
     key: fs.readFileSync(tunnelCfg.key_file),
     cert: fs.readFileSync(tunnelCfg.crt_file)
   }, processRequest) : http.createServer(processRequest);
 
-  let rhythm = new RepeatedTimer({
+  const tictac = new RepeatedTimer({
     loggingFactory: loggingFactory,
     period: 60 * 1000,
     target: function() {
@@ -78,7 +78,7 @@ function Server(params={}) {
     }
   });
 
-  let mode = ['silent', 'tictac', 'server'].indexOf(getDevebotMode(frameworkCfg.mode));
+  const mode = ['silent', 'tictac', 'server'].indexOf(getDevebotMode(frameworkCfg.mode));
 
   this.start = function() {
     L.has('silly') && L.log('silly', T.toMessage({
@@ -87,14 +87,14 @@ function Server(params={}) {
     }));
     return Promise.resolve().then(function() {
       if (mode == 0) return Promise.resolve();
-      if (mode == 1) return rhythm.start();
+      if (mode == 1) return tictac.start();
       return new Promise(function(onResolved, onRejected) {
-        let serverHost = lodash.get(frameworkCfg, ['host'], '0.0.0.0');
-        let serverPort = lodash.get(frameworkCfg, ['port'], 17779);
-        let serverInstance = server.listen(serverPort, serverHost, function () {
-          let proto = sslEnabled ? 'wss' : 'ws';
-          let host = serverInstance.address().address;
-          let port = serverInstance.address().port;
+        const serverHost = lodash.get(frameworkCfg, ['host'], '0.0.0.0');
+        const serverPort = lodash.get(frameworkCfg, ['port'], 17779);
+        const serverInstance = server.listen(serverPort, serverHost, function () {
+          const proto = sslEnabled ? 'wss' : 'ws';
+          const host = serverInstance.address().address;
+          const port = serverInstance.address().port;
           chores.isVerboseForced(constx.FRAMEWORK.NAME, frameworkCfg) &&
               console.log('%s is listening on %s://%s:%s%s', appName, proto, host, port, appRootUrl);
           onResolved(serverInstance);
@@ -117,7 +117,6 @@ function Server(params={}) {
 
   this.open = this.start; // alias
 
-  let serverCloseEvent;
   this.stop = function() {
     L.has('silly') && L.log('silly', T.toMessage({
       tags: [ blockRef, 'close()' ],
@@ -131,18 +130,19 @@ function Server(params={}) {
         text: 'triggers have stopped'
       }));
       if (mode == 0) return Promise.resolve();
-      if (mode == 1) return rhythm.stop();
+      if (mode == 1) return tictac.stop();
       return new Promise(function(onResolved, onRejected) {
-        let timeoutHandler = setTimeout(function() {
+        const timeoutHandler = setTimeout(function() {
           L.has('dunce') && L.log('dunce', 'Timeout closing Server');
           onRejected();
         }, 60000);
-        if (typeof(serverCloseEvent) === 'function') {
-          server.removeListener("close", serverCloseEvent);
-        }
-        server.on("close", serverCloseEvent = function() {
+        const serverCloseEvent = function() {
           L.has('dunce') && L.log('dunce', 'HTTP Server is invoked');
-        });
+          if (server && lodash.isFunction(serverCloseEvent)) {
+            server.removeListener("close", serverCloseEvent);
+          }
+        }
+        server.on("close", serverCloseEvent);
         server.close(function() {
           L.has('dunce') && L.log('dunce', 'HTTP Server has been closed');
           clearTimeout(timeoutHandler);
@@ -162,7 +162,7 @@ function Server(params={}) {
 
   this.close = this.stop; // alias
 
-  let wss = new WebSocketServer({
+  const wss = new WebSocketServer({
     server: server,
     path: appRootUrl + '/execute',
     verifyClient: function(info, callback) {
@@ -175,7 +175,7 @@ function Server(params={}) {
   });
 
   wss.on('connection', function connection(ws) {
-    let outlet = scriptRenderer.createOutlet({ ws: ws });
+    const outlet = scriptRenderer.createOutlet({ ws: ws });
 
     ws.on('open', function handler() {
       L.has('dunce') && L.log('dunce', ' - Websocket@server is opened');

@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "directories": {
@@ -14,16 +14,16 @@
     "lib/"
   ],
   "scripts": {
-    "build": "babel ./src -d ./lib",
     "clean": "rm -rf ./lib",
-    "clean-build": "npm run clean && npm run build",
-    "prepublish": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-production} npm run clean-build",
-    "pretest": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-test} npm run clean-build",
-    "prove": "mocha --recursive ./test/**/${DEVEBOT_TESTCASES:-*}-test.js",
+    "build-without-cleaning": "babel ./src -d ./lib",
+    "build": "npm run clean && npm run build-without-cleaning",
+    "prepublish": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-production} npm run build",
+    "pretest": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-test} npm run build",
+    "prove": "mocha --recursive ./test/{bdd,tdd}/${DEVEBOT_TESTCASES:-*}-test.js",
     "test": "npm run prove",
-    "test-without-rebuilding": "npm run prove",
     "test-publish": "npm run prepublish && npm run prove",
-    "test-to-reports": "npm run clean-build && mocha --recursive ./test/**/${DEVEBOT_TESTCASES:-*}-test.js --reporter mochawesome --reporter-options reportDir=test-reports,reportFilename=index"
+    "test-without-rebuilding": "mocha --recursive ./test/{bdd,tdd}/${DEVEBOT_TESTCASES:-*}-test.js --reporter dot",
+    "test-to-reports": "npm run build && mocha --recursive ./test/{bdd,tdd}/${DEVEBOT_TESTCASES:-*}-test.js --reporter mochawesome --reporter-options reportDir=test-reports,reportFilename=index"
   },
   "repository": {
     "type": "git",
@@ -45,6 +45,7 @@
   "homepage": "https://github.com/devebot/devebot#readme",
   "dependencies": {
     "bluebird": "^3.5.1",
+    "codetags": "^0.1.2",
     "injektor": "^0.1.17",
     "lodash": "^4.17.10",
     "logolite": "^0.1.7",

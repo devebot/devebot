@@ -11,25 +11,25 @@ const blockRef = chores.getBlockRef(__filename);
 function Runner(params={}) {
   Kernel.call(this, params);
 
-  let loggingWrapper = new LoggingWrapper(blockRef);
-  let L = loggingWrapper.getLogger();
-  let T = loggingWrapper.getTracer();
+  const loggingWrapper = new LoggingWrapper(blockRef);
+  const L = loggingWrapper.getLogger();
+  const T = loggingWrapper.getTracer();
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  let injektor = this._injektor;
+  const injektor = this._injektor;
   delete this._injektor;
 
-  let scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
-  let scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
+  const scriptExecutor = injektor.lookup('scriptExecutor', chores.injektorContext);
+  const scriptRenderer = injektor.lookup('scriptRenderer', chores.injektorContext);
 
   this.listen = function() {
-    let ws = new WsServerMock();
+    const ws = new WsServerMock();
 
-    let outlet = scriptRenderer.createOutlet({ ws: ws });
+    const outlet = scriptRenderer.createOutlet({ ws: ws });
 
     ws.on('message', function(command) {
       L.has('silly') && L.log('silly', T.add({ command }).toMessage({

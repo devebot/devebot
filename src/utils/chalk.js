@@ -3,15 +3,15 @@
 const toolset = require('./toolset');
 
 function Chalk(params={}) {
-  let themes = params.themes || {};
+  const themes = params.themes || {};
 
   if (params.blanked !== true && toolset.has('colors')) {
-    let colors = toolset.get('colors');
+    const colors = toolset.get('colors');
     colors.setTheme(themes);
     return colors;
   }
 
-  let self = this;
+  const self = this;
   Object.keys(themes).forEach(function(name) {
     self[name] = function(str) { return str; }
   });

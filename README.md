@@ -4,25 +4,24 @@
 
 > Nodejs Microservice Framework
 
-## Usage
+## Introduction
 
-Installs `devebot` module:
+Devebot is tiny microservice framework for Nodejs. It is designed under some important principles:
 
-```shell
-$ npm install --save devebot
-```
+* High modularity
+* Reusable
+* Easy to integrate
 
-Create your `app.js` source file, and appends the following block:
+![Architecture](https://raw.github.com/devebot/codetags/master/docs/assets/images/devebot-architecture.png)
 
-```javascript
-var Devebot = require('devebot');
 
-var app = Devebot({
-  appRootPath: __dirname
-});
+Based on the devebot framework, the application is decomposed into `plugins`, each of which implements a particular feature. The framework provides `bridges` which wraps or connects to other services like REST API or database servers.
 
-// start the server if run `$ node app.js`
-if (require.main === module) app.server.start();
+## Examples
 
-module.exports = app;
-```
+### Stormeys Microservice Dispatch System
+
+* [Stormeye Service](https://github.com/pnhung177/stormeye-dispatcher)
+* [Stormeye Worker Example 1](https://github.com/pnhung177/stormeye-worker-node1)
+* [Stormeye Worker Example 2](https://github.com/pnhung177/stormeye-worker-node2)
+* [Stormeye Client Scripts](https://github.com/pnhung177/stormeye-client)

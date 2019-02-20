@@ -6,35 +6,33 @@ const constx = require('../utils/constx');
 const blockRef = chores.getBlockRef(__filename);
 
 function JobqueueBinder(params={}) {
-  let self = this;
-  let loggingFactory = params.loggingFactory.branch(blockRef);
-  let L = loggingFactory.getLogger();
-  let T = loggingFactory.getTracer();
-  let sandboxName = params.sandboxName;
+  const loggingFactory = params.loggingFactory.branch(blockRef);
+  const L = loggingFactory.getLogger();
+  const T = loggingFactory.getTracer();
+  const sandboxName = params.sandboxName;
 
   L.has('silly') && L.log('silly', T.add({ sandboxName }).toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start in sandbox <{sandboxName}>'
   }));
 
-  let jqCfg = lodash.get(params, ['profileConfig', constx.FRAMEWORK.NAME, 'jobqueue'], {});
+  const jqCfg = lodash.get(params, ['profileConfig', constx.FRAMEWORK.NAME, 'jobqueue'], {});
+  const _ref_ = { jobqueueMasterName: null, jobqueueMaster: null }
 
-  let jobqueueMasterName = null;
-  let getJobqueueMasterName = function() {
-    return jobqueueMasterName = jobqueueMasterName ||
+  function getJobqueueMasterName() {
+    return _ref_.jobqueueMasterName = _ref_.jobqueueMasterName ||
         jqCfg.pluginId && [jqCfg.pluginId, "jobqueueMaster"].join(chores.getSeparator());
   }
 
-  let jobqueueMaster = null;
-  let getJobQueueMaster = function() {
-    return jobqueueMaster = jobqueueMaster ||
+  function getJobQueueMaster() {
+    return _ref_.jobqueueMaster = _ref_.jobqueueMaster ||
         getJobqueueMasterName() && params.injectedHandlers[getJobqueueMasterName()];
   }
 
   Object.defineProperties(this, {
     enabled: {
       get: function() {
-        let enabled = jqCfg.enabled !== false && getJobQueueMaster() != null;
+        const enabled = jqCfg.enabled !== false && getJobQueueMaster() != null;
         L.has('dunce') && L.log('dunce', T.add({ enabled, sandboxName }).toMessage({
           text: ' - jobqueueMaster in sandbox <{sandboxName}> status (enabled): {enabled}'
         }));

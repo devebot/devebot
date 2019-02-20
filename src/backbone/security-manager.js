@@ -9,21 +9,20 @@ const constx = require('../utils/constx');
 const blockRef = chores.getBlockRef(__filename);
 
 function SecurityManager(params={}) {
-  let self = this;
-  let loggingFactory = params.loggingFactory.branch(blockRef);
-  let L = loggingFactory.getLogger();
-  let T = loggingFactory.getTracer();
-  let CTX = {L, T};
+  const loggingFactory = params.loggingFactory.branch(blockRef);
+  const L = loggingFactory.getLogger();
+  const T = loggingFactory.getTracer();
+  const CTX = {L, T};
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  let authenCfg = lodash.get(params, ['profileConfig', constx.FRAMEWORK.NAME, 'authen'], {});
+  const authenCfg = lodash.get(params, ['profileConfig', constx.FRAMEWORK.NAME, 'authen'], {});
 
-  self.authenticate = function(tokens) {
-    let output = Promise.resolve({ result: true });
+  this.authenticate = function(tokens) {
+    const output = Promise.resolve({ result: true });
 
     L.has('silly') && L.log('silly', T.add({
       tokens: tokens,
@@ -36,9 +35,9 @@ function SecurityManager(params={}) {
     if (authenCfg.disabled) return output;
 
     return loadTokenStore(CTX, authenCfg.tokenStoreFile).then(function(store) {
-      let storeTokens = store.tokens || [];
-      for(let i=0; i<storeTokens.length; i++) {
-        let storeToken = storeTokens[i];
+      const storeTokens = store.tokens || [];
+      for(const i in storeTokens) {
+        const storeToken = storeTokens[i];
         if (storeToken.key && storeToken.key == tokens['x-token-key'] &&
             storeToken.secret == tokens['x-token-secret']) {
           return output;
@@ -69,11 +68,11 @@ SecurityManager.argumentSchema = {
 
 module.exports = SecurityManager;
 
-let loadTokenStore = function(ctx, storefile) {
-  let {L, T} = ctx;
-  let readFile = Promise.promisify(fs.readFile);
+function loadTokenStore(ctx, storefile) {
+  const {L, T} = ctx;
+  const readFile = Promise.promisify(fs.readFile);
   return readFile(storefile, 'utf8').then(function(text) {
-    let data = JSON.parse(text);
+    const data = JSON.parse(text);
     if (lodash.isEmpty(data.tokens) || !lodash.isArray(data.tokens)) {
       L.has('silly') && L.log('silly', T.add({
         storefile: storefile

@@ -22,32 +22,45 @@ const trapNames = [
   'ownKeys',
 ].concat(Object.keys(nameIndexOf))
 
-function BeanProxy(rootTarget, handler, options) {
-  function createProxy(target, path) {
-    const context = { rootTarget, path };
-    const realTraps = {};
+function BeanProxy(target, handler, opts = {}) {
+  function createProxy(beanTarget, path) {
+    const pathString = chainify(path);
+    const sharedContext = opts.isContextShared ? { root: target, path } : null;
+    const wrappedHandler = {};
     for (const trapName of trapNames) {
-      const nameIndex = nameIndexOf[trapName], trap = handler[trapName];
+      const trap = handler[trapName];
       if (isFunction(trap)) {
-        realTraps[trapName] = function () {
+        const nameIndex = nameIndexOf[trapName];
+        wrappedHandler[trapName] = function () {
+          const context = opts.isContextShared ? sharedContext : { root: target, path };
           const name = isNumber(nameIndex) ? arguments[nameIndex] : null;
-          context.nest = function (nestedTarget) {
-            if (isUndefined(nestedTarget)) {
-              nestedTarget = isString(name) ? rootTarget : {};
+          context.slug = pathString;
+          if (isString(name)) {
+            context.slug = pathString && (pathString + '.' + name) || name;
+          }
+          context.wrap = function (wrappedTarget) {
+            if (isUndefined(wrappedTarget)) {
+              wrappedTarget = isString(name) ? target : {};
             }
-            const nestedPath = isString(name) ? [].concat(path, name) : path;
-            return createProxy(nestedTarget, nestedPath);
+            const wrappedPath = isString(name) ? [].concat(path, name) : path;
+            return createProxy(wrappedTarget, wrappedPath);
           }
           return trap.apply(context, arguments);
         }
       }
     }
-    return new Proxy(target, realTraps);
+    return new Proxy(beanTarget, wrappedHandler);
   }
-  return createProxy(rootTarget, extractPath(options));
+  return createProxy(target, extractPath(opts));
 }
 
 module.exports = BeanProxy;
+
+function chainify(path) {
+  if (isString(path)) return path;
+  if (Array.isArray(path)) return path.join('.');
+  return null;
+}
 
 function extractPath(options) {
   return options && options.path ? toPath(options.path) : [];

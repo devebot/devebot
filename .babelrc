@@ -13,6 +13,9 @@
             "node": "6.10"
           }
         }]
+      ],
+      "plugins": [
+        "minify-mangle-names"
       ]
     },
     "test": {
