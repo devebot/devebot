@@ -469,7 +469,7 @@ bootstrap.initialize = function(action, options = {}) {
   return this;
 }
 
-const builtinPackages = ['bluebird', 'lodash', 'injektor', 'logolite', 'schemato', 'semver'];
+const builtinPackages = ['bluebird', 'lodash', 'injektor', 'logolite', 'schemato', 'semver', 'codetags'];
 const internalModules = ['chores', 'loader', 'pinbug', 'errors'];
 
 bootstrap.require = function(packageName) {

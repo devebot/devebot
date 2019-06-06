@@ -15,7 +15,7 @@ Devebot is tiny microservice framework for Nodejs. It is designed under some imp
 ![Architecture](https://raw.github.com/devebot/devebot/master/docs/assets/images/devebot-architecture.png)
 
 
-Based on the devebot framework, the application is decomposed into `plugins`, each of which implements a particular feature. The framework provides `bridges` which wraps or connects to other services like REST API or database servers.
+Based on the devebot framework, the application is decomposed into `plugins`, each of which implements a particular feature. The framework provides `bridges` which wrap or connect to other services such as REST API or database servers.
 
 ## Examples
 
