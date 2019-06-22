@@ -16,8 +16,8 @@ function ErrorCollection() {
       const info = { message: undefined, code: undefined, payload: undefined }
       Array.prototype.forEach.call(arguments, function(arg) {
         if (arg) {
-          const type = typeof(arg);
-          switch(type) {
+          const type = typeof arg;
+          switch (type) {
             case 'string': {
               if (info.message !== undefined) {
                 throw new TypeError(util.format('%s has already initialized', 'message'));

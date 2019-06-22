@@ -6,7 +6,7 @@ const loader = require('../utils/loader');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 
-function BridgeLoader(params={}) {
+function BridgeLoader(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();

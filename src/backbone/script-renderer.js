@@ -8,7 +8,7 @@ const constx = require('../utils/constx');
 const nodash = require('../utils/nodash');
 const blockRef = chores.getBlockRef(__filename);
 
-function ScriptRenderer(params={}) {
+function ScriptRenderer(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();

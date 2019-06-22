@@ -30,15 +30,15 @@ const commandObject = {
       data: {
         os_platform: os.platform(),
         os_arch: os.arch(),
-        os_cpus: lodash.map(os.cpus(), function(cpu) { 
+        os_cpus: lodash.map(os.cpus(), function(cpu) {
           return lodash.pick(cpu, ['model', 'speed']);
         }),
         os_hostname: os.hostname(),
         os_network_interface: os.networkInterfaces(),
-        os_totalmem: os.totalmem()/1024/1024,
-        os_freemem: os.freemem()/1024/1024,
+        os_totalmem: os.totalmem() / 1024 / 1024,
+        os_freemem: os.freemem() / 1024 / 1024,
         os_loadavg: os.loadavg(),
-        os_uptime: os.uptime()/3600
+        os_uptime: os.uptime() / 3600
       }
     }]);
   }

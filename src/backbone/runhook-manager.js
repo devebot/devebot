@@ -14,7 +14,7 @@ const blockRef = chores.getBlockRef(__filename);
  * @param {Object} params - The parameters of the constructor.
  * @param {Object} params.runhook - The parameters that sent to Runhooks
  */
-function RunhookManager(params={}) {
+function RunhookManager(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();

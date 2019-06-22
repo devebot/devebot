@@ -9,7 +9,7 @@ const blockRef = chores.getBlockRef(__filename);
 
 const SELECTED_FIELDS = [ 'crateScope', 'extension', 'schema', 'checkConstraints' ];
 
-function ManifestHandler(params={}) {
+function ManifestHandler(params = {}) {
   const {nameResolver, issueInspector, bridgeList, bundleList} = params;
   const loggingWrapper = new LoggingWrapper(blockRef);
   const L = loggingWrapper.getLogger();
@@ -113,9 +113,9 @@ function validateBridgeConfig(ref, bridgeConfig, bridgeSchema, result) {
   }));
 
   if (!chores.isUpgradeSupported('bridge-full-ref')) {
-    for(const dialectName in bridgeConfig) {
+    for (const dialectName in bridgeConfig) {
       const dialectMap = bridgeConfig[dialectName] || {};
-      for(const bridgeCode in dialectMap) {
+      for (const bridgeCode in dialectMap) {
         const bridgeMetadata = lodash.get(bridgeSchema, [bridgeCode], {});
         if (bridgeMetadata.enabled === false || !lodash.isObject(bridgeMetadata.schema)) continue;
         const dialectConfig = dialectMap[bridgeCode] || {};
@@ -126,13 +126,13 @@ function validateBridgeConfig(ref, bridgeConfig, bridgeSchema, result) {
     return result;
   }
 
-  for(const bridgeCode in bridgeConfig) {
+  for (const bridgeCode in bridgeConfig) {
     const bridgeMap = bridgeConfig[bridgeCode] || {};
     const bridgeMetadata = lodash.get(bridgeSchema, [bridgeCode], {});
     if (bridgeMetadata.enabled === false || !lodash.isObject(bridgeMetadata.schema)) continue;
-    for(const pluginName in bridgeMap) {
+    for (const pluginName in bridgeMap) {
       const pluginMap = bridgeMap[pluginName] || {};
-      for(const dialectName in pluginMap) {
+      for (const dialectName in pluginMap) {
         const dialectConfig = pluginMap[dialectName] || {};
         const r = chores.validate(dialectConfig, bridgeMetadata.schema);
         result.push(customizeBridgeResult(r, bridgeCode, pluginName, dialectName));

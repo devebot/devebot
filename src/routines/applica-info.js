@@ -18,9 +18,9 @@ const commandObject = {
 
     L.has('dunce') && L.log('dunce', 'app-info is invoked with: %s', JSON.stringify(options));
     return Promise.resolve([{
-        type: 'json',
-        title: 'Application Information',
-        data: chores.pickProperty('appInfo', [ctx, this, commandConfig], {})
+      type: 'json',
+      title: 'Application Information',
+      data: chores.pickProperty('appInfo', [ctx, this, commandConfig], {})
     }]);
   }
 };

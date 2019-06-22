@@ -8,7 +8,7 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const blockRef = chores.getBlockRef(__filename);
 
-function SecurityManager(params={}) {
+function SecurityManager(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
@@ -36,7 +36,7 @@ function SecurityManager(params={}) {
 
     return loadTokenStore(CTX, authenCfg.tokenStoreFile).then(function(store) {
       const storeTokens = store.tokens || [];
-      for(const i in storeTokens) {
+      for (const i in storeTokens) {
         const storeToken = storeTokens[i];
         if (storeToken.key && storeToken.key == tokens['x-token-key'] &&
             storeToken.secret == tokens['x-token-secret']) {

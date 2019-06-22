@@ -5,7 +5,7 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const blockRef = chores.getBlockRef(__filename);
 
-function JobqueueBinder(params={}) {
+function JobqueueBinder(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();

@@ -8,7 +8,7 @@ const constx = require('../utils/constx');
 const loader = require('../utils/loader');
 const blockRef = chores.getBlockRef(__filename);
 
-function BundleLoader(params={}) {
+function BundleLoader(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();

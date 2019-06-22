@@ -3,7 +3,6 @@
 const Injektor = require('injektor');
 const lodash = require('lodash');
 const path = require('path');
-const util = require('util');
 const chores = require('./utils/chores');
 const constx = require('./utils/constx');
 const LoggingWrapper = require('./backbone/logging-wrapper');
@@ -58,7 +57,7 @@ function Kernel(params = {}) {
     const bridgeMetadata = bridgeLoader.loadMetadata();
     L.has('silly') && L.log('silly', T.add({ metadata: bridgeMetadata }).toMessage({
       tags: [ blockRef, 'bridge-config-schema-input' ],
-      text: " - bridge's metadata: ${metadata}"
+      text: " - bridge's metadata: ${ metadata }"
     }));
     const bridgeSchema = extractBridgeSchema(SELECTED_FIELDS, bridgeMetadata);
 

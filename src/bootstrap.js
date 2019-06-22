@@ -1,6 +1,5 @@
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const lodash = require('lodash');
@@ -25,7 +24,7 @@ const issueInspector = IssueInspector.instance;
 const stateInspector = StateInspector.instance;
 const FRAMEWORK_CAPNAME = lodash.capitalize(constx.FRAMEWORK.NAME);
 
-function appLoader(params={}) {
+function appLoader(params = {}) {
   const {logger: L, tracer: T} = params;
 
   L.has('silly') && L.log('silly', T.add({ context: lodash.cloneDeep(params) }).toMessage({

@@ -38,7 +38,7 @@ const store = {
 const chores = {};
 
 chores.assertOk = function () {
-  for(const k in arguments) {
+  for (const k in arguments) {
     assert.ok(arguments[k], util.format('The argument #%s evaluated to a falsy value', k));
   }
 }
@@ -69,7 +69,7 @@ chores.loadPackageInfo = function(pkgRootPath, selectedFieldNames, defaultInfo) 
 };
 
 chores.getFirstDefinedValue = function() {
-  for(const i in arguments) {
+  for (const i in arguments) {
     const val = arguments[i];
     if (val !== undefined && val !== null) return val;
   }
@@ -85,7 +85,7 @@ chores.kickOutOf = function(map, excludedNames) {
 }
 
 chores.isOwnOrInheritedProperty = function(object, property) {
-  for(const propName in object) {
+  for (const propName in object) {
     if (propName === property) return true;
   }
   return object.hasOwnProperty(property);
@@ -93,7 +93,7 @@ chores.isOwnOrInheritedProperty = function(object, property) {
 
 chores.pickProperty = function(propName, containers, propDefault) {
   if (!lodash.isString(propName) || !lodash.isArray(containers)) return null;
-  for(const i in containers) {
+  for (const i in containers) {
     if (lodash.isObject(containers[i]) && containers[i][propName]) {
       return containers[i][propName];
     }
@@ -225,11 +225,11 @@ function _getBundleType(bundle) {
 
 chores.extractCodeByPattern = function(patterns, name) {
   assert.ok(patterns instanceof Array);
-  for(const k in patterns) {
+  for (const k in patterns) {
     assert.ok(patterns[k] instanceof RegExp);
   }
   const info = {};
-  for(info.i=0; info.i<patterns.length; info.i++) {
+  for (info.i=0; info.i<patterns.length; info.i++) {
     if (name.match(patterns[info.i])) break;
   }
   if (info.i >= patterns.length) {
@@ -392,7 +392,7 @@ chores.extractObjectInfo = function(data, opts) {
         if (Array.isArray(data)) {
           const info = [];
           if (level > 0) {
-            for(const i in data) {
+            for (const i in data) {
               info.push(detect(data[i], level - 1));
             }
           }
@@ -400,7 +400,7 @@ chores.extractObjectInfo = function(data, opts) {
         } else {
           const info = {};
           if (level > 0) {
-            for(const field in data) {
+            for (const field in data) {
               info[field] = detect(data[field], level - 1);
             }
           }
@@ -427,7 +427,7 @@ chores.isVersionSatisfied = function (version, versionMask) {
     }
     if (lodash.isArray(versionMask)) {
       if (versionMask.indexOf(version) >= 0) return true;
-      for(const i in versionMask) {
+      for (const i in versionMask) {
         if (semver.satisfies(version, versionMask[i])) return true;
       }
     }

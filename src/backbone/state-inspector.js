@@ -10,7 +10,7 @@ const toolset = require('../utils/toolset');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
-function StateInspector(params={}) {
+function StateInspector(params = {}) {
   const loggingWrapper = new LoggingWrapper(blockRef);
   const L = loggingWrapper.getLogger();
   const T = loggingWrapper.getTracer();

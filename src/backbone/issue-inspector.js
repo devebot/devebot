@@ -8,7 +8,7 @@ const constx = require('../utils/constx');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
-function IssueInspector(params={}) {
+function IssueInspector(params = {}) {
   const loggingWrapper = new LoggingWrapper(blockRef);
   const L = loggingWrapper.getLogger();
   const T = loggingWrapper.getTracer();

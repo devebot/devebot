@@ -12,7 +12,7 @@ const DEFAULT_SECTOR_NAME = chores.getBlockRef(__filename);
 const FRAMEWORK_METADATA = constx.FRAMEWORK.NAME + '-metadata';
 const STAMP = constx.LOGGER.STARTING_POINT;
 
-function LoggingService(params={}) {
+function LoggingService(params = {}) {
   const more = {};
   const logFactory = new LogFactory(transformLoggingConfig(params.profileConfig, more));
 

@@ -20,7 +20,7 @@ const CONFIG_TYPES = [CONFIG_PROFILE_NAME, CONFIG_SANDBOX_NAME, CONFIG_TEXTURE_N
 const CONFIG_METADATA_BLOCK = '__manifest__';
 const RELOADING_FORCED = true;
 
-function ConfigLoader(params={}) {
+function ConfigLoader(params = {}) {
   const { options, appRef, devebotRef, pluginRefs, bridgeRefs } = params;
   const { issueInspector, stateInspector, nameResolver, manifestHandler } = params;
   const loggingWrapper = new LoggingWrapper(blockRef);
@@ -65,7 +65,7 @@ function readVariable(ctx = {}, appLabel, varName) {
     util.format('NODE_%s_%s', appLabel, varName),
     util.format('NODE_%s_%s', 'DEVEBOT', varName)
   ];
-  for(const label of labels) {
+  for (const label of labels) {
     const value = envbox.getEnv(label);
     if (value) {
       L.has('dunce') && L.log('dunce', T.add({ label: labels[0], value }).toMessage({
@@ -193,7 +193,7 @@ function loadConfigOfModules(ctx = {}, config, aliasesOf, tileNames, appName, ap
         }));
       }
       const libRootDir = libRef.path;
-      for(const i in aliasesOf[configType]) {
+      for (const i in aliasesOf[configType]) {
         const defaultFile = path.join(libRootDir, CONFIG_SUBDIR, aliasesOf[configType][i] + '.js');
         if (chores.fileExists(defaultFile)) {
           config[configType]['default'] = lodash.defaultsDeep(config[configType]['default'],
@@ -250,7 +250,7 @@ function loadAppboxConfig(ctx, config, aliasesOf, tileNames, appRef, bridgeManif
     L.has('dunce') && L.log('dunce', T.add({ configType }).toMessage({
       text: ' - load the application default config of "${configType}"'
     }));
-    for(const i in aliasesOf[configType]) {
+    for (const i in aliasesOf[configType]) {
       const defaultFile = path.join(configDir, aliasesOf[configType][i] + '.js');
       if (chores.fileExists(defaultFile)) {
         config[configType]['expanse'] = standardizeConfig(ctx, configType, loadConfigFile(ctx, defaultFile), appRef, bridgeManifests, pluginManifests);
@@ -366,13 +366,13 @@ function modernizeConfig(ctx, configType, configStore, crateInfo, bridgeManifest
   const { issueInspector } = ctx;
   const collector = new ModernizingResultCollector();
   if (!lodash.isEmpty(bridgeManifests)) {
-    for(const bridgeName in configStore.bridges) {
+    for (const bridgeName in configStore.bridges) {
       const bridgePath = ["bridges"].concat(bridgeName);
       const bridgeNode = configStore.bridges[bridgeName] || {};
-      for(const pluginName in bridgeNode) {
+      for (const pluginName in bridgeNode) {
         const pluginPath = bridgePath.concat(pluginName);
         const pluginNode = bridgeNode[pluginName] || {};
-        for(const dialectName in pluginNode) {
+        for (const dialectName in pluginNode) {
           const dialectPath = pluginPath.concat(dialectName);
           const r = modernizeConfigBlock(ctx, configStore, dialectPath, bridgeManifests[bridgeName], "bridge");
           collector.push(r, crateInfo, "bridge", pluginName, bridgeName, dialectName);
@@ -385,7 +385,7 @@ function modernizeConfig(ctx, configType, configStore, crateInfo, bridgeManifest
       const r = modernizeConfigBlock(ctx, configStore, ["application"], pluginManifests["application"], "application");
       collector.push(r, crateInfo, "application");
     }
-    for(const pluginName in configStore.plugins) {
+    for (const pluginName in configStore.plugins) {
       const r = modernizeConfigBlock(ctx, configStore, ["plugins", pluginName], pluginManifests[pluginName], "plugin");
       collector.push(r, crateInfo, "plugin", pluginName);
     }
@@ -415,7 +415,7 @@ function applyManifestMigration(ctx, configStore, configPath, moduleVersion, man
         const configMeta = lodash.get(configNode, [CONFIG_METADATA_BLOCK]);
         const configData = lodash.omit(configNode, [CONFIG_METADATA_BLOCK]);
         const result = { migrated: false, configVersion, moduleVersion, steps: {} };
-        for(const ruleName in manifest.migration) {
+        for (const ruleName in manifest.migration) {
           const rule = manifest.migration[ruleName];
           if (rule.enabled === false) {
             result.steps[ruleName] = 'disabled';

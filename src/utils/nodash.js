@@ -1,7 +1,6 @@
 'use strict';
 
 function Nodash() {
-
   this.arrayify = function (val) {
     if (val === null || val === undefined) return [];
     return Array.isArray(val) ? val : [val];
@@ -12,15 +11,15 @@ function Nodash() {
   }
 
   this.isFunction = function(f) {
-    return typeof(f) === 'function';
+    return (typeof f) === 'function';
   }
 
   this.isObject = function(o) {
-    return o && typeof(o) === 'object' && !this.isArray(o);
+    return o && (typeof o) === 'object' && !this.isArray(o);
   }
 
   this.isString = function(s) {
-    return typeof(s) === 'string';
+    return (typeof s) === 'string';
   }
 
   this.stringToArray = function (labels) {
