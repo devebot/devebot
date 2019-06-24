@@ -163,10 +163,10 @@ function StateInspector(params = {}) {
         if (hasTask(options, 'print-config')) {
           printContent(stateMap);
         }
-      } catch(err) {
+      } catch (err) {
         console.error('Task %s has failed. Exception:\n%s', label, err.stack);
       } finally {
-        console.log('Task %s has finished. application loading end.', label);
+        console.info('Task %s has finished. application loading end.', label);
         process.exit(0);
       }
     }
@@ -247,53 +247,53 @@ function hasTask(options, taskName) {
 }
 
 function printContent(stateMap) {
-  console.log(chalk.heading1('[+] Display final configuration content:'));
+  console.info(chalk.heading1('[+] Display final configuration content:'));
   lodash.forEach(['profile', 'sandbox'], function(cfgType) {
     const cfgObj = lodash.get(stateMap, ['config', cfgType, 'mixture'], null);
-    console.log(chalk.heading2('[-] Final %s configuration:'), chalk.configType(cfgType));
-    console.log(chalk.configBody(JSON_stringify(cfgObj)));
+    console.info(chalk.heading2('[-] Final %s configuration:'), chalk.configType(cfgType));
+    console.info(chalk.configBody(JSON_stringify(cfgObj)));
   });
 }
 
 function printSummary(summary) {
-  console.log(chalk.heading1('[+] %s configuration checking result:'), chalk.configModule('Plugin'));
+  console.info(chalk.heading1('[+] %s configuration checking result:'), chalk.configModule('Plugin'));
   const pluginInfos = lodash.get(summary, ['config', 'sandbox', 'plugins'], {});
   lodash.forOwn(pluginInfos, function(info, name) {
     switch (info.status) {
       case -1:
-      console.log('--> %s(%s) (Undefined/default):', chalk.configIsNull(info.code), chalk.configIsNull(name));
-      console.log(chalk.configDefault(JSON_stringify(info.mixture)));
+      console.info('--> %s(%s) (Undefined/default):', chalk.configIsNull(info.code), chalk.configIsNull(name));
+      console.info(chalk.configDefault(JSON_stringify(info.mixture)));
       break;
 
       case 0:
-      console.log('--> %s(%s) (Empty/default):', chalk.configIsEmpty(info.code), chalk.configIsEmpty(name));
-      console.log(chalk.configDefault(JSON_stringify(info.mixture)));
+      console.info('--> %s(%s) (Empty/default):', chalk.configIsEmpty(info.code), chalk.configIsEmpty(name));
+      console.info(chalk.configDefault(JSON_stringify(info.mixture)));
       break;
 
       case 1:
-      console.log('--> %s(%s) (Ok/customized):', chalk.configIsOk(info.code), chalk.configIsOk(name));
-      console.log(chalk.configMixture(JSON_stringify(info.mixture)));
+      console.info('--> %s(%s) (Ok/customized):', chalk.configIsOk(info.code), chalk.configIsOk(name));
+      console.info(chalk.configMixture(JSON_stringify(info.mixture)));
       break;
     }
   });
 
-  console.log(chalk.heading1('[+] %s configuration checking result:'), chalk.configModule('Bridge'));
+  console.info(chalk.heading1('[+] %s configuration checking result:'), chalk.configModule('Bridge'));
   const bridgeInfos = lodash.get(summary, ['config', 'sandbox', 'bridges'], {});
   lodash.forOwn(bridgeInfos, function(info, name) {
     switch (info.status) {
       case -1:
-      console.log('--> %s (Undefined/default):', chalk.configIsNull(name));
-      console.log(chalk.configDefault(JSON_stringify(info.mixture)));
+      console.info('--> %s (Undefined/default):', chalk.configIsNull(name));
+      console.info(chalk.configDefault(JSON_stringify(info.mixture)));
       break;
 
       case 0:
-      console.log('--> %s (Empty/default):', chalk.configIsEmpty(name));
-      console.log(chalk.configDefault(JSON_stringify(info.mixture)));
+      console.info('--> %s (Empty/default):', chalk.configIsEmpty(name));
+      console.info(chalk.configDefault(JSON_stringify(info.mixture)));
       break;
 
       case 1:
-      console.log('--> %s (Ok/customized):', chalk.configIsOk(name));
-      console.log(chalk.configMixture(JSON_stringify(info.mixture)));
+      console.info('--> %s (Ok/customized):', chalk.configIsOk(name));
+      console.info(chalk.configMixture(JSON_stringify(info.mixture)));
       break;
     }
   });

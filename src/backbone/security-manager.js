@@ -1,6 +1,5 @@
 'use strict';
 
-const path = require('path');
 const fs = require('fs');
 const Promise = require('bluebird');
 const lodash = require('lodash');
@@ -12,7 +11,7 @@ function SecurityManager(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
-  const CTX = {L, T};
+  const CTX = { L, T };
 
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
@@ -43,7 +42,7 @@ function SecurityManager(params = {}) {
           return output;
         }
       }
-      return Promise.resolve({ result: false, code: 401, name: 'Token Not Found'});
+      return Promise.resolve({ result: false, code: 401, name: 'Token Not Found' });
     });
   };
 
@@ -69,7 +68,7 @@ SecurityManager.argumentSchema = {
 module.exports = SecurityManager;
 
 function loadTokenStore(ctx, storefile) {
-  const {L, T} = ctx;
+  const { L, T } = ctx;
   const readFile = Promise.promisify(fs.readFile);
   return readFile(storefile, 'utf8').then(function(text) {
     const data = JSON.parse(text);

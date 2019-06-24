@@ -349,23 +349,6 @@ function getComponentLabel(compName) {
   return constx.FRAMEWORK.NAME + chores.getSeparator() + compName;
 }
 
-function wrapScriptConstructor(ScriptConstructor, wrapperNames) {
-  function wrapperConstructor(params) {
-    ScriptConstructor.call(this, params);
-  }
-
-  wrapperConstructor.prototype = Object.create(ScriptConstructor.prototype);
-
-  wrapperConstructor.argumentSchema = lodash.cloneDeep(ScriptConstructor.argumentSchema);
-  lodash.forEach(wrapperNames, function(serviceName) {
-    const serviceEntry = {};
-    serviceEntry[serviceName] = { "type": "object" };
-    lodash.assign(wrapperConstructor.argumentSchema.properties, serviceEntry);
-  });
-
-  return wrapperConstructor;
-};
-
 function mergeSandboxServiceHelps(serviceNames, blocks) {
   const self = this;
   serviceNames.forEach(function(serviceName) {

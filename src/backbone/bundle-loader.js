@@ -13,7 +13,7 @@ function BundleLoader(params = {}) {
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
   const CTX = lodash.assign({L, T}, lodash.pick(params, [
-    'issueInspector','nameResolver', 'schemaValidator', 'objectDecorator'
+    'issueInspector', 'nameResolver', 'schemaValidator', 'objectDecorator'
   ]));
 
   L.has('silly') && L.log('silly', T.toMessage({
@@ -115,7 +115,7 @@ function loadAllScripts(CTX, scriptMap, scriptType, scriptContext, pluginRootDir
 };
 
 function loadScriptEntries(CTX, scriptMap, scriptType, scriptContext, pluginRootDir) {
-  const {L, T, schemaValidator} = CTX || this;
+  const { L, T } = CTX || this;
 
   const scriptSubDir = chores.getComponentDir(pluginRootDir, scriptType);
   const scriptFolder = path.join(pluginRootDir.path, scriptSubDir);
@@ -133,7 +133,7 @@ function loadScriptEntries(CTX, scriptMap, scriptType, scriptContext, pluginRoot
 };
 
 function loadScriptEntry(CTX, scriptMap, scriptType, scriptSubDir, scriptFile, scriptContext, pluginRootDir) {
-  const {L, T, issueInspector, nameResolver, schemaValidator} = CTX || this;
+  const { L, T, issueInspector, nameResolver } = CTX || this;
   const opStatus = lodash.assign({ type: scriptType, file: scriptFile, subDir: scriptSubDir }, pluginRootDir);
   const filepath = path.join(pluginRootDir.path, scriptSubDir, scriptFile);
   try {
@@ -192,23 +192,8 @@ function loadScriptEntry(CTX, scriptMap, scriptType, scriptSubDir, scriptFile, s
   issueInspector.collect(opStatus);
 };
 
-function parseScriptTree(scriptFile, scriptInstance, isHierarchical) {
-  let entryPath = scriptFile.replace('.js', '').toLowerCase().split('_');
-  if (entryPath.length > 0 && entryPath[0] !== constx[scriptType].ROOT_KEY) {
-    entryPath.unshift(constx[scriptType].ROOT_KEY);
-  }
-  entryPath = entryPath.reverse();
-  entryPath.unshift(scriptInstance);
-  const entry = lodash.reduce(entryPath, function(result, item) {
-    const nestEntry = {};
-    nestEntry[item] = result;
-    return nestEntry;
-  });
-  return entry;
-}
-
 function validateScript(CTX, scriptObject, scriptType) {
-  const {L, T, schemaValidator} = CTX || this;
+  const { schemaValidator } = CTX || this;
   const results = [];
 
   scriptObject = scriptObject || {};
@@ -225,7 +210,7 @@ function validateScript(CTX, scriptObject, scriptType) {
   }
 
   return results.reduce(function(output, result) {
-    output.valid = output.valid && (result.valid != false);
+    output.valid = output.valid && (result.valid !== false);
     output.errors = output.errors.concat(result.errors);
     return output;
   }, { valid: true, errors: [] });
@@ -241,7 +226,7 @@ function loadAllMetainfs(CTX, metainfMap, pluginRootDirs) {
 }
 
 function loadMetainfEntries(CTX, metainfMap, pluginRootDir) {
-  const {L, T, schemaValidator} = CTX = CTX || this;
+  const { L, T } = CTX = CTX || this;
   const metainfType = 'METAINF';
   const metainfSubDir = chores.getComponentDir(pluginRootDir, metainfType);
   const metainfFolder = path.join(pluginRootDir.path, metainfSubDir);
@@ -255,7 +240,7 @@ function loadMetainfEntries(CTX, metainfMap, pluginRootDir) {
 }
 
 function loadMetainfEntry(CTX, metainfMap, metainfSubDir, schemaFile, pluginRootDir) {
-  const {L, T, issueInspector, nameResolver, schemaValidator} = CTX || this;
+  const { L, T, issueInspector, nameResolver } = CTX || this;
   const metainfType = 'METAINF';
   const opStatus = lodash.assign({ type: 'METAINF', file: schemaFile, subDir: metainfSubDir }, pluginRootDir);
   const filepath = path.join(pluginRootDir.path, metainfSubDir, schemaFile);
@@ -300,7 +285,7 @@ function loadMetainfEntry(CTX, metainfMap, metainfSubDir, schemaFile, pluginRoot
       };
       lodash.defaultsDeep(metainfMap, entry);
     }
-  } catch(err) {
+  } catch (err) {
     L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
       text: ' - schema file ${filepath} loading has failed'
     }));
@@ -312,13 +297,13 @@ function loadMetainfEntry(CTX, metainfMap, metainfSubDir, schemaFile, pluginRoot
 }
 
 function validateMetainf(CTX, metainfObject) {
-  const {L, T, schemaValidator} = CTX = CTX || this;
+  const { schemaValidator } = CTX = CTX || this;
   const metainfType = 'METAINF';
   const results = [];
   metainfObject = metainfObject || {};
   results.push(schemaValidator.validate(metainfObject, constx[metainfType].SCHEMA_OBJECT));
   return results.reduce(function(output, result) {
-    output.valid = output.valid && (result.valid != false);
+    output.valid = output.valid && (result.valid !== false);
     output.errors = output.errors.concat(result.errors);
     return output;
   }, { valid: true, errors: [] });
@@ -334,7 +319,7 @@ function loadAllGadgets(CTX, gadgetMap, gadgetType, pluginRootDirs) {
 };
 
 function loadGadgetEntries(CTX, gadgetMap, gadgetType, pluginRootDir) {
-  const {L, T, schemaValidator} = CTX || this;
+  const { L, T } = CTX || this;
 
   const gadgetSubDir = chores.getComponentDir(pluginRootDir, gadgetType);
   const gadgetFolder = path.join(pluginRootDir.path, gadgetSubDir);
@@ -352,7 +337,7 @@ function loadGadgetEntries(CTX, gadgetMap, gadgetType, pluginRootDir) {
 };
 
 function loadGadgetEntry(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetFile, pluginRootDir) {
-  const {L, T, issueInspector, schemaValidator} = CTX = CTX || this;
+  const { L, T, issueInspector } = CTX = CTX || this;
   const opStatus = lodash.assign({ type: gadgetType, file: gadgetFile, subDir: gadgetSubDir }, pluginRootDir);
   const filepath = path.join(pluginRootDir.path, gadgetSubDir, gadgetFile);
   try {
@@ -370,7 +355,7 @@ function loadGadgetEntry(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetFile, p
       }));
       opStatus.hasError = true;
     }
-  } catch(err) {
+  } catch (err) {
     L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
       text: ' - gadget file ${filepath} loading has failed'
     }));
@@ -382,7 +367,7 @@ function loadGadgetEntry(CTX, gadgetMap, gadgetType, gadgetSubDir, gadgetFile, p
 };
 
 function buildGadgetWrapper(CTX, gadgetConstructor, gadgetType, wrapperName, pluginRootDir) {
-  const {L, T, nameResolver, objectDecorator, schemaValidator} = CTX;
+  const { L, T, nameResolver, objectDecorator } = CTX;
   const result = {};
 
   if (!lodash.isFunction(gadgetConstructor)) {
@@ -437,7 +422,7 @@ function buildGadgetWrapper(CTX, gadgetConstructor, gadgetType, wrapperName, plu
           kwargs[newKey] = kwargs[oldKey];
         }
       });
-      if (false) {
+      if (constx.LOADING.DELETE_OLD_REFERENCE_ALIAS) {
         // remove the old references
         const newKeys = lodash.keys(referenceAlias);
         const oldKeys = lodash.values(referenceAlias);

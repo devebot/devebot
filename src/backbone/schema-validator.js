@@ -1,6 +1,5 @@
 'use strict';
 
-const lodash = require('lodash');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 

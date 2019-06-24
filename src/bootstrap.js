@@ -113,7 +113,7 @@ function appLoader(params = {}) {
 
   Object.defineProperty(_app_, 'config', {
     get: function() {
-      if (_ref_.config == undefined || _ref_.config == null) {
+      if (_ref_.config === undefined || _ref_.config === null) {
         _ref_.config = configLoader.load();
         _ref_.config.appName = appName;
         _ref_.config.appInfo = appInfo;
@@ -131,7 +131,7 @@ function appLoader(params = {}) {
 
   Object.defineProperty(_app_, 'runner', {
     get: function() {
-      return _ref_.runner = _ref_.runner || new Runner({
+      _ref_.runner = _ref_.runner || new Runner({
         appName,
         appInfo,
         bridgeList,
@@ -143,13 +143,14 @@ function appLoader(params = {}) {
         nameResolver,
         manifestHandler,
       });
+      return _ref_.runner;
     },
     set: function(value) {}
   });
 
   Object.defineProperty(_app_, 'server', {
     get: function() {
-      return _ref_.server = _ref_.server || new Server({
+      _ref_.server = _ref_.server || new Server({
         appName,
         appInfo,
         bridgeList,
@@ -161,6 +162,7 @@ function appLoader(params = {}) {
         nameResolver,
         manifestHandler,
       });
+      return _ref_.server;
     },
     set: function(value) {}
   });
@@ -453,13 +455,13 @@ bootstrap.initialize = function(action, options = {}) {
       const tasks = argv.tasks || argv.actions;
       if (lodash.isEmpty(tasks)) {
         if (options.forced && !lodash.isEmpty(argv._)) {
-          console.log('Incorrect task(s). Should be: (--tasks=print-config,check-config)');
+          console.info('Incorrect task(s). Should be: (--tasks=print-config,check-config)');
           process.exit(0);
         }
       } else {
         const jobs = stateInspector.init({ tasks });
         if (lodash.isEmpty(jobs)) {
-          console.log('Unknown task(s): (%s)!', tasks);
+          console.info('Unknown task(s): (%s)!', tasks);
           process.exit(0);
         }
       }

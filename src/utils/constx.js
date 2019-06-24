@@ -565,5 +565,8 @@ module.exports = {
       tag: 'manifest-refiner',
       enabled: true,
     },
-  ]
+  ],
+  LOADING: {
+    DELETE_OLD_REFERENCE_ALIAS: false
+  }
 };

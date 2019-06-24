@@ -40,67 +40,67 @@ function AbstractOutlet(params) {
 
   this.render = function(state, output) {
     const self = this;
-    switch(state) {
+    switch (state) {
       case 'error':
-      self._send(JSON.stringify({
-        state: constx.WEBSOCKET.STATE.ERROR,
-        message: constx.WEBSOCKET.MSG_ON.ERROR
-      }));
-      break;
+        self._send(JSON.stringify({
+          state: constx.WEBSOCKET.STATE.ERROR,
+          message: constx.WEBSOCKET.MSG_ON.ERROR
+        }));
+        break;
 
       case 'definition':
-      self._send(JSON.stringify({
-        state: 'definition',
-        payload: output
-      }));
-      break;
+        self._send(JSON.stringify({
+          state: 'definition',
+          payload: output
+        }));
+        break;
 
       case 'started':
-      self._send(JSON.stringify({
-        state: constx.WEBSOCKET.STATE.STARTED,
-        message: constx.WEBSOCKET.MSG_ON.STARTED
-      }));
-      break;
+        self._send(JSON.stringify({
+          state: constx.WEBSOCKET.STATE.STARTED,
+          message: constx.WEBSOCKET.MSG_ON.STARTED
+        }));
+        break;
 
       case 'progress':
-      self._send(JSON.stringify({
-        state: constx.WEBSOCKET.STATE.PROGRESS,
-        message: constx.WEBSOCKET.MSG_ON.PROGRESS,
-        percent: output.progress,
-        payload: output.data,
-        progress: output.progress, //deprecated
-        data: output.data //deprecated
-      }));
-      break;
+        self._send(JSON.stringify({
+          state: constx.WEBSOCKET.STATE.PROGRESS,
+          message: constx.WEBSOCKET.MSG_ON.PROGRESS,
+          percent: output.progress,
+          payload: output.data,
+          progress: output.progress, //deprecated
+          data: output.data //deprecated
+        }));
+        break;
 
       case 'failed':
-      self._send(JSON.stringify({
-        state: constx.WEBSOCKET.STATE.FAILED,
-        message: constx.WEBSOCKET.MSG_ON.FAILED,
-        payload: standardizeOutput(params.schemaValidator, output, true)
-      }));
-      break;
+        self._send(JSON.stringify({
+          state: constx.WEBSOCKET.STATE.FAILED,
+          message: constx.WEBSOCKET.MSG_ON.FAILED,
+          payload: standardizeOutput(params.schemaValidator, output, true)
+        }));
+        break;
 
       case 'completed':
-      self._send(JSON.stringify({
-        state: constx.WEBSOCKET.STATE.COMPLETED,
-        message: constx.WEBSOCKET.MSG_ON.COMPLETED,
-        payload: standardizeOutput(params.schemaValidator, output, false)
-      }));
-      break;
+        self._send(JSON.stringify({
+          state: constx.WEBSOCKET.STATE.COMPLETED,
+          message: constx.WEBSOCKET.MSG_ON.COMPLETED,
+          payload: standardizeOutput(params.schemaValidator, output, false)
+        }));
+        break;
 
       case 'cancelled':
-      self._send(JSON.stringify({
-        state: constx.WEBSOCKET.STATE.CANCELLED,
-        message: constx.WEBSOCKET.MSG_ON.CANCELLED
-      }));
-      break;
+        self._send(JSON.stringify({
+          state: constx.WEBSOCKET.STATE.CANCELLED,
+          message: constx.WEBSOCKET.MSG_ON.CANCELLED
+        }));
+        break;
 
       case 'done':
-      self._send(JSON.stringify({
-        state: constx.WEBSOCKET.STATE.DONE
-      }));
-      break;
+        self._send(JSON.stringify({
+          state: constx.WEBSOCKET.STATE.DONE
+        }));
+        break;
     }
   }
 }

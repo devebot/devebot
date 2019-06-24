@@ -16,7 +16,7 @@ const commandObject = {
     const L = this.loggingFactory.getLogger();
     const T = this.loggingFactory.getTracer();
 
-    L.has('dunce') && L.log('dunce', 'app-info is invoked with: %s', JSON.stringify(options));
+    T && L && L.has('dunce') && L.log('dunce', 'app-info is invoked with: %s', JSON.stringify(options));
     return Promise.resolve([{
       type: 'json',
       title: 'Application Information',

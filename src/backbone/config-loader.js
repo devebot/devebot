@@ -148,7 +148,7 @@ function buildConfigTileNames(ctx, options = {}, profileName, sandboxName, textu
 }
 
 function loadConfigOfModules(ctx = {}, config, aliasesOf, tileNames, appName, appRef, devebotRef, pluginRefs, bridgeRefs, customDir, customEnv) {
-  const { L, T, nameResolver } = ctx;
+  const { L, T } = ctx;
 
   const libRefs = lodash.values(pluginRefs);
   if (devebotRef) {
@@ -236,12 +236,12 @@ function loadAppboxConfig(ctx, config, aliasesOf, tileNames, appRef, bridgeManif
     }));
     const configFiles = chores.filterFiles(configDir, '.*\.js');
     const configInfos = lodash.map(configFiles, function(file) {
-      if (false) {
+      if (constx.LOADING.SPLITTING_FILENAME_BY_REGEXP) {
         return file.replace('.js', '').split(/_(.+)/).filter(function(sub) {
           return sub.length > 0;
         });
       }
-      return file.replace('.js', '').replace(/[_]/,'&').split('&');
+      return file.replace('.js', '').replace(/[_]/, '&').split('&');
     });
     L.has('dunce') && L.log('dunce', T.add({ configInfos }).toMessage({
       text: ' - parsing configFiles result: ${configInfos}'
@@ -292,8 +292,8 @@ function loadConfigFile(ctx, configFile) {
     L.has('dunce') && L.log('dunce', T.add({ configFile }).toMessage({
       text: ' - loading config file: "${configFile}" has done.'
     }));
-  } catch(err) {
-    if (err.code != 'MODULE_NOT_FOUND') {
+  } catch (err) {
+    if (err.code !== 'MODULE_NOT_FOUND') {
       L.has('dunce') && L.log('dunce', T.add({ configFile }).toMessage({
         text: ' - config file ${configFile} loading is failed.'
       }));
@@ -312,7 +312,7 @@ function filterConfigBy(ctx, configInfos, selectedNames, configType, aliasesOf) 
     idx[name] = index;
   });
   lodash.forEach(configInfos, function(item) {
-    const found = (item.length == 2) && (aliasesOf[configType].indexOf(item[0]) >= 0) && (item[1].length > 0);
+    const found = (item.length === 2) && (aliasesOf[configType].indexOf(item[0]) >= 0) && (item[1].length > 0);
     if (found && idx[item[1]] != null) {
       arr[idx[item[1]]] = item;
     }
@@ -485,7 +485,7 @@ function ModernizingResultCollector() {
 }
 
 function transformConfig(ctx, configType, configStore, crateInfo) {
-  const { L, T, nameResolver } = ctx || this;
+  const { nameResolver } = ctx || this;
   if (configType === CONFIG_SANDBOX_NAME) {
     configStore = convertPreciseConfig(ctx, configStore, crateInfo.type, crateInfo.name, crateInfo.presets);
     configStore = applyAliasMap(ctx, configStore, nameResolver.getOriginalNameOf);
@@ -498,12 +498,11 @@ function transformConfig(ctx, configType, configStore, crateInfo) {
 }
 
 function convertPreciseConfig(ctx, preciseConfig, moduleType, moduleName, modulePresets) {
-  const { L, T } = ctx;
   if (lodash.isEmpty(preciseConfig) || !lodash.isObject(preciseConfig)) {
     return preciseConfig;
   }
   // convert old bridge structures
-  if (chores.isUpgradeSupported(['bridge-full-ref','presets'])) {
+  if (chores.isUpgradeSupported(['bridge-full-ref', 'presets'])) {
     const tags = nodash.arrayify(lodash.get(modulePresets, ['configTags'], []));
     const cfgBridges = preciseConfig.bridges;
     const loadable = RELOADING_FORCED || !(cfgBridges && cfgBridges.__status__);
@@ -541,7 +540,6 @@ function convertPreciseConfig(ctx, preciseConfig, moduleType, moduleName, module
 //-----------------------------------------------------------------------------
 
 let applyAliasMap = function(ctx, preciseConfig, nameTransformer) {
-  const { L, T } = ctx;
   if (chores.isUpgradeSupported('standardizing-config')) {
     if (preciseConfig && lodash.isObject(preciseConfig.plugins)) {
       const oldPlugins = preciseConfig.plugins;
@@ -585,7 +583,7 @@ if (!chores.isUpgradeSupported('simplify-name-resolver')) {
   }
   doAliasMap = function(ctx, preciseConfig, pluginAliasMap, bridgeAliasMap) {
     function nameTransformer(name, type) {
-      switch(type) {
+      switch (type) {
         case 'plugin':
           return pluginAliasMap[name] || name;
         case 'bridge':

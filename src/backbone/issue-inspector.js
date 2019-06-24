@@ -62,7 +62,7 @@ function IssueInspector(params = {}) {
         console.error(chalk.errorHeader('[x] There are %s error(s) occurred during load:'), summary.numberOfErrors);
         lodash.forEach(summary.failedServices, function(fsv) {
           if (fsv.stage === 'bootstrap') {
-            switch(fsv.type) {
+            switch (fsv.type) {
               case 'appbox':
               case 'application':
               case constx.FRAMEWORK.NAME: {
@@ -87,7 +87,7 @@ function IssueInspector(params = {}) {
             return;
           }
           if (fsv.stage === 'manifest') {
-            switch(fsv.type) {
+            switch (fsv.type) {
               case 'appbox':
               case 'application':
               case constx.FRAMEWORK.NAME: {
@@ -108,7 +108,7 @@ function IssueInspector(params = {}) {
             }
           }
           if (fsv.stage === 'naming') {
-            switch(fsv.type) {
+            switch (fsv.type) {
               case 'plugin': {
                 console.error(chalk.errorMessage('--> [%s:%s] resolving plugin-code is failed, reasons:'), fsv.type, fsv.name);
                 console.error(chalk.errorStack("  " + fsv.stack));
@@ -131,7 +131,7 @@ function IssueInspector(params = {}) {
             }
           }
           if (fsv.stage === 'config/schema') {
-            switch(fsv.type) {
+            switch (fsv.type) {
               case 'application':
               case constx.FRAMEWORK.NAME:
               case 'plugin': {
@@ -147,7 +147,7 @@ function IssueInspector(params = {}) {
             }
           }
           if (fsv.stage === 'instantiating') {
-            switch(fsv.type) {
+            switch (fsv.type) {
               case 'ROUTINE':
               case 'SERVICE':
               case 'TRIGGER': {
@@ -167,7 +167,7 @@ function IssueInspector(params = {}) {
             }
           }
           if (fsv.stage === 'check-methods') {
-            switch(fsv.type) {
+            switch (fsv.type) {
               case 'TRIGGER': {
                 console.error(chalk.errorMessage('--> [%s:%s] required method(s): %s not found'), fsv.type, fsv.name, JSON.stringify(fsv.methods));
                 return;
@@ -178,7 +178,7 @@ function IssueInspector(params = {}) {
               }
             }
           }
-          switch(fsv.type) {
+          switch (fsv.type) {
             case 'CONFIG': {
               console.error(chalk.errorMessage('--> [%s] in (%s):'), fsv.type, fsv.file);
               console.error(chalk.errorStack("  " + fsv.stack));
@@ -232,7 +232,7 @@ function IssueInspector(params = {}) {
       tags: [ blockRef, 'exit' ],
       text: 'process.exit(${exitCode}) is invoked'
     }));
-    switch(chores.fatalErrorReaction()) {
+    switch (chores.fatalErrorReaction()) {
       case 'exit':
         process.exit(exitCode);
         break;

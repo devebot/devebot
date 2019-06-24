@@ -168,7 +168,7 @@ function wrapObject(refs, object, opts) {
         info: argList
       }));
       if (!cached[methodPath]) {
-        const { textureOfBean } = opts; 
+        const { textureOfBean } = opts;
         const supportAllMethods = chores.getFirstDefinedValue(
           textureOfBean && textureOfBean.supportAllMethods,
           opts.supportAllMethods);
@@ -239,7 +239,7 @@ function wrapMethod(refs, target, opts) {
 }
 
 function MockingInterceptor(params) {
-  const { logger, tracer, texture, method, methodName, object, objectName } = params;
+  const { logger, tracer, texture, method, methodName, objectName } = params;
   const enabled = isMockingEnabled(texture) && !lodash.isEmpty(texture.mocking.mappings);
   let capsule;
   Object.defineProperty(this, 'capsule', {
@@ -459,8 +459,8 @@ function callMethod(refs, argumentsList, logOnEvent, logState) {
   }
 
   function _invoke(argumentsList) {
-    let result = undefined, exception = undefined;
-    switch(methodType) {
+    let result, exception;
+    switch (methodType) {
       case 'promise': {
         result = Promise.resolve().then(function() {
           logOnEvent.Request(logState, argumentsList);
@@ -662,7 +662,7 @@ function getTextureOfPlugin({textureStore, pluginCode, gadgetType, gadgetName}) 
 
 function propagateEnabled(childTexture, parentTexture) {
   if (parentTexture && parentTexture.enabled === false) {
-    if (childTexture && childTexture.enabled == undefined) {
+    if (childTexture && childTexture.enabled == null) {
       childTexture.enabled = parentTexture.enabled;
     }
   }
@@ -670,7 +670,7 @@ function propagateEnabled(childTexture, parentTexture) {
 }
 
 function detectRequestId(argumentsList) {
-  let reqId = undefined;
+  let reqId;
   if (argumentsList && argumentsList.length > 0) {
     for (let k=(argumentsList.length-1); k>=0; k--) {
       const o = argumentsList[k];

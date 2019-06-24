@@ -63,7 +63,7 @@ chores.loadPackageInfo = function(pkgRootPath, selectedFieldNames, defaultInfo) 
       return lodash.pick(pkgJson, selectedFieldNames);
     }
     return pkgJson;
-  } catch(err) {
+  } catch (err) {
     return defaultInfo || null;
   }
 };
@@ -105,9 +105,9 @@ chores.deepFreeze = function (o) {
   const self = this;
   Object.freeze(o);
   Object.getOwnPropertyNames(o).forEach(function (prop) {
-    if (o.hasOwnProperty(prop)
-        && (nodash.isObject(o[prop]) || nodash.isFunction(o[prop]))
-        && !Object.isFrozen(o[prop])) {
+    if (o.hasOwnProperty(prop) &&
+        (nodash.isObject(o[prop]) || nodash.isFunction(o[prop])) &&
+        !Object.isFrozen(o[prop])) {
       self.deepFreeze(o[prop]);
     }
   });
@@ -171,7 +171,7 @@ chores.assertDir = function(appName) {
   try {
     fs.readdirSync(configDir);
   } catch (err) {
-    if (err.code == 'ENOENT') {
+    if (err.code === 'ENOENT') {
       try {
         fs.mkdirSync(configDir);
       } catch (err) {
@@ -296,6 +296,21 @@ chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxReg
   return ref;
 }
 
+chores.parseScriptTree = function (scriptType, scriptFile, scriptInstance, isHierarchical) {
+  let entryPath = scriptFile.replace('.js', '').toLowerCase().split('_');
+  if (entryPath.length > 0 && entryPath[0] !== constx[scriptType].ROOT_KEY) {
+    entryPath.unshift(constx[scriptType].ROOT_KEY);
+  }
+  entryPath = entryPath.reverse();
+  entryPath.unshift(scriptInstance);
+  const entry = lodash.reduce(entryPath, function(result, item) {
+    const nestEntry = {};
+    nestEntry[item] = result;
+    return nestEntry;
+  });
+  return entry;
+}
+
 chores.printError = function(err) {
   if (getenv(['DEVEBOT_ENV', 'NODE_ENV']) !== 'test') {
     [
@@ -376,7 +391,7 @@ chores.extractObjectInfo = function(data, opts) {
   function detect(data, level=2) {
     if (typeof level !== "number" || level < 0) level = 0;
     const type = typeof(data);
-    switch(type) {
+    switch (type) {
       case "boolean":
       case "number":
       case "string":

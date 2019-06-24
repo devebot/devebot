@@ -10,7 +10,7 @@
       "presets": [
         ["env", {
           "targets": {
-            "node": "6.10"
+            "node": "4"
           }
         }]
       ],
@@ -22,7 +22,7 @@
       "presets": [
         ["env", {
           "targets": {
-            "node": "4.0"
+            "node": "6"
           }
         }]
       ]
@@ -31,7 +31,7 @@
       "presets": [
         ["env", {
           "targets": {
-            "node": "4.0"
+            "node": "6"
           }
         }]
       ],
