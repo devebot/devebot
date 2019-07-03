@@ -363,6 +363,7 @@ function standardizeConfig(ctx, configType, configStore, crateInfo, bridgeManife
 
 function modernizeConfig(ctx, configType, configStore, crateInfo, bridgeManifests, pluginManifests) {
   if (configType !== CONFIG_SANDBOX_NAME) return configStore;
+  if (lodash.isEmpty(configStore)) return configStore;
   const { issueInspector } = ctx;
   const collector = new ModernizingResultCollector();
   if (!lodash.isEmpty(bridgeManifests)) {
@@ -502,34 +503,34 @@ function convertPreciseConfig(ctx, preciseConfig, moduleType, moduleName, module
     return preciseConfig;
   }
   // convert old bridge structures
+  function traverseBackward(cfgBridges, newBridges) {
+    lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
+      if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
+        if (moduleType === 'application') {
+          newBridges[cfgName] = newBridges[cfgName] || {};
+          lodash.merge(newBridges[cfgName], bridgeCfg);
+        } else
+        if (moduleType === 'plugin') {
+          moduleName = moduleName || '*';
+          const bridgeNames = lodash.keys(bridgeCfg);
+          if (bridgeNames.length === 1) {
+            const bridgeName = bridgeNames[0];
+            newBridges[bridgeName] = newBridges[bridgeName] || {};
+            newBridges[bridgeName][moduleName] = newBridges[bridgeName][moduleName] || {};
+            if (lodash.isObject(bridgeCfg[bridgeName])) {
+              newBridges[bridgeName][moduleName][cfgName] = bridgeCfg[bridgeName];
+            }
+          }
+        }
+      }
+    });
+  }
   if (chores.isUpgradeSupported(['bridge-full-ref', 'presets'])) {
     const tags = nodash.arrayify(lodash.get(modulePresets, ['configTags'], []));
     const cfgBridges = preciseConfig.bridges;
     const loadable = RELOADING_FORCED || !(cfgBridges && cfgBridges.__status__);
     if (lodash.isObject(cfgBridges) && tags.indexOf('bridge[dialect-bridge]') >= 0 && loadable) {
       const newBridges = RELOADING_FORCED ? {} : { __status__: true };
-      function traverseBackward(cfgBridges, newBridges) {
-        lodash.forOwn(cfgBridges, function(bridgeCfg, cfgName) {
-          if (lodash.isObject(bridgeCfg) && !lodash.isEmpty(bridgeCfg)) {
-            if (moduleType === 'application') {
-              newBridges[cfgName] = newBridges[cfgName] || {};
-              lodash.merge(newBridges[cfgName], bridgeCfg);
-            } else
-            if (moduleType === 'plugin') {
-              moduleName = moduleName || '*';
-              const bridgeNames = lodash.keys(bridgeCfg);
-              if (bridgeNames.length === 1) {
-                const bridgeName = bridgeNames[0];
-                newBridges[bridgeName] = newBridges[bridgeName] || {};
-                newBridges[bridgeName][moduleName] = newBridges[bridgeName][moduleName] || {};
-                if (lodash.isObject(bridgeCfg[bridgeName])) {
-                  newBridges[bridgeName][moduleName][cfgName] = bridgeCfg[bridgeName];
-                }
-              }
-            }
-          }
-        });
-      }
       traverseBackward(cfgBridges, newBridges);
       preciseConfig.bridges = newBridges;
     }
