@@ -43,11 +43,6 @@ chores.assertOk = function () {
   }
 }
 
-// @Deprecated
-chores.buildError = function(errorName) {
-  return errors.assertConstructor(errorName);
-}
-
 chores.getUUID = function() {
   return uuidv4();
 }
@@ -448,6 +443,30 @@ chores.isVersionSatisfied = function (version, versionMask) {
     }
   }
   return false;
+}
+
+chores.getVersionOf = function (packageName) {
+  if (packageName === "devebot") {
+    const pkg = require(path.join(__dirname, '../../package.json'));
+    return pkg.version;
+  } else {
+    let parentPath, modulePath;
+    try {
+      modulePath = parentPath = path.dirname(require.resolve(packageName));
+    } catch (err) {
+      return null;
+    }
+    do {
+      try {
+        const pkg = require(path.join(modulePath, 'package.json'));
+        return pkg.version;
+      } catch (err) {
+        parentPath = modulePath;
+        modulePath = path.dirname(modulePath);
+      }
+    } while (modulePath !== parentPath);
+    return null;
+  }
 }
 
 module.exports = chores;
