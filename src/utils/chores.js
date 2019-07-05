@@ -424,10 +424,28 @@ chores.extractObjectInfo = function(data, opts) {
   return detect(data, opts && opts.level);
 }
 
-chores.isVersionLessThan = function (version1, version2) {
+chores.isVersionLT = function (version1, version2) {
   if (!semver.valid(version1) || !semver.valid(version2)) return null;
   return semver.lt(version1, version2);
 }
+
+chores.isVersionLTE = function (version1, version2) {
+  if (!semver.valid(version1) || !semver.valid(version2)) return null;
+  return semver.lte(version1, version2);
+}
+
+chores.isVersionGT = function (version1, version2) {
+  if (!semver.valid(version1) || !semver.valid(version2)) return null;
+  return semver.gt(version1, version2);
+}
+
+chores.isVersionGTE = function (version1, version2) {
+  if (!semver.valid(version1) || !semver.valid(version2)) return null;
+  return semver.gte(version1, version2);
+}
+
+chores.isVersionLessThan = chores.isVersionLT;
+chores.isVersionLessThanOrEqualTo = chores.isVersionLTE;
 
 chores.isVersionSatisfied = function (version, versionMask) {
   if (semver.valid(version)) {

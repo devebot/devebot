@@ -1,5 +1,6 @@
 .idea
 .vscode
+.npmrc
 node_modules*
 /doc
 /lib
@@ -9,3 +10,4 @@ node_modules*
 *.log
 *test.sh
 *removed
+package-lock.json
