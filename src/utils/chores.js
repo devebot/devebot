@@ -487,4 +487,48 @@ chores.getVersionOf = function (packageName) {
   }
 }
 
+function ServiceSelector(kwargs = {}) {
+  const { serviceResolver, sandboxRegistry } = kwargs;
+
+  assert.ok(this.constructor === ServiceSelector);
+  assert.ok(serviceResolver && lodash.isString(serviceResolver));
+  assert.ok(sandboxRegistry && lodash.isObject(sandboxRegistry));
+
+  let serviceResolverAvailable = true;
+
+  this.lookup = function (serviceName, methodName) {
+    const hasMethod = (typeof methodName === 'string') && (methodName.length > 0);
+    let ref = {};
+    if (serviceResolverAvailable) {
+      let resolver = sandboxRegistry.lookupService(serviceResolver);
+      if (resolver) {
+        ref.proxied = true;
+        ref.isRemote = true; // @Deprecated
+        ref.service = resolver.lookupService(serviceName);
+        if (hasMethod && ref.service) {
+          ref.method = ref.service[methodName];
+        }
+      } else {
+        serviceResolverAvailable = false;
+      }
+    }
+    if (hasMethod && !ref.method) {
+      ref.proxied = false;
+      ref.isRemote = false; // @Deprecated
+      ref.service = sandboxRegistry.lookupService(serviceName);
+      if (ref.service) {
+        ref.method = ref.service[methodName];
+      }
+    }
+    return ref;
+  }
+
+  // @Deprecated
+  this.lookupMethod = this.lookup;
+}
+
+chores.newServiceSelector = function (kwargs) {
+  return new ServiceSelector(kwargs);
+}
+
 module.exports = chores;

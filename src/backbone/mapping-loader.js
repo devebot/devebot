@@ -30,7 +30,7 @@ function MappingLoader(params = {}) {
           bundle, enabled: descriptor && descriptor.enabled !== false
         }).toMessage({
           tags: [ blockRef, 'load-mappings' ],
-          text: ' - load the mappings bundle ${bundle} - enable: ${enabled}'
+          text: ' - load the mappings bundle [${bundle}] - enable: ${enabled}'
         }));
         if (lodash.isString(descriptor)) {
           descriptor = { location: descriptor }
@@ -153,7 +153,7 @@ function loadMappingStore(mappingName, { location, fileFilter, keyGenerator, eva
   if (!lodash.isFunction(keyGenerator)) {
     keyGenerator = defaultKeyGenerator;
   }
-  let mappings;
+  let mappings = {};
   let mappingStat;
   try {
     mappingStat = fs.statSync(location);
@@ -165,24 +165,45 @@ function loadMappingStore(mappingName, { location, fileFilter, keyGenerator, eva
       throw err;
     }
   }
+  const loadMappingFile = function (mappings, mappingName, evaluated, fileInfo) {
+    const mappingFile = path.join(fileInfo.dir, fileInfo.base);
+    const mappingBody = evaluateMappingFile(mappingFile, mappingName, evaluated);
+    const mappingId = keyGenerator(mappingName, fileInfo, mappingBody);
+    if (lodash.isEmpty(mappingId)) {
+      if (lodash.isObject(mappingBody)) {
+        lodash.assign(mappings, mappingBody);
+      }
+    } else {
+      mappings[mappingId] = mappingBody;
+    }
+  }
   if (mappingStat.isFile()) {
-    mappings = evaluateMappingFile(location, mappingName, evaluated);
+    const fileInfo = lodash.assign(path.parse(location), { standalone: true });
+    loadMappingFile(mappings, mappingName, evaluated, fileInfo);
   }
   if (mappingStat.isDirectory()) {
-    mappings = {};
-    const fileinfos = traverseDir(location, fileFilter);
-    lodash.forEach(fileinfos, function(info) {
-      const mappingFile = path.join(info.dir, info.base);
-      const fileBody = evaluateMappingFile(mappingFile, mappingName, evaluated);
-      const mappingId = keyGenerator(mappingName, info, fileBody);
-      mappings[mappingId] = fileBody;
-    });
+    let multifiles = true;
+    try {
+      const indexFile = path.join(location, 'index.js');
+      const indexStat = fs.statSync(indexFile);
+      if (indexStat.isFile()) {
+        const fileInfo = lodash.assign(path.parse(indexFile), { standalone: true });
+        loadMappingFile(mappings, mappingName, evaluated, fileInfo);
+        multifiles = false;
+      }
+    } catch (err) {}
+    if (multifiles) {
+      const fileInfos = traverseDir(location, fileFilter);
+      lodash.forEach(fileInfos, function(fileInfo) {
+        loadMappingFile(mappings, mappingName, evaluated, fileInfo);
+      });
+    }
   }
   return mappings;
 }
 
-function defaultFileFilter (fileinfo) {
-  return fileinfo.ext === '.js';
+function defaultFileFilter (fileInfo) {
+  return fileInfo.ext === '.js';
 }
 
 function defaultKeyGenerator (mappingName, fileInfo, fileBody) {
@@ -207,24 +228,24 @@ function requireMappingFile(mappingFile) {
   }
 }
 
-function traverseDir(dir, filter, fileinfos) {
+function traverseDir(dir, filter, fileInfos) {
   if (!lodash.isFunction(filter)) {
     let exts = filter;
     if (exts != null) {
       if (lodash.isRegExp(exts)) {
-        filter = function (fileinfo) {
-          if (fileinfo == null) return true;
-          return exts.test(path.join(fileinfo.path, fileinfo.base));
+        filter = function (fileInfo) {
+          if (fileInfo == null) return true;
+          return exts.test(path.join(fileInfo.path, fileInfo.base));
         }
       } else {
         if (!lodash.isArray(exts)) {
           exts = [exts];
         }
-        filter = function (fileinfo) {
-          if (fileinfo == null) return true;
+        filter = function (fileInfo) {
+          if (fileInfo == null) return true;
           for(const i in exts) {
             const ext = exts[i];
-            const filepath = path.join(fileinfo.path, fileinfo.base);
+            const filepath = path.join(fileInfo.path, fileInfo.base);
             if (filepath.indexOf(ext.toString()) >= 0) {
               return true;
             }
@@ -234,41 +255,41 @@ function traverseDir(dir, filter, fileinfos) {
       }
     }
   }
-  if (!lodash.isArray(fileinfos)) {
-    fileinfos = [];
+  if (!lodash.isArray(fileInfos)) {
+    fileInfos = [];
   }
   try {
     dir = path.normalize(dir);
     if (dir && dir !== path.sep && dir.length > 1 && dir.endsWith(path.sep)) {
       dir = dir.substring(0, dir.length - 1);
     }
-    return traverseDirRecursively(dir, dir, filter, fileinfos);
+    return traverseDirRecursively(dir, dir, filter, fileInfos);
   } catch (err) {
-    return fileinfos;
+    return fileInfos;
   }
 }
 
-function traverseDirRecursively(homeDir, dir, filter, fileinfos = []) {
+function traverseDirRecursively(homeDir, dir, filter, fileInfos = []) {
   assert.ok(filter == null || lodash.isFunction(filter));
   const files = fs.readdirSync(dir);
   for (const i in files) {
     const filename = path.join(dir, files[i]);
     const filestat = fs.statSync(filename);
     if (filestat.isDirectory()) {
-      traverseDirRecursively(homeDir, filename, filter, fileinfos);
+      traverseDirRecursively(homeDir, filename, filter, fileInfos);
     } else if (filestat.isFile()) {
-      const fileinfo = path.parse(filename);
-      if (filter == null || filter(fileinfo)) {
-        fileinfos.push({
+      const fileInfo = path.parse(filename);
+      if (filter == null || filter(fileInfo)) {
+        fileInfos.push({
           home: homeDir,
-          path: fileinfo.dir.slice(homeDir.length),
-          dir: fileinfo.dir,
-          base: fileinfo.base,
-          name: fileinfo.name,
-          ext: fileinfo.ext
+          path: fileInfo.dir.slice(homeDir.length),
+          dir: fileInfo.dir,
+          base: fileInfo.base,
+          name: fileInfo.name,
+          ext: fileInfo.ext
         });
       }
     }
   }
-  return fileinfos;
+  return fileInfos;
 }
