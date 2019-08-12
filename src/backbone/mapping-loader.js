@@ -69,9 +69,6 @@ MappingLoader.argumentSchema = {
     "profileConfig": {
       "type": "object"
     },
-    "issueInspector": {
-      "type": "object"
-    },
     "loggingFactory": {
       "type": "object"
     },
@@ -80,6 +77,22 @@ MappingLoader.argumentSchema = {
     }
   }
 };
+
+if (chores.isUpgradeSupported('builtin-mapping-loader')) {
+  lodash.assign(MappingLoader.argumentSchema.properties, {
+    "issueInspector": {
+      "type": "object"
+    },
+  });
+}
+
+if (chores.isUpgradeSupported('sandbox-mapping-loader')) {
+  lodash.assign(MappingLoader.argumentSchema.properties, {
+    "sandboxRegistry": {
+      "type": "object"
+    },
+  });
+}
 
 MappingLoader.MAPPING_STORE_SCHEMA = {
   "type": "object",

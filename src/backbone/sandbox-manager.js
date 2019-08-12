@@ -28,6 +28,13 @@ function SandboxManager(params = {}) {
   chores.loadServiceByNames(managerMap, __dirname, DEFAULT_SERVICES);
   const managerNames = lodash.keys(managerMap);
 
+  const utilityMap = {};
+  const utilityNames = [];
+  if (chores.isUpgradeSupported('sandbox-mapping-loader')) {
+    utilityNames.push('mapping-loader');
+  }
+  chores.loadServiceByNames(utilityMap, __dirname, utilityNames);
+
   const serviceMap = {};
   params.bundleLoader.loadServices(serviceMap);
   chores.kickOutOf(serviceMap, managerNames);
@@ -61,6 +68,10 @@ function SandboxManager(params = {}) {
   }
   COPIED_DEPENDENCIES.forEach(function(refName) {
     sandboxInjektor.registerObject(refName, params[refName], chores.injektorContext);
+  });
+
+  lodash.forOwn(utilityMap, function(utilityConstruktor, utilityName) {
+    sandboxInjektor.defineService(utilityName, utilityConstruktor, chores.injektorContext);
   });
 
   lodash.forOwn(serviceMap, function(serviceRecord, serviceName) {
@@ -347,9 +358,11 @@ SandboxManager.argumentSchema = {
 };
 
 if (chores.isUpgradeSupported('builtin-mapping-loader')) {
-  SandboxManager.argumentSchema.properties["mappingLoader"] = {
-    "type": "object"
-  };
+  lodash.assign(SandboxManager.argumentSchema.properties, {
+    "mappingLoader": {
+      "type": "object"
+    },
+  });
 }
 
 module.exports = SandboxManager;
