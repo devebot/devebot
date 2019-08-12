@@ -487,8 +487,22 @@ chores.getVersionOf = function (packageName) {
   }
 }
 
+chores.renameJsonFields = function (data, nameMappings) {
+  if (nameMappings && lodash.isObject(nameMappings)) {
+    for(const oldName in nameMappings) {
+      const val = lodash.get(data, oldName);
+      if (!lodash.isUndefined(val)) {
+        const newName = nameMappings[oldName];
+        lodash.unset(data, oldName);
+        lodash.set(data, newName, val);
+      }
+    }
+  }
+  return data;
+}
+
 function ServiceSelector(kwargs = {}) {
-  const { serviceResolver, sandboxRegistry } = kwargs;
+  const { serviceResolver, sandboxRegistry, binding } = kwargs;
 
   assert.ok(this.constructor === ServiceSelector);
   assert.ok(serviceResolver && lodash.isString(serviceResolver));
@@ -520,6 +534,10 @@ function ServiceSelector(kwargs = {}) {
         ref.method = ref.service[methodName];
       }
     }
+    // bind the method to the service
+    if (binding !== false && ref.method) {
+      ref.method = ref.method.bind(ref.service);
+    }
     return ref;
   }
 
@@ -529,6 +547,45 @@ function ServiceSelector(kwargs = {}) {
 
 chores.newServiceSelector = function (kwargs) {
   return new ServiceSelector(kwargs);
+}
+
+function ErrorBuilder ({ errorCodes, defaultLanguage }) {
+  this.newError = function(errorName, { payload, language } = {}) {
+    language = language || defaultLanguage;
+    const errInfo = errorCodes[errorName];
+    if (errInfo == null) {
+      const err = new Error('Error[' + errorName + '] unsupported');
+      err.name = errorName;
+      err.returnCode = -1;
+      err.statusCode = 500;
+      return err;
+    }
+    let msg = errInfo.message || errorName;
+    if (errInfo.messageIn && typeof language === 'string') {
+      msg = errInfo.messageIn[language] || msg;
+    }
+    if (payload && typeof payload === 'object') {
+      msg = chores.formatTemplate(msg, payload);
+    } else {
+      payload = null;
+    }
+    const err = new Error(msg);
+    err.name = errorName;
+    err.returnCode = errInfo.returnCode;
+    err.statusCode = errInfo.statusCode;
+    if (payload) {
+      err.payload = payload;
+    }
+    return err;
+  }
+
+  this.getDescriptor = function () {
+    return { errorCodes, defaultLanguage };
+  }
+}
+
+chores.newErrorBuilder = function (kwargs) {
+  return new ErrorBuilder(kwargs);
 }
 
 module.exports = chores;

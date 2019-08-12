@@ -4,9 +4,11 @@ module.exports = {
   },
   "extends": "standard",
   "rules": {
+    "no-undef": "error",
+    "no-unused-vars": "error",
+    "no-inner-declarations": ["error"],
     "camelcase": "warn",
     "curly": "error",
-    "no-undef": "error",
     "no-undef-init": "error",
     "no-constant-condition": "error",
     "no-console": ["error", {
@@ -26,11 +28,10 @@ module.exports = {
       "always"
     ],
     "prefer-promise-reject-errors": ["warn"],
-    "no-inner-declarations": ["warn"],
     "promise/param-names": ["warn"],
-    "no-unmodified-loop-condition": ["warn"],
+    "no-unmodified-loop-condition": ["error"],
     "no-useless-escape": ["warn"],
-    "eol-last": ["warn"],
+    "eol-last": ["error"],
     "space-before-function-paren": ["warn", {
       "anonymous": "ignore",
       "named": "always",
@@ -45,7 +46,6 @@ module.exports = {
     }],
     // for development
     "indent": "off",
-    "no-unused-vars": "error",
     "no-multi-spaces": "off",
     "no-trailing-spaces": "error",
     "handle-callback-err": "error",
