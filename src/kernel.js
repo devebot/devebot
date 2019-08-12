@@ -9,11 +9,15 @@ const LoggingWrapper = require('./backbone/logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
 const CONSTRUCTORS = {};
-chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), [
+const SERVICE_NAMES = [
   'sandbox-manager', 'schema-validator', 'script-executor', 'script-renderer',
-  'security-manager', 'bridge-loader', 'bundle-loader', 'mapping-loader',
+  'security-manager', 'bridge-loader', 'bundle-loader',
   'object-decorator', 'logging-factory', 'process-manager',
-]);
+]
+if (chores.isUpgradeSupported('builtin-mapping-loader')) {
+  SERVICE_NAMES.push('mapping-loader');
+}
+chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), SERVICE_NAMES);
 
 function Kernel(params = {}) {
   const loggingWrapper = new LoggingWrapper(blockRef);

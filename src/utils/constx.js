@@ -565,6 +565,14 @@ module.exports = {
       tag: 'manifest-refiner',
       enabled: true,
     },
+    {
+      tag: 'builtin-mapping-loader',
+      enabled: false,
+    },
+    {
+      tag: 'sandbox-mapping-loader',
+      enabled: true,
+    },
   ],
   LOADING: {
     DELETE_OLD_REFERENCE_ALIAS: false

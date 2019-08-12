@@ -54,8 +54,11 @@ function SandboxManager(params = {}) {
   const sandboxInjektor = new Injektor(chores.injektorOptions);
   const COPIED_DEPENDENCIES = [ 'appName', 'appInfo',
     'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
-    'contextManager', 'schemaValidator', 'loggingFactory', 'mappingLoader', 'processManager'
+    'contextManager', 'schemaValidator', 'loggingFactory', 'processManager'
   ];
+  if (chores.isUpgradeSupported('builtin-mapping-loader')) {
+    COPIED_DEPENDENCIES.push('mappingLoader');
+  }
   COPIED_DEPENDENCIES.forEach(function(refName) {
     sandboxInjektor.registerObject(refName, params[refName], chores.injektorContext);
   });
@@ -337,14 +340,17 @@ SandboxManager.argumentSchema = {
     "processManager": {
       "type": "object"
     },
-    "mappingLoader": {
-      "type": "object"
-    },
     "schemaValidator": {
       "type": "object"
     }
   }
 };
+
+if (chores.isUpgradeSupported('builtin-mapping-loader')) {
+  SandboxManager.argumentSchema.properties["mappingLoader"] = {
+    "type": "object"
+  };
+}
 
 module.exports = SandboxManager;
 
