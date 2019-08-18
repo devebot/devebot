@@ -3,6 +3,7 @@
 const assert = require('assert');
 const lodash = require('lodash');
 const semver = require('semver');
+const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -549,16 +550,44 @@ chores.newServiceSelector = function (kwargs) {
   return new ServiceSelector(kwargs);
 }
 
-function ErrorBuilder ({ errorCodes, defaultLanguage }) {
+const HD_ALGORITHMS = [ 'md5', 'sha1', 'sha256', 'sha512', 'ripemd160' ];
+const HD_ENCODINGS = [ 'hex', 'base64' ];
+
+chores.getHashDigest = function (message, { algorithm, encoding } = {}) {
+  if (HD_ALGORITHMS.indexOf(algorithm) < 0) {
+    algorithm = 'sha1';
+  }
+  if (HD_ENCODINGS.indexOf(encoding) < 0) {
+    encoding = 'hex';
+  }
+  const hash = crypto.createHash(algorithm);
+  const data = hash.update(message, 'utf-8');
+  return data.digest(encoding);
+}
+
+function newError (errorName, message, opts = {}) {
+  const err = new Error(message);
+  err.name = errorName;
+  for (const fieldName in opts) {
+    if (opts[fieldName] !== undefined) {
+      err[fieldName] = opts[fieldName];
+    }
+  }
+  return err;
+}
+
+function ErrorBuilder ({ packageName, errorCodes, defaultLanguage }) {
+  const packageRef = chores.getHashDigest(packageName, { encoding: 'base64' });
+
   this.newError = function(errorName, { payload, language } = {}) {
     language = language || defaultLanguage;
     const errInfo = errorCodes[errorName];
     if (errInfo == null) {
-      const err = new Error('Error[' + errorName + '] unsupported');
-      err.name = errorName;
-      err.returnCode = -1;
-      err.statusCode = 500;
-      return err;
+      return newError(errorName, 'Error[' + errorName + '] unsupported', {
+        packageRef,
+        returnCode: -1,
+        statusCode: 500
+      });
     }
     let msg = errInfo.message || errorName;
     if (errInfo.messageIn && typeof language === 'string') {
@@ -569,18 +598,16 @@ function ErrorBuilder ({ errorCodes, defaultLanguage }) {
     } else {
       payload = null;
     }
-    const err = new Error(msg);
-    err.name = errorName;
-    err.returnCode = errInfo.returnCode;
-    err.statusCode = errInfo.statusCode;
-    if (payload) {
-      err.payload = payload;
-    }
-    return err;
+    return newError(errorName, msg, {
+      packageRef,
+      returnCode: errInfo.returnCode,
+      statusCode: errInfo.statusCode,
+      payload: payload
+    });
   }
 
   this.getDescriptor = function () {
-    return { errorCodes, defaultLanguage };
+    return { packageRef, errorCodes, defaultLanguage };
   }
 }
 
