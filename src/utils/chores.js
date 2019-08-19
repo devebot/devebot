@@ -487,6 +487,17 @@ chores.getVersionOf = function (packageName) {
   }
 }
 
+chores.getNodeVersion = function () {
+  if ('node' in process.versions) {
+    return process.versions['node'];
+  }
+  const vstr = process.version;
+  if (typeof vstr === 'string') {
+    return vstr.replace('v', '');
+  }
+  return null;
+}
+
 chores.renameJsonFields = function (data, nameMappings) {
   if (nameMappings && lodash.isObject(nameMappings)) {
     for (const oldName in nameMappings) {
