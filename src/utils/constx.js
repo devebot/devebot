@@ -573,6 +573,10 @@ module.exports = {
       tag: 'sandbox-mapping-loader',
       enabled: true,
     },
+    {
+      tag: 'optimization-mode',
+      enabled: true,
+    },
   ],
   LOADING: {
     DELETE_OLD_REFERENCE_ALIAS: false

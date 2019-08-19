@@ -31,7 +31,7 @@ module.exports = {
     "promise/param-names": ["warn"],
     "no-unmodified-loop-condition": ["error"],
     "no-useless-escape": ["warn"],
-    "eol-last": ["error"],
+    "eol-last": ["warn"],
     "space-before-function-paren": ["warn", {
       "anonymous": "ignore",
       "named": "always",

@@ -13,7 +13,6 @@ const format = require('logolite/lib/format');
 const Validator = require('schemato').Validator;
 const constx = require('./constx');
 const loader = require('./loader');
-const errors = require('./errors');
 const envbox = require('./envbox');
 const nodash = require('./nodash');
 const getenv = require('./getenv');
@@ -490,7 +489,7 @@ chores.getVersionOf = function (packageName) {
 
 chores.renameJsonFields = function (data, nameMappings) {
   if (nameMappings && lodash.isObject(nameMappings)) {
-    for(const oldName in nameMappings) {
+    for (const oldName in nameMappings) {
       const val = lodash.get(data, oldName);
       if (!lodash.isUndefined(val)) {
         const newName = nameMappings[oldName];

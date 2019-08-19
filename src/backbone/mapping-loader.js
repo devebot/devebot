@@ -18,6 +18,7 @@ function MappingLoader(params = {}) {
   }));
 
   this.loadMappings = function(mappingStore, options = {}) {
+    const loaderContext = lodash.get(options, 'context', {});
     let mappings = {};
     if (lodash.isString(mappingStore)) {
       const store = {};
@@ -39,7 +40,7 @@ function MappingLoader(params = {}) {
           lodash.defaults(descriptor, lodash.pick(options, [
             'evaluated', 'fileFilter', 'keyGenerator'
           ]));
-          let accum = loadMappingStore(bundle, descriptor);
+          let accum = loadMappingStore(bundle, descriptor, loaderContext);
           lodash.merge(mappings, accum);
         }
       });
@@ -159,7 +160,7 @@ function validateDescriptor(ctx = {}, scriptObject = {}) {
   }, { valid: true, errors: [] });
 };
 
-function loadMappingStore(mappingName, { location, fileFilter, keyGenerator, evaluated }) {
+function loadMappingStore(mappingName, { location, fileFilter, keyGenerator, evaluated }, loaderContext) {
   if (!lodash.isFunction(fileFilter)) {
     fileFilter = defaultFileFilter;
   }
@@ -178,9 +179,9 @@ function loadMappingStore(mappingName, { location, fileFilter, keyGenerator, eva
       throw err;
     }
   }
-  const loadMappingFile = function (mappings, mappingName, evaluated, fileInfo) {
-    const mappingFile = path.join(fileInfo.dir, fileInfo.base);
-    const mappingBody = evaluateMappingFile(mappingFile, mappingName, evaluated);
+  const loadMappingFile = function (mappings, mappingName, evaluated, fileInfo, loaderContext) {
+    const mappingFile = getFilePath(fileInfo);
+    const mappingBody = evaluateMappingFile(mappingFile, mappingName, evaluated, loaderContext);
     const mappingId = keyGenerator(mappingName, fileInfo, mappingBody);
     if (lodash.isEmpty(mappingId)) {
       if (lodash.isObject(mappingBody)) {
@@ -192,7 +193,7 @@ function loadMappingStore(mappingName, { location, fileFilter, keyGenerator, eva
   }
   if (mappingStat.isFile()) {
     const fileInfo = lodash.assign(path.parse(location), { standalone: true });
-    loadMappingFile(mappings, mappingName, evaluated, fileInfo);
+    loadMappingFile(mappings, mappingName, evaluated, fileInfo, loaderContext);
   }
   if (mappingStat.isDirectory()) {
     let multifiles = true;
@@ -201,18 +202,22 @@ function loadMappingStore(mappingName, { location, fileFilter, keyGenerator, eva
       const indexStat = fs.statSync(indexFile);
       if (indexStat.isFile()) {
         const fileInfo = lodash.assign(path.parse(indexFile), { standalone: true });
-        loadMappingFile(mappings, mappingName, evaluated, fileInfo);
+        loadMappingFile(mappings, mappingName, evaluated, fileInfo, loaderContext);
         multifiles = false;
       }
     } catch (err) {}
     if (multifiles) {
       const fileInfos = traverseDir(location, fileFilter);
       lodash.forEach(fileInfos, function(fileInfo) {
-        loadMappingFile(mappings, mappingName, evaluated, fileInfo);
+        loadMappingFile(mappings, mappingName, evaluated, fileInfo, loaderContext);
       });
     }
   }
   return mappings;
+}
+
+function getFilePath (fileInfo) {
+  return path.join(fileInfo.dir, fileInfo.base);
 }
 
 function defaultFileFilter (fileInfo) {
@@ -223,14 +228,14 @@ function defaultKeyGenerator (mappingName, fileInfo, fileBody) {
   return mappingName;
 }
 
-function evaluateMappingFile(mappingPath, mappingName, evaluated) {
-  const mappingBody = requireMappingFile(mappingPath);
-  if (lodash.isFunction(mappingBody) && evaluated !== false) {
+function evaluateMappingFile(mappingPath, mappingName, evaluated, loaderContext) {
+  const mappingScript = requireMappingFile(mappingPath);
+  if (lodash.isFunction(mappingScript) && evaluated !== false) {
     try {
-      return mappingBody(mappingName);
+      return mappingScript(mappingName, loaderContext);
     } catch (err) {}
   }
-  return mappingBody;
+  return mappingScript;
 }
 
 function requireMappingFile(mappingFile) {
@@ -256,7 +261,7 @@ function traverseDir(dir, filter, fileInfos) {
         }
         filter = function (fileInfo) {
           if (fileInfo == null) return true;
-          for(const i in exts) {
+          for (const i in exts) {
             const ext = exts[i];
             const filepath = path.join(fileInfo.path, fileInfo.base);
             if (filepath.indexOf(ext.toString()) >= 0) {

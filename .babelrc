@@ -10,12 +10,9 @@
       "presets": [
         ["env", {
           "targets": {
-            "node": "4"
+            "node": "6"
           }
         }]
-      ],
-      "plugins": [
-        "minify-mangle-names"
       ]
     },
     "test": {
@@ -34,9 +31,6 @@
             "node": "6"
           }
         }]
-      ],
-      "plugins": [
-        "minify-mangle-names"
       ]
     }
   }
