@@ -3,6 +3,7 @@
 const assert = require('assert');
 const lodash = require('lodash');
 const semver = require('semver');
+const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -12,7 +13,6 @@ const format = require('logolite/lib/format');
 const Validator = require('schemato').Validator;
 const constx = require('./constx');
 const loader = require('./loader');
-const errors = require('./errors');
 const envbox = require('./envbox');
 const nodash = require('./nodash');
 const getenv = require('./getenv');
@@ -38,14 +38,9 @@ const store = {
 const chores = {};
 
 chores.assertOk = function () {
-  for(const k in arguments) {
+  for (const k in arguments) {
     assert.ok(arguments[k], util.format('The argument #%s evaluated to a falsy value', k));
   }
-}
-
-// @Deprecated
-chores.buildError = function(errorName) {
-  return errors.assertConstructor(errorName);
 }
 
 chores.getUUID = function() {
@@ -63,13 +58,13 @@ chores.loadPackageInfo = function(pkgRootPath, selectedFieldNames, defaultInfo) 
       return lodash.pick(pkgJson, selectedFieldNames);
     }
     return pkgJson;
-  } catch(err) {
+  } catch (err) {
     return defaultInfo || null;
   }
 };
 
 chores.getFirstDefinedValue = function() {
-  for(const i in arguments) {
+  for (const i in arguments) {
     const val = arguments[i];
     if (val !== undefined && val !== null) return val;
   }
@@ -85,7 +80,7 @@ chores.kickOutOf = function(map, excludedNames) {
 }
 
 chores.isOwnOrInheritedProperty = function(object, property) {
-  for(const propName in object) {
+  for (const propName in object) {
     if (propName === property) return true;
   }
   return object.hasOwnProperty(property);
@@ -93,7 +88,7 @@ chores.isOwnOrInheritedProperty = function(object, property) {
 
 chores.pickProperty = function(propName, containers, propDefault) {
   if (!lodash.isString(propName) || !lodash.isArray(containers)) return null;
-  for(const i in containers) {
+  for (const i in containers) {
     if (lodash.isObject(containers[i]) && containers[i][propName]) {
       return containers[i][propName];
     }
@@ -105,9 +100,9 @@ chores.deepFreeze = function (o) {
   const self = this;
   Object.freeze(o);
   Object.getOwnPropertyNames(o).forEach(function (prop) {
-    if (o.hasOwnProperty(prop)
-        && (nodash.isObject(o[prop]) || nodash.isFunction(o[prop]))
-        && !Object.isFrozen(o[prop])) {
+    if (o.hasOwnProperty(prop) &&
+        (nodash.isObject(o[prop]) || nodash.isFunction(o[prop])) &&
+        !Object.isFrozen(o[prop])) {
       self.deepFreeze(o[prop]);
     }
   });
@@ -171,7 +166,7 @@ chores.assertDir = function(appName) {
   try {
     fs.readdirSync(configDir);
   } catch (err) {
-    if (err.code == 'ENOENT') {
+    if (err.code === 'ENOENT') {
       try {
         fs.mkdirSync(configDir);
       } catch (err) {
@@ -225,11 +220,11 @@ function _getBundleType(bundle) {
 
 chores.extractCodeByPattern = function(patterns, name) {
   assert.ok(patterns instanceof Array);
-  for(const k in patterns) {
+  for (const k in patterns) {
     assert.ok(patterns[k] instanceof RegExp);
   }
   const info = {};
-  for(info.i=0; info.i<patterns.length; info.i++) {
+  for (info.i=0; info.i<patterns.length; info.i++) {
     if (name.match(patterns[info.i])) break;
   }
   if (info.i >= patterns.length) {
@@ -294,6 +289,21 @@ chores.lookupMethodRef = function(methodName, serviceName, proxyName, sandboxReg
     }
   }
   return ref;
+}
+
+chores.parseScriptTree = function (scriptType, scriptFile, scriptInstance, isHierarchical) {
+  let entryPath = scriptFile.replace('.js', '').toLowerCase().split('_');
+  if (entryPath.length > 0 && entryPath[0] !== constx[scriptType].ROOT_KEY) {
+    entryPath.unshift(constx[scriptType].ROOT_KEY);
+  }
+  entryPath = entryPath.reverse();
+  entryPath.unshift(scriptInstance);
+  const entry = lodash.reduce(entryPath, function(result, item) {
+    const nestEntry = {};
+    nestEntry[item] = result;
+    return nestEntry;
+  });
+  return entry;
 }
 
 chores.printError = function(err) {
@@ -376,7 +386,7 @@ chores.extractObjectInfo = function(data, opts) {
   function detect(data, level=2) {
     if (typeof level !== "number" || level < 0) level = 0;
     const type = typeof(data);
-    switch(type) {
+    switch (type) {
       case "boolean":
       case "number":
       case "string":
@@ -392,7 +402,7 @@ chores.extractObjectInfo = function(data, opts) {
         if (Array.isArray(data)) {
           const info = [];
           if (level > 0) {
-            for(const i in data) {
+            for (const i in data) {
               info.push(detect(data[i], level - 1));
             }
           }
@@ -400,7 +410,7 @@ chores.extractObjectInfo = function(data, opts) {
         } else {
           const info = {};
           if (level > 0) {
-            for(const field in data) {
+            for (const field in data) {
               info[field] = detect(data[field], level - 1);
             }
           }
@@ -414,10 +424,28 @@ chores.extractObjectInfo = function(data, opts) {
   return detect(data, opts && opts.level);
 }
 
-chores.isVersionLessThan = function (version1, version2) {
+chores.isVersionLT = function (version1, version2) {
   if (!semver.valid(version1) || !semver.valid(version2)) return null;
   return semver.lt(version1, version2);
 }
+
+chores.isVersionLTE = function (version1, version2) {
+  if (!semver.valid(version1) || !semver.valid(version2)) return null;
+  return semver.lte(version1, version2);
+}
+
+chores.isVersionGT = function (version1, version2) {
+  if (!semver.valid(version1) || !semver.valid(version2)) return null;
+  return semver.gt(version1, version2);
+}
+
+chores.isVersionGTE = function (version1, version2) {
+  if (!semver.valid(version1) || !semver.valid(version2)) return null;
+  return semver.gte(version1, version2);
+}
+
+chores.isVersionLessThan = chores.isVersionLT;
+chores.isVersionLessThanOrEqualTo = chores.isVersionLTE;
 
 chores.isVersionSatisfied = function (version, versionMask) {
   if (semver.valid(version)) {
@@ -427,12 +455,174 @@ chores.isVersionSatisfied = function (version, versionMask) {
     }
     if (lodash.isArray(versionMask)) {
       if (versionMask.indexOf(version) >= 0) return true;
-      for(const i in versionMask) {
+      for (const i in versionMask) {
         if (semver.satisfies(version, versionMask[i])) return true;
       }
     }
   }
   return false;
+}
+
+chores.getVersionOf = function (packageName) {
+  if (packageName === "devebot") {
+    const pkg = require(path.join(__dirname, '../../package.json'));
+    return pkg.version;
+  } else {
+    let parentPath, modulePath;
+    try {
+      modulePath = parentPath = path.dirname(require.resolve(packageName));
+    } catch (err) {
+      return null;
+    }
+    do {
+      try {
+        const pkg = require(path.join(modulePath, 'package.json'));
+        return pkg.version;
+      } catch (err) {
+        parentPath = modulePath;
+        modulePath = path.dirname(modulePath);
+      }
+    } while (modulePath !== parentPath);
+    return null;
+  }
+}
+
+chores.getNodeVersion = function () {
+  if ('node' in process.versions) {
+    return process.versions['node'];
+  }
+  const vstr = process.version;
+  if (typeof vstr === 'string') {
+    return vstr.replace('v', '');
+  }
+  return null;
+}
+
+chores.renameJsonFields = function (data, nameMappings) {
+  if (nameMappings && lodash.isObject(nameMappings)) {
+    for (const oldName in nameMappings) {
+      const val = lodash.get(data, oldName);
+      if (!lodash.isUndefined(val)) {
+        const newName = nameMappings[oldName];
+        lodash.unset(data, oldName);
+        lodash.set(data, newName, val);
+      }
+    }
+  }
+  return data;
+}
+
+function ServiceSelector(kwargs = {}) {
+  const { serviceResolver, sandboxRegistry, binding } = kwargs;
+
+  assert.ok(this.constructor === ServiceSelector);
+  assert.ok(serviceResolver && lodash.isString(serviceResolver));
+  assert.ok(sandboxRegistry && lodash.isObject(sandboxRegistry));
+
+  let serviceResolverAvailable = true;
+
+  this.lookup = function (serviceName, methodName) {
+    const hasMethod = (typeof methodName === 'string') && (methodName.length > 0);
+    let ref = {};
+    if (serviceResolverAvailable) {
+      let resolver = sandboxRegistry.lookupService(serviceResolver);
+      if (resolver) {
+        ref.proxied = true;
+        ref.isRemote = true; // @Deprecated
+        ref.service = resolver.lookupService(serviceName);
+        if (hasMethod && ref.service) {
+          ref.method = ref.service[methodName];
+        }
+      } else {
+        serviceResolverAvailable = false;
+      }
+    }
+    if (hasMethod && !ref.method) {
+      ref.proxied = false;
+      ref.isRemote = false; // @Deprecated
+      ref.service = sandboxRegistry.lookupService(serviceName);
+      if (ref.service) {
+        ref.method = ref.service[methodName];
+      }
+    }
+    // bind the method to the service
+    if (binding !== false && ref.method) {
+      ref.method = ref.method.bind(ref.service);
+    }
+    return ref;
+  }
+
+  // @Deprecated
+  this.lookupMethod = this.lookup;
+}
+
+chores.newServiceSelector = function (kwargs) {
+  return new ServiceSelector(kwargs);
+}
+
+const HD_ALGORITHMS = [ 'md5', 'sha1', 'sha256', 'sha512', 'ripemd160' ];
+const HD_ENCODINGS = [ 'hex', 'base64' ];
+
+chores.getHashDigest = function (message, { algorithm, encoding } = {}) {
+  if (HD_ALGORITHMS.indexOf(algorithm) < 0) {
+    algorithm = 'sha1';
+  }
+  if (HD_ENCODINGS.indexOf(encoding) < 0) {
+    encoding = 'hex';
+  }
+  const hash = crypto.createHash(algorithm);
+  const data = hash.update(message, 'utf-8');
+  return data.digest(encoding);
+}
+
+function newError (errorName, message, opts = {}) {
+  const err = new Error(message);
+  err.name = errorName;
+  for (const fieldName in opts) {
+    if (opts[fieldName] !== undefined) {
+      err[fieldName] = opts[fieldName];
+    }
+  }
+  return err;
+}
+
+function ErrorBuilder ({ packageName, errorCodes, defaultLanguage }) {
+  const packageRef = chores.getHashDigest(packageName, { encoding: 'base64' });
+
+  this.newError = function(errorName, { payload, language } = {}) {
+    language = language || defaultLanguage;
+    const errInfo = errorCodes[errorName];
+    if (errInfo == null) {
+      return newError(errorName, 'Error[' + errorName + '] unsupported', {
+        packageRef,
+        returnCode: -1,
+        statusCode: 500
+      });
+    }
+    let msg = errInfo.message || errorName;
+    if (errInfo.messageIn && typeof language === 'string') {
+      msg = errInfo.messageIn[language] || msg;
+    }
+    if (payload && typeof payload === 'object') {
+      msg = chores.formatTemplate(msg, payload);
+    } else {
+      payload = null;
+    }
+    return newError(errorName, msg, {
+      packageRef,
+      returnCode: errInfo.returnCode,
+      statusCode: errInfo.statusCode,
+      payload: payload
+    });
+  }
+
+  this.getDescriptor = function () {
+    return { packageRef, errorCodes, defaultLanguage };
+  }
+}
+
+chores.newErrorBuilder = function (kwargs) {
+  return new ErrorBuilder(kwargs);
 }
 
 module.exports = chores;

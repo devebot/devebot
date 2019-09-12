@@ -14,7 +14,7 @@ const blockRef = chores.getBlockRef(__filename);
  * @param {Object} params - The parameters of the constructor.
  * @param {Object} params.runhook - The parameters that sent to Runhooks
  */
-function RunhookManager(params={}) {
+function RunhookManager(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
@@ -54,7 +54,7 @@ function RunhookManager(params={}) {
   };
 
   // default: undefined ~ false
-  const predefinedContext = lodash.get(params, ['profileConfig', constx.ROUTINE.ROOT_KEY, 'predefinedContext']) == true;
+  const predefinedContext = lodash.get(params, ['profileConfig', constx.ROUTINE.ROOT_KEY, 'predefinedContext']) === true;
 
   const routineStore = new Injektor(chores.injektorOptions);
 
@@ -65,15 +65,19 @@ function RunhookManager(params={}) {
   };
 
   function getRunhook(command) {
-    if (!command || !command.name) return {
-      code: -1,
-      message: 'command.name is undefined'
-    };
+    if (!command || !command.name) {
+      return {
+        code: -1,
+        message: 'command.name is undefined'
+      };
+    }
     const fn = routineStore.suggestName(command.name);
-    if (fn == null || fn.length == 0) return {
-      code: -2,
-      message: 'command.name not found'
-    };
+    if (fn == null || fn.length === 0) {
+      return {
+        code: -2,
+        message: 'command.name not found'
+      };
+    }
     if (fn.length >= 2) {
       try {
         return routineStore.lookup(command.name, {

@@ -36,7 +36,7 @@ function BeanProxy(target, handler, opts = {}) {
           const name = isNumber(nameIndex) ? arguments[nameIndex] : null;
           context.slug = pathString;
           if (isString(name)) {
-            context.slug = pathString && (pathString + '.' + name) || name;
+            context.slug = (pathString && (pathString + '.' + name)) || name;
           }
           context.wrap = function (wrappedTarget) {
             if (isUndefined(wrappedTarget)) {

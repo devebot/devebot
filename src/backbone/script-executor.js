@@ -5,7 +5,7 @@ const lodash = require('lodash');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 
-function ScriptExecutor(params={}) {
+function ScriptExecutor(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
@@ -32,7 +32,7 @@ function ScriptExecutor(params={}) {
   this.executeCommand = function(command, outlet) {
     try {
       command = resolveCommand(command);
-    } catch(error) {
+    } catch (error) {
       L.has('error') && L.log('error', T.toMessage({
         tags: [ blockRef, 'executeCommand', 'invalid-command-object' ],
         text: ' - Invalid command object'
@@ -49,7 +49,7 @@ function ScriptExecutor(params={}) {
     }));
 
     let promize;
-    if (command.name == 'definition') {
+    if (command.name === 'definition') {
       promize = Promise.resolve().then(function() {
         outlet.render('definition', {
           appName: params.appName,
@@ -61,7 +61,7 @@ function ScriptExecutor(params={}) {
       promize = runhookManager.execute(command, { outlet: outlet });
     }
 
-    promize.catch(function(error) {
+    promize.catch(function() {
       L.has('silly') && L.log('silly', reqTr.add({ commandName: command.name }).toMessage({
         tags: [ blockRef, 'executeCommand', 'failed' ],
         text: '${commandName}#${requestId} is failed'

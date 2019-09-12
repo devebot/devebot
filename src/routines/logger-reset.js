@@ -17,7 +17,7 @@ const commandObject = {
     const originLogger = loggingFactory.getLogger({ type: 'origin' });
     const promixe = Promise.resolve().then(function() {
       originLogger.resetDefaultLevels();
-      return {status: 'ok'};
+      return { status: 'ok' };
     });
     return promixe;
   }

@@ -7,8 +7,7 @@ const nodash = require('../utils/nodash');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
-function ContextManager(params={}) {
-  const issueInspector = params.issueInspector;
+function ContextManager(params = {}) {
   const loggingWrapper = new LoggingWrapper(blockRef);
   const L = loggingWrapper.getLogger();
   const T = loggingWrapper.getTracer();
@@ -53,7 +52,7 @@ function ContextManager(params={}) {
       _ref_.featureEnabled = envbox.getEnv('FEATURE_ENABLED');
     }
     labels = nodash.arrayify(labels);
-    for(const k in labels) {
+    for (const k in labels) {
       if (!checkFeatureSupported(labels[k])) return false;
     }
     return true;

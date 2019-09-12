@@ -13,7 +13,7 @@ const blockRef = chores.getBlockRef(__filename);
 
 const DEFAULT_SERVICES = [ 'jobqueue-binder' ];
 
-function SandboxManager(params={}) {
+function SandboxManager(params = {}) {
   const issueInspector = params.issueInspector;
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
@@ -27,6 +27,13 @@ function SandboxManager(params={}) {
   const managerMap = {};
   chores.loadServiceByNames(managerMap, __dirname, DEFAULT_SERVICES);
   const managerNames = lodash.keys(managerMap);
+
+  const utilityMap = {};
+  const utilityNames = [];
+  if (chores.isUpgradeSupported('sandbox-mapping-loader')) {
+    utilityNames.push('mapping-loader');
+  }
+  chores.loadServiceByNames(utilityMap, __dirname, utilityNames);
 
   const serviceMap = {};
   params.bundleLoader.loadServices(serviceMap);
@@ -56,8 +63,15 @@ function SandboxManager(params={}) {
     'sandboxNames', 'sandboxConfig', 'profileNames', 'profileConfig',
     'contextManager', 'schemaValidator', 'loggingFactory', 'processManager'
   ];
+  if (chores.isUpgradeSupported('builtin-mapping-loader')) {
+    COPIED_DEPENDENCIES.push('mappingLoader');
+  }
   COPIED_DEPENDENCIES.forEach(function(refName) {
     sandboxInjektor.registerObject(refName, params[refName], chores.injektorContext);
+  });
+
+  lodash.forOwn(utilityMap, function(utilityConstruktor, utilityName) {
+    sandboxInjektor.defineService(utilityName, utilityConstruktor, chores.injektorContext);
   });
 
   lodash.forOwn(serviceMap, function(serviceRecord, serviceName) {
@@ -343,28 +357,19 @@ SandboxManager.argumentSchema = {
   }
 };
 
+if (chores.isUpgradeSupported('builtin-mapping-loader')) {
+  lodash.assign(SandboxManager.argumentSchema.properties, {
+    "mappingLoader": {
+      "type": "object"
+    },
+  });
+}
+
 module.exports = SandboxManager;
 
 function getComponentLabel(compName) {
   return constx.FRAMEWORK.NAME + chores.getSeparator() + compName;
 }
-
-function wrapScriptConstructor(ScriptConstructor, wrapperNames) {
-  function wrapperConstructor(params) {
-    ScriptConstructor.call(this, params);
-  }
-
-  wrapperConstructor.prototype = Object.create(ScriptConstructor.prototype);
-
-  wrapperConstructor.argumentSchema = lodash.cloneDeep(ScriptConstructor.argumentSchema);
-  lodash.forEach(wrapperNames, function(serviceName) {
-    const serviceEntry = {};
-    serviceEntry[serviceName] = { "type": "object" };
-    lodash.assign(wrapperConstructor.argumentSchema.properties, serviceEntry);
-  });
-
-  return wrapperConstructor;
-};
 
 function mergeSandboxServiceHelps(serviceNames, blocks) {
   const self = this;

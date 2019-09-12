@@ -41,16 +41,17 @@ const commandObject = {
     const transportList = (lodash.isEmpty(transports) ? null : transports.split(','));
 
     if (options['enabled']) {
-      const enabled = (options['enabled'] == false || options['enabled'] == 'false') ? false : true;
+      const enabled = (options['enabled'] === false || options['enabled'] === 'false') ? false : true;
       originLogger.activate(transportList, enabled);
     }
 
     if (options['level']) {
       const level = options['level'];
       originLogger.setLevel(level, transportList);
+      return Promise.resolve({currentLogLevel: level});
     }
 
-    return Promise.resolve({currentLogLevel: level});
+    return Promise.resolve({});
   }
 };
 

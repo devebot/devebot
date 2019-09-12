@@ -7,7 +7,7 @@ module.exports = function(envName, defaultValue) {
     }
   }
   if (envName instanceof Array) {
-    for(const i in envName) {
+    for (const i in envName) {
       if (envName[i] in process.env) {
         return process.env[envName[i]];
       }

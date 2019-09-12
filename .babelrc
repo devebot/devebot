@@ -10,19 +10,16 @@
       "presets": [
         ["env", {
           "targets": {
-            "node": "6.10"
+            "node": "6"
           }
         }]
-      ],
-      "plugins": [
-        "minify-mangle-names"
       ]
     },
     "test": {
       "presets": [
         ["env", {
           "targets": {
-            "node": "4.0"
+            "node": "6"
           }
         }]
       ]
@@ -31,12 +28,9 @@
       "presets": [
         ["env", {
           "targets": {
-            "node": "4.0"
+            "node": "6"
           }
         }]
-      ],
-      "plugins": [
-        "minify-mangle-names"
       ]
     }
   }

@@ -7,7 +7,7 @@ const constx = require('../utils/constx');
 const nodash = require('../utils/nodash');
 const blockRef = chores.getBlockRef(__filename);
 
-function NameResolver(params={}) {
+function NameResolver(params = {}) {
   const {issueInspector, bridgeList, pluginList} = params;
   const loggingWrapper = new LoggingWrapper(blockRef);
   const L = loggingWrapper.getLogger();
@@ -34,7 +34,7 @@ function NameResolver(params={}) {
   }
 
   function _getOriginalNameOf(crateName, crateType) {
-    switch(crateType) {
+    switch (crateType) {
       case 'application': {
         crateName = crateType;
         break;
@@ -50,7 +50,7 @@ function NameResolver(params={}) {
   }
 
   function _getDefaultAliasOf(crateName, crateType) {
-    switch(crateType) {
+    switch (crateType) {
       case 'application': {
         crateName = crateType;
         break;
@@ -148,7 +148,7 @@ const LIB_NAME_PATTERNS = {
     /^([a-z][a-z0-9\-]*[a-z0-9])$/g
   ],
   plugin: [
-    new RegExp("^" + constx.FRAMEWORK.NAME + "-dp-([a-z][a-z0-9\-]*[a-z0-9])$" ,"g"),
+    new RegExp("^" + constx.FRAMEWORK.NAME + "-dp-([a-z][a-z0-9\-]*[a-z0-9])$", "g"),
     /^([a-z][a-z0-9\-]*[a-z0-9])$/g
   ]
 }

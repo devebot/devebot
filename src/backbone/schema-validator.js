@@ -1,10 +1,9 @@
 'use strict';
 
-const lodash = require('lodash');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 
-function SchemaValidator(params={}) {
+function SchemaValidator(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();

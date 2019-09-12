@@ -8,7 +8,7 @@ const chores = require('./utils/chores');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
-function Runner(params={}) {
+function Runner(params = {}) {
   Kernel.call(this, params);
 
   const loggingWrapper = new LoggingWrapper(blockRef);
@@ -52,7 +52,7 @@ util.inherits(Runner, Kernel);
 
 module.exports = Runner;
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 function WsClientMock(wsServer) {
   events.EventEmitter.call(this);
@@ -77,7 +77,7 @@ WsClientMock.prototype.ready = function(msg) {
   this.emit('open');
 };
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 function WsServerMock() {
   events.EventEmitter.call(this);

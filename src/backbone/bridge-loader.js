@@ -6,7 +6,7 @@ const loader = require('../utils/loader');
 const chores = require('../utils/chores');
 const blockRef = chores.getBlockRef(__filename);
 
-function BridgeLoader(params={}) {
+function BridgeLoader(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
@@ -125,7 +125,7 @@ function loadBridgeContructor(ctx, bridgeRef) {
       }));
       opStatus.hasError = true;
     }
-  } catch(err) {
+  } catch (err) {
     L.has('dunce') && L.log('dunce', T.add(bridgeRef).toMessage({
       text: ' - bridge constructor (${name}) loading has failed'
     }));
@@ -207,7 +207,7 @@ function buildBridgeDialect(ctx, dialectOpts) {
 
   let configPath;
   if (!chores.isUpgradeSupported('bridge-full-ref')) {
-    switch(optType) {
+    switch (optType) {
       case 0:
         configPath = ['sandboxConfig', 'bridges', dialectName, bridgeCode];
         break;
@@ -264,7 +264,7 @@ function buildBridgeDialect(ctx, dialectOpts) {
           text: ' - constructor has finished'
         }));
       }
-    } catch(err) {
+    } catch (err) {
       L.has('silly') && L.log('silly', T.add({ bridgeCode }).toMessage({
         tags: [ sectorRef, 'constructor-failed' ],
         text: ' - bridgeConstructor (${bridgeCode}) call has failed'
@@ -341,7 +341,7 @@ function buildBridgeDialects(ctx, bridgeList, dialectOptions, optType) {
 
   const bridgeDialects = {};
   if (!chores.isUpgradeSupported('bridge-full-ref')) {
-    switch(optType) {
+    switch (optType) {
       case 0:
         lodash.forOwn(dialectOptions, function(dialectConfig, dialectName) {
           const bridgeCode = lodash.findKey(dialectConfig, function(o, k) {

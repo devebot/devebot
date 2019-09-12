@@ -2,6 +2,7 @@
 
 const lodash = require('lodash');
 const path = require('path');
+const util = require('util');
 const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const LoggingWrapper = require('./logging-wrapper');
@@ -9,7 +10,7 @@ const blockRef = chores.getBlockRef(__filename);
 
 const SELECTED_FIELDS = [ 'crateScope', 'extension', 'schema', 'checkConstraints' ];
 
-function ManifestHandler(params={}) {
+function ManifestHandler(params = {}) {
   const {nameResolver, issueInspector, bridgeList, bundleList} = params;
   const loggingWrapper = new LoggingWrapper(blockRef);
   const L = loggingWrapper.getLogger();
@@ -113,9 +114,9 @@ function validateBridgeConfig(ref, bridgeConfig, bridgeSchema, result) {
   }));
 
   if (!chores.isUpgradeSupported('bridge-full-ref')) {
-    for(const dialectName in bridgeConfig) {
+    for (const dialectName in bridgeConfig) {
       const dialectMap = bridgeConfig[dialectName] || {};
-      for(const bridgeCode in dialectMap) {
+      for (const bridgeCode in dialectMap) {
         const bridgeMetadata = lodash.get(bridgeSchema, [bridgeCode], {});
         if (bridgeMetadata.enabled === false || !lodash.isObject(bridgeMetadata.schema)) continue;
         const dialectConfig = dialectMap[bridgeCode] || {};
@@ -126,13 +127,13 @@ function validateBridgeConfig(ref, bridgeConfig, bridgeSchema, result) {
     return result;
   }
 
-  for(const bridgeCode in bridgeConfig) {
+  for (const bridgeCode in bridgeConfig) {
     const bridgeMap = bridgeConfig[bridgeCode] || {};
     const bridgeMetadata = lodash.get(bridgeSchema, [bridgeCode], {});
     if (bridgeMetadata.enabled === false || !lodash.isObject(bridgeMetadata.schema)) continue;
-    for(const pluginName in bridgeMap) {
+    for (const pluginName in bridgeMap) {
       const pluginMap = bridgeMap[pluginName] || {};
-      for(const dialectName in pluginMap) {
+      for (const dialectName in pluginMap) {
         const dialectConfig = pluginMap[dialectName] || {};
         const r = chores.validate(dialectConfig, bridgeMetadata.schema);
         result.push(customizeBridgeResult(r, bridgeCode, pluginName, dialectName));
@@ -158,7 +159,7 @@ function customizeBridgeResult(result, bridgeCode, pluginName, dialectName) {
 //-----------------------------------------------------------------------------
 
 function combineBundleSchema(ref, bundleList, bundleSchema = {}) {
-  const { L, T, nameResolver } = ref;
+  const { nameResolver } = ref;
   bundleSchema.profile = bundleSchema.profile || {};
   bundleSchema.sandbox = bundleSchema.sandbox || {};
   lodash.forEach(bundleList, function(bundleRef) {
@@ -210,7 +211,6 @@ function validateBundleConfig(ref, bundleConfig, bundleSchema, result) {
 }
 
 function validateSandboxSchemaOfCrates(ref, result, config, schema) {
-  const { L, T } = ref;
   config = config || {};
   schema = schema || {};
   if (config.application) {
@@ -239,7 +239,6 @@ function validateSandboxSchemaOfCrate(ref, result, crateConfig, crateSchema, cra
 }
 
 function checkSandboxConstraintsOfCrates(ref, result, config, schema) {
-  const { L, T } = ref;
   config = config || {};
   schema = schema || {};
   if (lodash.isObject(config.application)) {
@@ -253,7 +252,6 @@ function checkSandboxConstraintsOfCrates(ref, result, config, schema) {
 }
 
 function checkSandboxConstraintsOfAppbox(ref, result, config, schema) {
-  const { L, T } = ref;
   const crateName = 'application';
   const crateConfig = config.application;
   const crateSchema = schema.application;
@@ -273,7 +271,6 @@ function checkSandboxConstraintsOfAppbox(ref, result, config, schema) {
 }
 
 function checkSandboxConstraintsOfPlugin(ref, result, config, schema, crateName) {
-  const { L, T } = ref;
   const crateConfig = config.plugins[crateName];
   const crateSchema = schema && schema.plugins && schema.plugins[crateName];
   const checkConstraints = crateSchema && crateSchema.checkConstraints;
@@ -305,7 +302,7 @@ function applyCheckConstraints(checkConstraints, extractedCfg, crateName) {
 }
 
 function customizeSandboxResult(result, crateScope, validationType) {
-  result = (result == undefined || result == null) ? false : result;
+  result = (result === undefined || result === null) ? false : result;
   result = (typeof result === 'boolean') ? { ok: result } : result;
   const output = {};
   output.stage = 'config/' + validationType;

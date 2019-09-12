@@ -11,7 +11,7 @@ function appinfoLoader(appRootPath, libRootPaths, topRootPath) {
   const L = loggingWrapper.getLogger();
   const T = loggingWrapper.getTracer();
 
-  if (L.has('dunce')) {
+  if (T && L && L.has('dunce')) {
     L.log('dunce', ' + load the application package at: %s', appRootPath);
     L.log('dunce', ' - load the layerware packages at: %s', JSON.stringify(libRootPaths, null, 2));
     L.log('dunce', ' - load the framework package at: %s', topRootPath);

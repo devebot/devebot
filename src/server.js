@@ -15,7 +15,7 @@ const LoggingWrapper = require('./backbone/logging-wrapper');
 const RepeatedTimer = require('./backbone/repeated-timer');
 const blockRef = chores.getBlockRef(__filename);
 
-function Server(params={}) {
+function Server(params = {}) {
   Kernel.call(this, params);
 
   // init the default parameters
@@ -86,8 +86,8 @@ function Server(params={}) {
       text: 'start() is invoked'
     }));
     return Promise.resolve().then(function() {
-      if (mode == 0) return Promise.resolve();
-      if (mode == 1) return tictac.start();
+      if (mode === 0) return Promise.resolve();
+      if (mode === 1) return tictac.start();
       return new Promise(function(onResolved, onRejected) {
         const serverHost = lodash.get(frameworkCfg, ['host'], '0.0.0.0');
         const serverPort = lodash.get(frameworkCfg, ['port'], 17779);
@@ -96,7 +96,7 @@ function Server(params={}) {
           const host = serverInstance.address().address;
           const port = serverInstance.address().port;
           chores.isVerboseForced(constx.FRAMEWORK.NAME, frameworkCfg) &&
-              console.log('%s is listening on %s://%s:%s%s', appName, proto, host, port, appRootUrl);
+              console.info('%s is listening on %s://%s:%s%s', appName, proto, host, port, appRootUrl);
           onResolved(serverInstance);
         });
       });
@@ -129,8 +129,8 @@ function Server(params={}) {
         tags: [ blockRef, 'close()', 'triggers-stopped' ],
         text: 'triggers have stopped'
       }));
-      if (mode == 0) return Promise.resolve();
-      if (mode == 1) return tictac.stop();
+      if (mode === 0) return Promise.resolve();
+      if (mode === 1) return tictac.stop();
       return new Promise(function(onResolved, onRejected) {
         const timeoutHandler = setTimeout(function() {
           L.has('dunce') && L.log('dunce', 'Timeout closing Server');
@@ -155,7 +155,7 @@ function Server(params={}) {
         text: 'webserver has stopped'
       }));
       chores.isVerboseForced(constx.FRAMEWORK.NAME, frameworkCfg) &&
-          console.log('%s has been closed', appName);
+          console.info('%s has been closed', appName);
       return Promise.resolve();
     });
   }

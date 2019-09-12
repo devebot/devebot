@@ -6,10 +6,10 @@ function pinbug(pkgName) {
   if (debug == null) {
     try {
       debug = require('debug');
-    } catch(err) {
+    } catch (err) {
       debug = function() {
         function log() {
-          return console.log.apply(console, arguments);
+          return console.info.apply(console, arguments);
         }
         log.enabled = false;
         return log;

@@ -13,7 +13,7 @@ const blockRef = chores.getBlockRef(__filename);
 const NOOP = function() {}
 const MODE = getenv(['DEVEBOT_NODE_ENV', 'NODE_ENV']) === 'test' ? null : 'direct';
 
-function ObjectDecorator(params={}) {
+function ObjectDecorator(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const nameResolver = params.nameResolver;
   const L = loggingFactory.getLogger();
@@ -168,7 +168,7 @@ function wrapObject(refs, object, opts) {
         info: argList
       }));
       if (!cached[methodPath]) {
-        const { textureOfBean } = opts; 
+        const { textureOfBean } = opts;
         const supportAllMethods = chores.getFirstDefinedValue(
           textureOfBean && textureOfBean.supportAllMethods,
           opts.supportAllMethods);
@@ -239,7 +239,7 @@ function wrapMethod(refs, target, opts) {
 }
 
 function MockingInterceptor(params) {
-  const { logger, tracer, texture, method, methodName, object, objectName } = params;
+  const { logger, tracer, texture, method, methodName, objectName } = params;
   const enabled = isMockingEnabled(texture) && !lodash.isEmpty(texture.mocking.mappings);
   let capsule;
   Object.defineProperty(this, 'capsule', {
@@ -304,7 +304,7 @@ function MockingInterceptor(params) {
 }
 
 function getMockingGenerator(texture, thisArg, argumentsList) {
-  for(const name in texture.mocking.mappings) {
+  for (const name in texture.mocking.mappings) {
     const rule = texture.mocking.mappings[name];
     if (!lodash.isFunction(rule.selector)) continue;
     if (!lodash.isFunction(rule.generate)) continue;
@@ -315,7 +315,7 @@ function getMockingGenerator(texture, thisArg, argumentsList) {
   return null;
 }
 
-function LoggingInterceptor(params={}) {
+function LoggingInterceptor(params = {}) {
   const { logger, tracer, preciseThreshold } = params
   const { texture, object, objectName, method, methodName, streamId } = params;
   const counter = { promise: 0, callback: 0, general: 0 }
@@ -459,8 +459,8 @@ function callMethod(refs, argumentsList, logOnEvent, logState) {
   }
 
   function _invoke(argumentsList) {
-    let result = undefined, exception = undefined;
-    switch(methodType) {
+    let result, exception;
+    switch (methodType) {
       case 'promise': {
         result = Promise.resolve().then(function() {
           logOnEvent.Request(logState, argumentsList);
@@ -526,7 +526,7 @@ function hitMethodType(pointer, counter, methodType) {
       counter[methodType]++;
     } else {
       if (methodType !== pointer.current && pointer.current) {
-        for(const name in counter) {
+        for (const name in counter) {
           counter[name] = 0;
         }
       }
@@ -662,7 +662,7 @@ function getTextureOfPlugin({textureStore, pluginCode, gadgetType, gadgetName}) 
 
 function propagateEnabled(childTexture, parentTexture) {
   if (parentTexture && parentTexture.enabled === false) {
-    if (childTexture && childTexture.enabled == undefined) {
+    if (childTexture && childTexture.enabled == null) {
       childTexture.enabled = parentTexture.enabled;
     }
   }
@@ -670,9 +670,9 @@ function propagateEnabled(childTexture, parentTexture) {
 }
 
 function detectRequestId(argumentsList) {
-  let reqId = undefined;
+  let reqId;
   if (argumentsList && argumentsList.length > 0) {
-    for(let k=(argumentsList.length-1); k>=0; k--) {
+    for (let k=(argumentsList.length-1); k>=0; k--) {
       const o = argumentsList[k];
       reqId = o && (o.requestId || o.reqId);
       if (typeof reqId === 'string') break;
@@ -684,7 +684,7 @@ function detectRequestId(argumentsList) {
 function isProxyRecursive(texture) {
   if (!texture) return false;
   const fields = ['recursive', 'spread', 'outspread', 'nested', 'wrapped'];
-  for(const i in fields) {
+  for (const i in fields) {
     if (texture[fields[i]]) return true;
   }
   return false;

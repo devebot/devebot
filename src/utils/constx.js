@@ -1,8 +1,9 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 
-const PKG_INFO = JSON.parse(fs.readFileSync(__dirname + '/../../package.json', 'utf8'));
+const PKG_INFO = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../package.json'), 'utf8'));
 
 const PRESETS_SCHEMA = {
   "type": "object",
@@ -564,5 +565,20 @@ module.exports = {
       tag: 'manifest-refiner',
       enabled: true,
     },
-  ]
+    {
+      tag: 'builtin-mapping-loader',
+      enabled: false,
+    },
+    {
+      tag: 'sandbox-mapping-loader',
+      enabled: true,
+    },
+    {
+      tag: 'optimization-mode',
+      enabled: true,
+    },
+  ],
+  LOADING: {
+    DELETE_OLD_REFERENCE_ALIAS: false
+  }
 };

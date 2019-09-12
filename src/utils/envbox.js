@@ -133,7 +133,7 @@ const ENV_DEF_DEFAULT = [
   }
 ]
 
-function EnvironmentCollection(params={}) {
+function EnvironmentCollection(params = {}) {
   const definition = {};
   const store = { env: {}, namespace: params.namespace || 'DEVEBOT' };
 
@@ -167,7 +167,7 @@ function EnvironmentCollection(params={}) {
   this.setNamespace = function(ns, opts = {}) {
     store.namespace = ns;
     if (opts.occupyValues) {
-      for(const envKey in definition) {
+      for (const envKey in definition) {
         this.getEnv(envKey);
         const envName = getLabel(envKey);
         if (envName in process.env) {
@@ -234,7 +234,7 @@ function EnvironmentCollection(params={}) {
 
   this.clearCache = function(keys) {
     keys = nodash.arrayify(keys);
-    for(const key in store.env) {
+    for (const key in store.env) {
       if (keys.length === 0 || keys.indexOf(key) >= 0) {
         delete store.env[key];
       }
@@ -247,13 +247,14 @@ function EnvironmentCollection(params={}) {
     // get the excluded scopes
     const excl = nodash.arrayify(opts.excludes || [ 'framework', 'test' ]);
     // print to console or muted?
-    const lines = [], muted = (opts.muted === true);
+    const lines = [];
+    const muted = (opts.muted === true);
     const chalk = muted ? new Chalk({ blanked: true, themes: DEFAULT_THEMES }) : DEFAULT_CHALK;
     function printInfo() {
       if (muted) {
         lines.push(util.format.apply(util, arguments));
       } else {
-        console.log.apply(console, arguments);
+        console.info.apply(console, arguments);
       }
     }
     // printing
@@ -284,7 +285,7 @@ function EnvironmentCollection(params={}) {
   }
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ color chalks
 
 const DEFAULT_THEMES = {
   heading1: ['cyan', 'bold'],
@@ -300,7 +301,7 @@ const DEFAULT_CHALK = new Chalk({
   themes: DEFAULT_THEMES
 });
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default constructor & instance property
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default constructor & instance property
 
 let privateEnvbox;
 
@@ -316,7 +317,7 @@ Object.defineProperty(EnvironmentCollection, 'instance', {
 // Deprecated
 // module.exports = EnvironmentCollection;
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ default instance
 
 const defaultInstance = new EnvironmentCollection({
   definition: ENV_DEF_DEFAULT

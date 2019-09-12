@@ -3,18 +3,21 @@
 const Injektor = require('injektor');
 const lodash = require('lodash');
 const path = require('path');
-const util = require('util');
 const chores = require('./utils/chores');
 const constx = require('./utils/constx');
 const LoggingWrapper = require('./backbone/logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
 
 const CONSTRUCTORS = {};
-chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), [
+const SERVICE_NAMES = [
   'sandbox-manager', 'schema-validator', 'script-executor', 'script-renderer',
   'security-manager', 'bridge-loader', 'bundle-loader',
   'object-decorator', 'logging-factory', 'process-manager',
-]);
+]
+if (chores.isUpgradeSupported('builtin-mapping-loader')) {
+  SERVICE_NAMES.push('mapping-loader');
+}
+chores.loadServiceByNames(CONSTRUCTORS, path.join(__dirname, 'backbone'), SERVICE_NAMES);
 
 function Kernel(params = {}) {
   const loggingWrapper = new LoggingWrapper(blockRef);
@@ -58,7 +61,7 @@ function Kernel(params = {}) {
     const bridgeMetadata = bridgeLoader.loadMetadata();
     L.has('silly') && L.log('silly', T.add({ metadata: bridgeMetadata }).toMessage({
       tags: [ blockRef, 'bridge-config-schema-input' ],
-      text: " - bridge's metadata: ${metadata}"
+      text: " - bridge's metadata: ${ metadata }"
     }));
     const bridgeSchema = extractBridgeSchema(SELECTED_FIELDS, bridgeMetadata);
 

@@ -7,7 +7,7 @@ const MAPPINGS = {
 }
 
 function _logit(L, level) {
-  L = nodash.isObject(L) && nodash.isFunction(L.has) && nodash.isFunction(L.log) && L || null;
+  L = (nodash.isObject(L) && nodash.isFunction(L.has) && nodash.isFunction(L.log) && L) || null;
   L && L.has(level) && L.log.apply(Array.prototype.slice.call(arguments, 1));
 }
 
@@ -16,7 +16,7 @@ function loader(name, opts = {}) {
   try {
     _ref_.pkg = require(name);
     _logit(opts.logger, 'debug', ' - file %s is loading ... ok', name);
-  } catch(err) {
+  } catch (err) {
     if (err.code) {
       if (MAPPINGS[err.code]) {
         _logit(opts.logger, 'debug', ' - file %s is loading ... failed. Reason: %s', name, MAPPINGS[err.code]);

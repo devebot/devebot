@@ -39,7 +39,7 @@ function RepeatedTimer(kwargs={}) {
 
   function taskWrapper() {
     _ref_.taskCounter++;
-    if (0 == config.total || _ref_.taskCounter <= config.total) {
+    if (config.total === 0 || _ref_.taskCounter <= config.total) {
       config.target.call(self);
     } else {
       self.stop();
@@ -56,7 +56,7 @@ function RepeatedTimer(kwargs={}) {
   }
 
   this.startInSilent = function() {
-    if (0 < config.total && config.total < _ref_.taskCounter) {
+    if (config.total > 0 && config.total < _ref_.taskCounter) {
       return this;
     }
     if (!_ref_.taskHandler) {

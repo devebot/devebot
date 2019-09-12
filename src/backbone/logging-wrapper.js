@@ -1,6 +1,5 @@
 'use strict';
 
-const lodash = require('lodash');
 const LogAdapter = require('logolite').LogAdapter;
 const LogTracer = require('logolite').LogTracer;
 const chores = require('../utils/chores');

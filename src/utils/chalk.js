@@ -2,7 +2,7 @@
 
 const toolset = require('./toolset');
 
-function Chalk(params={}) {
+function Chalk(params = {}) {
   const themes = params.themes || {};
 
   if (params.blanked !== true && toolset.has('colors')) {

@@ -5,8 +5,7 @@ const chores = require('../utils/chores');
 const getenv = require('../utils/getenv');
 const blockRef = chores.getBlockRef(__filename);
 
-function ProcessManager(params={}) {
-  const issueInspector = params.issueInspector;
+function ProcessManager(params = {}) {
   const loggingFactory = params.loggingFactory.branch(blockRef);
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
@@ -37,7 +36,7 @@ function ProcessManager(params={}) {
   Object.defineProperty(this, 'isMaster', {
     get: function() {
       if (!this.available || pm_id < 0 || pm_total <= 0) return false;
-      return (pm_id % pm_total) == 0;
+      return (pm_id % pm_total) === 0;
     },
     set: function(value) {}
   });
@@ -58,7 +57,7 @@ function ProcessManager(params={}) {
 
   this.belongTo = function(idx) {
     if (!this.available || pm_id < 0 || pm_total <= pm_id) return null;
-    while(idx >= pm_total) idx -= pm_total;
+    while (idx >= pm_total) idx -= pm_total;
     return idx === pm_id;
   }
 

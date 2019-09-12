@@ -1,6 +1,6 @@
 {
   "name": "devebot",
-  "version": "0.2.10",
+  "version": "0.3.3",
   "description": "Nodejs Microservice Framework",
   "main": "index.js",
   "directories": {
@@ -17,6 +17,8 @@
     "clean": "rm -rf ./lib",
     "build-without-cleaning": "babel ./src -d ./lib",
     "build": "npm run clean && npm run build-without-cleaning",
+    "eslint-lib": "eslint ./lib/ --quiet",
+    "eslint-src": "eslint ./src/ --quiet",
     "prepublish": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-production} npm run build",
     "pretest": "BABEL_ENV=${DEVEBOT_BABEL_ENV:-test} npm run build",
     "prove": "mocha --recursive ./test/{bdd,tdd}/${DEVEBOT_TESTCASES:-*}-test.js",
@@ -48,7 +50,7 @@
     "codetags": "0.1.2",
     "injektor": "0.1.18",
     "lodash": "4.17.11",
-    "logolite": "0.1.8",
+    "logolite": "^0.3.0",
     "logzilla": "0.1.18",
     "minimist": "1.2.0",
     "schemato": "0.1.2",
@@ -57,9 +59,17 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
+    "babel-minify": "^0.5.1",
     "babel-plugin-minify-mangle-names": "^0.3.0",
     "babel-plugin-transform-async-to-module-method": "^6.24.1",
     "babel-preset-env": "^1.6.1",
+    "eslint": "^5.16.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "liberica": "^0.3.1",
     "mocha": "^4.1.0",
     "mochawesome": "^3.1.1"
   }
