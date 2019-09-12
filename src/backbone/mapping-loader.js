@@ -12,12 +12,15 @@ function MappingLoader(params = {}) {
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
 
+  const { schemaValidator } = params;
+
   L.has('silly') && L.log('silly', T.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
   this.loadMappings = function(mappingStore, options = {}) {
+    // determine the loaderContext
     const loaderContext = lodash.get(options, 'context', {});
     let mappings = {};
     if (lodash.isString(mappingStore)) {
@@ -44,6 +47,22 @@ function MappingLoader(params = {}) {
           lodash.merge(mappings, accum);
         }
       });
+    }
+    // validate with a jsonschema
+    const jsonschema = lodash.get(options, 'jsonschema', {});
+    if (!lodash.isEmpty(jsonschema)) {
+      const result = schemaValidator.validate(mappings, jsonschema);
+      if (result && result.valid === false) {
+        throw new Error('mappings is invalid with the jsonschema');
+      }
+    }
+    // validate with a validator
+    const validator = lodash.get(options, 'validator', {});
+    if (lodash.isFunction(validator)) {
+      const result = validator(mappings);
+      if (result && result.ok === false) {
+        throw new Error('mappings is invalid with the validator');
+      }
     }
     return mappings;
   }
@@ -116,8 +135,10 @@ MappingLoader.MAPPING_STORE_SCHEMA = {
               "type": "boolean"
             },
             "fileFilter": {
+              "description": "A customized filter that select the mapping files"
             },
             "keyGenerator": {
+              "description": "A customized mapping key generation function"
             }
           },
           "additionalProperties": false

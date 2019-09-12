@@ -180,6 +180,9 @@ function loadScriptEntry(CTX, scriptMap, scriptType, scriptSubDir, scriptFile, s
       L.has('dunce') && L.log('dunce', T.add({ filepath }).toMessage({
         text: ' - script file ${filepath} doesnot contain a function.'
       }));
+      opStatus.stack = chores.formatTemplate('Service file ${filepath} does not contain a function', {
+        filepath
+      });
       opStatus.hasError = true;
     }
   } catch (err) {
