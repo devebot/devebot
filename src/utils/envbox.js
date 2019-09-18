@@ -3,6 +3,8 @@
 const constx = require('./constx');
 const Envcloak = require('envcloak');
 
+Envcloak.NAMESPACE = 'DEVEBOT';
+
 const ENV_DEF_DEFAULT = [
   {
     name: "TASKS",
