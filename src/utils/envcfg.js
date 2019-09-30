@@ -6,9 +6,8 @@ function sanitizePrefix (prefix) {
   return lodash.trim(prefix, '_') + '_';
 }
 
-function extractEnv (prefix) {
+function extractEnv (prefix, cfg = {}) {
   prefix = sanitizePrefix(prefix);
-  const cfg = {};
   for (const envName in process.env) {
     if (lodash.startsWith(envName, prefix)) {
       const realName = lodash.replace(envName, prefix, '');

@@ -7,6 +7,7 @@ const chores = require('../utils/chores');
 const constx = require('../utils/constx');
 const loader = require('../utils/loader');
 const envbox = require('../utils/envbox');
+const envcfg = require('../utils/envcfg');
 const nodash = require('../utils/nodash');
 const LoggingWrapper = require('./logging-wrapper');
 const blockRef = chores.getBlockRef(__filename);
@@ -226,6 +227,22 @@ function extractConfigManifest(ctx, moduleRefs, configManifest) {
     configManifest[moduleName] = lodash.pick(moduleRef, ['version', 'manifest']);
   });
   return configManifest;
+}
+
+function loadEnvironConfig(ctx = {}, appLabel) {
+  const prefixes = [
+    util.format('%s_CONFIG_VAL', appLabel),
+    util.format('%s_CONFIG_VAL', 'DEVEBOT'),
+    util.format('NODE_%s_CONFIG_VAL', appLabel),
+    util.format('NODE_%s_CONFIG_VAL', 'DEVEBOT'),
+  ];
+
+  let store = {};
+  for (const prefix of prefixes) {
+    store = envcfg.extractEnv(prefix, store);
+  }
+
+  return store;
 }
 
 function loadAppboxConfig(ctx, config, aliasesOf, tileNames, appRef, bridgeManifests, pluginManifests, configType, configDir) {
