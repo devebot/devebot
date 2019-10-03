@@ -96,6 +96,8 @@ function loadConfig(ctx = {}, appName, options, appRef, devebotRef, pluginRefs, 
 
   loadConfigOfModules(ctx, config, aliasesOf, tileNames, appName, appRef, devebotRef, pluginRefs, bridgeRefs, customDir, customEnv);
 
+  fillConfigByEnvVars(ctx, config, appName);
+
   lodash.forEach([CONFIG_SANDBOX_NAME, CONFIG_TEXTURE_NAME], function(configType) {
     if (chores.isUpgradeSupported('standardizing-config')) {
       applyAliasMap(ctx, config[configType].default, nameResolver.getDefaultAliasOf);
@@ -214,8 +216,6 @@ function loadConfigOfModules(ctx = {}, config, aliasesOf, tileNames, appName, ap
 
     L.has('dunce') && L.log('dunce', ' - Final config object: %s', util.inspect(config[configType], {depth: 8}));
   });
-
-  loadEnvironConfig(ctx, config, appName);
 }
 
 function extractConfigManifest(ctx, moduleRefs, configManifest) {
@@ -231,9 +231,9 @@ function extractConfigManifest(ctx, moduleRefs, configManifest) {
   return configManifest;
 }
 
-function loadEnvironConfig(ctx = {}, config = {}, appName) {
+function fillConfigByEnvVars(ctx = {}, config = {}, appName) {
   const appLabel = chores.stringLabelCase(appName);
-  const store = extractEnvironConfig(ctx, appLabel);
+  const { store, paths } = extractEnvironConfig(ctx, appLabel);
   CONFIG_TYPES.forEach(function(configType) {
     config[configType] = config[configType] || {};
     if (configType in store && !lodash.isEmpty(store[configType])) {
@@ -251,12 +251,12 @@ function extractEnvironConfig(ctx = {}, appLabel) {
     util.format('NODE_%s_CONFIG_VAL', 'DEVEBOT'),
   ];
 
-  let store = {};
+  let result = {};
   for (const prefix of prefixes) {
-    store = envcfg.extractEnv(prefix, store);
+    result = envcfg.extractEnv(prefix, result);
   }
 
-  return store;
+  return result;
 }
 
 function loadAppboxConfig(ctx, config, aliasesOf, tileNames, appRef, bridgeManifests, pluginManifests, configType, configDir) {

@@ -7,12 +7,17 @@ function sanitizePrefix (prefix) {
 }
 
 function extractEnv (prefix, cfg = {}) {
+  cfg.store = cfg.store || {};
+  cfg.paths = cfg.paths || [];
   prefix = sanitizePrefix(prefix);
   for (const envName in process.env) {
     if (lodash.startsWith(envName, prefix)) {
       const realName = lodash.replace(envName, prefix, '');
       const fieldPath = lodash.split(realName, '_');
-      lodash.set(cfg, fieldPath, process.env[envName]);
+      if (fieldPath.length > 0) {
+        lodash.set(cfg.store, fieldPath, process.env[envName]);
+        cfg.paths.push(fieldPath);
+      }
     }
   }
   return cfg;
