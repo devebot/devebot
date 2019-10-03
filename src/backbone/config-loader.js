@@ -252,6 +252,9 @@ function fillConfigByEnvVars(ctx = {}, config = {}, appName) {
     const oldVal = lodash.get(config, [configType, 'mixture'].concat(location.slice(1)));
     if (lodash.isNumber(oldVal)) {
       newVal = Number(envVal);
+      if (Number.isNaN(newVal)) {
+        newVal = null;
+      }
     } else
     if (lodash.isBoolean(oldVal)) {
       newVal = envVal.toLowerCase() == 'true' ? true : false;
@@ -260,7 +263,7 @@ function fillConfigByEnvVars(ctx = {}, config = {}, appName) {
       newVal = envVal;
     }
 
-    if (newVal !== undefined) {
+    if (!lodash.isNil(newVal)) {
       lodash.set(clone, location, newVal);
     }
   }
