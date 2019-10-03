@@ -234,10 +234,41 @@ function extractConfigManifest(ctx, moduleRefs, configManifest) {
 function fillConfigByEnvVars(ctx = {}, config = {}, appName) {
   const appLabel = chores.stringLabelCase(appName);
   const { store, paths } = extractEnvironConfig(ctx, appLabel);
+  const clone = {};
+  for (const location of paths) {
+    if (!lodash.isArray(location)) {
+      continue;
+    }
+    if (location.length < 2) {
+      continue;
+    }
+    const configType = location[0];
+    if (CONFIG_TYPES.indexOf(configType) < 0) {
+      continue;
+    }
+
+    let newVal = undefined;
+    const envVal = lodash.get(store, location);
+    const oldVal = lodash.get(config, [configType, 'mixture'].concat(location.slice(1)));
+    if (lodash.isNumber(oldVal)) {
+      newVal = Number(envVal);
+    } else
+    if (lodash.isBoolean(oldVal)) {
+      newVal = envVal.toLowerCase() == 'true' ? true : false;
+    } else
+    if (lodash.isString(oldVal)) {
+      newVal = envVal;
+    }
+
+    if (newVal !== undefined) {
+      lodash.set(clone, location, newVal);
+    }
+  }
+
   CONFIG_TYPES.forEach(function(configType) {
     config[configType] = config[configType] || {};
-    if (configType in store && !lodash.isEmpty(store[configType])) {
-      config[configType]['environ'] = store[configType];
+    if (configType in clone && !lodash.isEmpty(clone[configType])) {
+      config[configType]['environ'] = clone[configType];
       config[configType]['mixture'] = lodash.merge(config[configType]['mixture'], config[configType]['environ']);
     }
   });
