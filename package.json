@@ -53,7 +53,7 @@
     "lodash": "4.17.15",
     "logolite": "^0.3.0",
     "logzilla": "0.1.18",
-    "minimist": "1.2.0",
+    "minimist": "1.2.5",
     "schemato": "0.1.2",
     "semver": "5.7.0",
     "ws": "3.3.3"
